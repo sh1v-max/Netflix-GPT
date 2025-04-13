@@ -1,10 +1,9 @@
 import './App.css'
+import Body from './components/Body'
 
 function App() {
   return (
-    <>
-      <h1 className="text-red-300 text-3xl font-bold underline">Namaste react</h1>
-    </>
+  <Body />
   )
 }
 
