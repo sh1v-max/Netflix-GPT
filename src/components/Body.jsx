@@ -1,9 +1,25 @@
 import React from 'react'
+import Login from './Login'
+import Browse from './Browse'
+import { createBrowserRouter } from 'react-router-dom'
+import { RouterProvider } from 'react-router-dom'
 
 const Body = () => {
+
+  const appRouter = createBrowserRouter([
+    {
+      path: "/",
+      element: <Login />,
+    },
+    {
+      path: "/browse",
+      element: <Browse />,
+    },
+  ])
+  
   return (
-    <div>Body
-      <h1 className='text-2xl bg-yellow-500'> Hello sir</h1>
+    <div>
+      <RouterProvider router={appRouter} />
     </div>
   )
 }
