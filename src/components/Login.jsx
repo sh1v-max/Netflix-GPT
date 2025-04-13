@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Header from './Header'
 import { Footer } from './Footer'
+import PasswordInput from './PasswordInput'
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true)
@@ -29,16 +30,27 @@ const Login = () => {
         <h2 className="text-3xl font-semibold mb-6">
           {isSignInForm ? 'Sign In' : 'Sign Up'}
         </h2>
+        {!isSignInForm && (
+          <input
+            type="text"
+            placeholder="Full Name"
+            className="w-full p-3 mb-4 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600"
+          />
+        )}
         <input
           type="text"
           placeholder="Email or phone number"
           className="w-full p-3 mb-4 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600"
         />
-        <input
+        {/* <input
           type="password"
           placeholder="Password"
           className="w-full p-3 mb-6 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600"
-        />
+        /> */}
+
+        {/* i was trying to create show password eye icon */}
+        <PasswordInput placeholder="Password" />
+        
         <button
           type="submit"
           className="w-full bg-red-600 hover:bg-red-700 transition-colors duration-300 font-semibold py-3 rounded"
@@ -57,9 +69,7 @@ const Login = () => {
         </div>
 
         <p className="text-gray-400 mt-6 text-sm">
-          {isSignInForm
-            ? "New to Netflix? "
-            : 'Already have an account? '}
+          {isSignInForm ? 'New to Netflix? ' : 'Already have an account? '}
           <span
             className="text-white hover:underline cursor-pointer"
             onClick={toggleSighInForm}
