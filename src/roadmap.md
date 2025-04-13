@@ -25,11 +25,13 @@
 
 - create vite app
 - installed tailwind
-- login/sign up page
+- routing
+- login page
   - header/footer
   - sign in/ sign up form 
+  - form validation or authentication
     - use Formik library for form validation
-  - now form validation or authentication
+    - using useRef() hook
   - redirect to browser page
 - browse (after authentication)
   - header
