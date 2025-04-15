@@ -20,9 +20,9 @@ const Login = () => {
     // we can either use state variables or we can use state reference
     //? we can use useRef() to do that
     // we need reference to the input fields to do so
-    // checkValidateDate(email, password)
-    console.log(email)
-    console.log(password)
+    checkValidateDate(email.current.value, password.current.value)
+    console.log(email.current.value)
+    console.log(password.current.value)
   }
 
   const togglePasswordVisibility = () => {
