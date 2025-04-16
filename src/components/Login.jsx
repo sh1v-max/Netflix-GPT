@@ -8,6 +8,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   // creating useRef for email and password
+  const name = useRef(null)
   const email = useRef(null)
   const password = useRef(null)
 
@@ -21,9 +22,14 @@ const Login = () => {
     // we can either use state variables or we can use state reference
     //? we can use useRef() to do that
     // we need reference to the input fields to do so
-    const message = checkValidateDate(email.current.value, password.current.value)
+    const message = checkValidateDate(
+      email.current.value,
+      password.current.value,
+      name.current.value
+    )
     console.log(email.current.value)
     console.log(password.current.value)
+    console.log(name.current.value)
     console.log(message)
     setErrorMessage(message)
   }
@@ -45,7 +51,7 @@ const Login = () => {
       </div>
 
       <form
-      onSubmit={(e) => e.preventDefault()}
+        onSubmit={(e) => e.preventDefault()}
         action=""
         className="w-4/12 absolute p-12 bg-black my-50 mx-auto right-0 left-0 text-white rounded-md shadow-lg"
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
@@ -55,20 +61,21 @@ const Login = () => {
         </h2>
         {!isSignInForm && (
           <input
+            ref={name}
             type="text"
             placeholder="Full Name"
             className="w-full p-3 mb-4 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600"
           />
         )}
         <input
-        ref={email}
+          ref={email}
           type="text"
           placeholder="Email or phone number"
           className="w-full p-3 mb-4 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600"
         />
         <div className="relative mb-8">
           <input
-          ref={password}
+            ref={password}
             type={showPassword ? 'text' : 'password'}
             placeholder="password"
             className="w-full p-3 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -90,7 +97,7 @@ const Login = () => {
           </button>
         </div>
 
-        <p className='text-red-600 font-bold text-lg py-2'>{errorMessage}</p>
+        <p className="text-red-600 font-bold text-lg py-2">{errorMessage}</p>
 
         <button
           type="submit"

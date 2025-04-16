@@ -32,6 +32,7 @@
   - form validation or authentication
     - use Formik library for form validation
     - using useRef() hook
+    - validation done, now let's start authentication
   - redirect to browser page
 - browse (after authentication)
   - header
