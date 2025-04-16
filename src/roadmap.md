@@ -45,8 +45,8 @@
     - user authentication using firebase
     - refer to firebase documentation for authentication (highly recommended)
     - adding user into firebase
-    - sign up/in user
-    - adding user in redux store
+    - implemented sign up/in user API
+    - created redux store with userSlice
   - redirect to browser page
 - browse (after authentication)
   - header
