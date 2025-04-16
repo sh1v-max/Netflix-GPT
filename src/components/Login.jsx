@@ -25,11 +25,11 @@ const Login = () => {
     const message = checkValidateDate(
       email.current.value,
       password.current.value,
-      name.current.value
+      isSignInForm ? null : name.current?.value
     )
     console.log(email.current.value)
     console.log(password.current.value)
-    console.log(name.current.value)
+    // console.log(name.current.value)
     console.log(message)
     setErrorMessage(message)
   }
