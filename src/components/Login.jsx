@@ -6,6 +6,7 @@ import { checkValidateDate } from '../utils/validate'
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   // creating useRef for email and password
   const email = useRef(null)
   const password = useRef(null)
@@ -20,9 +21,11 @@ const Login = () => {
     // we can either use state variables or we can use state reference
     //? we can use useRef() to do that
     // we need reference to the input fields to do so
-    checkValidateDate(email.current.value, password.current.value)
+    const message = checkValidateDate(email.current.value, password.current.value)
     console.log(email.current.value)
     console.log(password.current.value)
+    console.log(message)
+    setErrorMessage(message)
   }
 
   const togglePasswordVisibility = () => {
@@ -86,6 +89,8 @@ const Login = () => {
             />
           </button>
         </div>
+
+        <p className='text-red-600 font-bold text-lg py-2'>{errorMessage}</p>
 
         <button
           type="submit"
