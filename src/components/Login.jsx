@@ -2,6 +2,11 @@ import React, { useRef, useState } from 'react'
 import Header from './Header'
 import { Footer } from './Footer'
 import { checkValidateDate } from '../utils/validate'
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from 'firebase/auth'
+import { auth } from '../utils/firebase'
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true)
@@ -27,11 +32,49 @@ const Login = () => {
       password.current.value,
       isSignInForm ? null : name.current?.value
     )
-    console.log(email.current.value)
-    console.log(password.current.value)
-    // console.log(name.current.value)
-    console.log(message)
     setErrorMessage(message)
+
+    if (message) return
+    if (!isSignInForm) {
+      // Sign up logic
+
+      createUserWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        // this is basically email and password we need to pass
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user
+          console.log(user)
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code
+          const errorMessage = error.message
+          setErrorMessage(errorCode + ' ' + errorMessage)
+          // ..
+        })
+    } else {
+      // Sign in logic
+      signInWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user
+          console.log(user)
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code
+          const errorMessage = error.message
+          setErrorMessage(errorCode + ' ' + errorMessage)
+        })
+    }
   }
 
   const togglePasswordVisibility = () => {

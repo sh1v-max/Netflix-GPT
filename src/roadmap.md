@@ -33,6 +33,17 @@
     - use Formik library for form validation
     - using useRef() hook
     - validation done, now let's start authentication
+    - for validation, we will be using google firebase for backend
+    - deployed using firebase
+      - commands to deploy:
+      ``` bash
+        1. install firebase CLI- npm install -g firebase-tools
+        2. firebase login
+        3. initialize firebase project- firebase init
+        4. deploy firebase project- firebase deploy
+      ```
+    - user authentication using firebase
+    - refer to firebase documentation for authentication (highly recommended)
   - redirect to browser page
 - browse (after authentication)
   - header
