@@ -44,6 +44,9 @@
       ```
     - user authentication using firebase
     - refer to firebase documentation for authentication (highly recommended)
+    - adding user into firebase
+    - sign up/in user
+    - adding user in redux store
   - redirect to browser page
 - browse (after authentication)
   - header
