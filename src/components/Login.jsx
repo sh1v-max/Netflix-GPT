@@ -5,15 +5,19 @@ import { checkValidateDate } from '../utils/validate'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile,
 } from 'firebase/auth'
 import { auth } from '../utils/firebase'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { addUser } from '../utils/userSlice'
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   // creating useRef for email and password
   const name = useRef(null)
   const email = useRef(null)
@@ -49,8 +53,32 @@ const Login = () => {
         .then((userCredential) => {
           // Signed up
           const user = userCredential.user
+
+          // will update user using user api from firebase
+          updateProfile(user, {
+            displayName: name.current.value,
+            photoURL: 'https://avatars.githubusercontent.com/u/75415783?v=4',
+          })
+            .then(() => {
+              const { uid, email, displayName, photoURL } = auth.currentUser;
+              // auth.currentUser is the updated user
+              dispatch(
+                addUser({
+                  uid: uid,
+                  email: email,
+                  name: displayName,
+                  photo: photoURL,
+                })
+              )
+              // Profile updated!
+              // and once out profile is updated, we can navigate
+              navigate('/browse')
+            })
+            .catch((error) => {
+              setErrorMessage(error.message)
+            })
+
           console.log(user) // user
-          navigate('/browse')
         })
         .catch((error) => {
           const errorCode = error.code

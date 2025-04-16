@@ -12,15 +12,15 @@ const Body = () => {
   const dispatch = useDispatch()
   const appRouter = createBrowserRouter([
     {
-      path: "/",
+      path: '/',
       element: <Login />,
     },
     {
-      path: "/browse",
+      path: '/browse',
       element: <Browse />,
     },
   ])
-  
+
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -28,17 +28,24 @@ const Body = () => {
         // see docs for a list of available properties
         // https://firebase.google.com/docs/reference/js/auth.user
         // const uid = user.uid;
-        const {uid, email, displayName} = user;
-        dispatch(addUser({id: uid, email: email, name: displayName}))
+        const { uid, email, displayName, photoURL } = user
+        dispatch(
+          addUser({
+            uid: uid,
+            email: email,
+            name: displayName,
+            photo: photoURL,
+          })
+        )
         // when user sign in, i'm navigating him to the browse page
       } else {
         // User is signed out
         dispatch(removeUser())
         // when user sign out, navigate him to main page
       }
-    });
+    })
   }, [])
-  
+
   return (
     <div>
       <RouterProvider router={appRouter} />

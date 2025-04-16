@@ -3,10 +3,14 @@ import React from 'react'
 import { useState } from 'react'
 import { auth } from '../utils/firebase'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false)
   const navigate = useNavigate()
+  const user = useSelector((store) => store.user)
+  console.log(user)
+  // console.log(user.photo)
   const handleSignOut = () => {
     // Logic to sign out the user
     signOut(auth).then(() => {
@@ -30,14 +34,15 @@ const Header = () => {
       />
 
       {/* User Dropdown Container */}
-      <div className="relative">
+      { user && <div className="relative">
         <div
           className="flex items-center space-x-2 cursor-pointer"
           onClick={() => setShowMenu(!showMenu)}
         >
           <img
             className="w-10 h-10 rounded-md object-cover"
-            src="https://wallpapers.com/images/high/netflix-profile-pictures-1000-x-1000-qo9h82134t9nv0j0.webp"
+            // src="https://wallpapers.com/images/high/netflix-profile-pictures-1000-x-1000-qo9h82134t9nv0j0.webp"
+            src={user.photo}
             alt="User Icon"
           />
 
@@ -76,7 +81,7 @@ const Header = () => {
             </button>
           </ul>
         )}
-      </div>
+      </div>}
     </header>
   )
 }
