@@ -46,5 +46,6 @@
     - refer to firebase documentation for authentication (highly recommended)
     - adding user into firebase
     - implemented sign up/in user API
+    - created redux store with userSlice
 - browse (after authentication)
   - header
