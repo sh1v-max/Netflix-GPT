@@ -48,5 +48,6 @@
     - implemented sign up/in user API
     - created redux store with userSlice
     - added user into redux store, and then fetched data back from redux store
+  - redirect to browser page
 - browse (after authentication)
   - header
