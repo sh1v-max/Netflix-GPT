@@ -44,5 +44,6 @@
       ```
     - user authentication using firebase
     - refer to firebase documentation for authentication (highly recommended)
+    - adding user into firebase
 - browse (after authentication)
   - header
