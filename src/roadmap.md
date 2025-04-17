@@ -45,5 +45,6 @@
     - user authentication using firebase
     - refer to firebase documentation for authentication (highly recommended)
     - adding user into firebase
+    - implemented sign up/in user API
 - browse (after authentication)
   - header
