@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import Login from './Login'
 import Browse from './Browse'
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, useNavigate } from 'react-router-dom'
 import { RouterProvider } from 'react-router-dom'
 import { auth } from '../utils/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
@@ -10,6 +10,7 @@ import { addUser, removeUser } from '../utils/userSlice'
 
 const Body = () => {
   const dispatch = useDispatch()
+  const navigate =useNavigate()
   const appRouter = createBrowserRouter([
     {
       path: '/',
@@ -38,10 +39,12 @@ const Body = () => {
           })
         )
         // when user sign in, i'm navigating him to the browse page
+        navigate('/browse')
       } else {
         // User is signed out
         dispatch(removeUser())
         // when user sign out, navigate him to main page
+        navigate('/')
       }
     })
   }, [])
