@@ -45,9 +45,12 @@ const Body = () => {
         dispatch(removeUser())
         // when user sign out, navigate him to main page
         navigate('/')
+        // this will return an error, why? cause we are using navigate outside the routerProvider
       }
     })
   }, [])
+  // to resolve this, we need to useEffect in any other component
+  // which will always inside my body component, such as header component
 
   return (
     <div>
