@@ -1,13 +1,15 @@
-import { signOut } from 'firebase/auth'
-import React from 'react'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
+import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { auth } from '../utils/firebase'
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { addUser, removeUser } from '../utils/userSlice'
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const user = useSelector((store) => store.user)
   console.log(user)
   // console.log(user.photo)
@@ -23,6 +25,34 @@ const Header = () => {
     });
     console.log('User signed out')
   }
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        // see docs for a list of available properties
+        // https://firebase.google.com/docs/reference/js/auth.user
+        // const uid = user.uid;
+        const { uid, email, displayName, photoURL } = user
+        dispatch(
+          addUser({
+            uid: uid,
+            email: email,
+            name: displayName,
+            photo: photoURL,
+          })
+        )
+        // when user sign in, i'm navigating him to the browse page
+        navigate('/browse')
+      } else {
+        // User is signed out
+        dispatch(removeUser())
+        // when user sign out, navigate him to main page
+        navigate('/')
+        // this will return an error, why? cause we are using navigate outside the routerProvider
+      }
+    })
+  }, [])
 
   return (
     <header className="absolute top-0 left-0 w-full px-8 py-4 bg-gradient-to-b from-black z-30 flex items-center justify-between">
