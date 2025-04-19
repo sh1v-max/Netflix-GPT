@@ -51,7 +51,7 @@ const Login = () => {
       )
         // this is basically email and password we need to pass
         .then((userCredential) => {
-          // Signed up
+          //? Signed up
           const user = userCredential.user
 
           // will update user using user api from firebase
@@ -86,7 +86,7 @@ const Login = () => {
           setErrorMessage(errorCode + ' ' + errorMessage)
         })
     } else {
-      // Sign in logic
+      //? Sign in logic
       signInWithEmailAndPassword(
         auth,
         email.current.value,
