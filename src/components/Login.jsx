@@ -72,7 +72,8 @@ const Login = () => {
               )
               // Profile updated!
               // and once out profile is updated, we can navigate
-              navigate('/browse')
+              // navigate('/browse')
+              // now we are navigating from header, by checking auth state
             })
             .catch((error) => {
               setErrorMessage(error.message)
@@ -95,8 +96,6 @@ const Login = () => {
         .then((userCredential) => {
           // Signed in
           const user = userCredential.user
-          console.log(user)
-          navigate('/browse')
         })
         .catch((error) => {
           const errorCode = error.code
