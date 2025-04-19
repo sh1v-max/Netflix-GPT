@@ -48,6 +48,9 @@
     - implemented sign up/in user API
     - created redux store with userSlice
     - added user into redux store, and then fetched data back from redux store
-  - redirect to browser page
+  - redirect to browser page 
+    - BugFix: sign up user displayName and profile picture update
+    - BugFix: if the user is not logged in Redirect/browse to login page and vice versa
+    - redirected using onAuthStateChanged
 - browse (after authentication)
   - header
