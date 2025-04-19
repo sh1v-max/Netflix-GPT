@@ -53,6 +53,6 @@
     - BugFix: if the user is not logged in Redirect/browse to login page and vice versa
     - redirected using onAuthStateChanged 
     - unsubscribed to the onAuthStateChanged callback
-  - add hardcoded values to the constant files
+  - added hardcoded values to the constant files
 - browse (after authentication)
   - header
