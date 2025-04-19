@@ -8,7 +8,6 @@ import {
   updateProfile,
 } from 'firebase/auth'
 import { auth } from '../utils/firebase'
-import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { addUser } from '../utils/userSlice'
 
@@ -16,7 +15,6 @@ const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const navigate = useNavigate()
   const dispatch = useDispatch()
   // creating useRef for email and password
   const name = useRef(null)
