@@ -51,6 +51,7 @@
   - redirect to browser page 
     - BugFix: sign up user displayName and profile picture update
     - BugFix: if the user is not logged in Redirect/browse to login page and vice versa
-    - redirected using onAuthStateChanged
+    - redirected using onAuthStateChanged 
+    - unsubscribed to the onAuthStateChanged callback
 - browse (after authentication)
   - header

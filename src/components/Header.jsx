@@ -5,6 +5,7 @@ import { auth } from '../utils/firebase'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { addUser, removeUser } from '../utils/userSlice'
+import {LOGO} from '../utils/constant'
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false)
@@ -15,19 +16,21 @@ const Header = () => {
   // console.log(user.photo)
   const handleSignOut = () => {
     // Logic to sign out the user
-    signOut(auth).then(() => {
-      // Sign-out successful.
-      navigate('/')
-    }).catch((error) => {
-      // An error happened.
-      navigate('/error')
-      console.error('Sign out error:', error)
-    });
+    signOut(auth)
+      .then(() => {
+        // Sign-out successful.
+        navigate('/')
+      })
+      .catch((error) => {
+        // An error happened.
+        navigate('/error')
+        console.error('Sign out error:', error)
+      })
     console.log('User signed out')
   }
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         // User is signed in
         // see docs for a list of available properties
@@ -52,6 +55,11 @@ const Header = () => {
         // this will return an error, why? cause we are using navigate outside the routerProvider
       }
     })
+
+    // this will unsubscribe the event listener when component unmounts
+    return () => {
+      unsubscribe()
+    }
   }, [])
 
   return (
@@ -59,59 +67,61 @@ const Header = () => {
       {/* Logo */}
       <img
         className="w-44 object-contain"
-        src="https://cdn.cookielaw.org/logos/dd6b162f-1a32-456a-9cfe-897231c7763c/4345ea78-053c-46d2-b11e-09adaef973dc/Netflix_Logo_PMS.png"
+        src={LOGO}
         alt="Netflix Logo"
       />
 
       {/* User Dropdown Container */}
-      { user && <div className="relative">
-        <div
-          className="flex items-center space-x-2 cursor-pointer"
-          onClick={() => setShowMenu(!showMenu)}
-        >
-          <img
-            className="w-10 h-10 rounded-md object-cover"
-            // src="https://wallpapers.com/images/high/netflix-profile-pictures-1000-x-1000-qo9h82134t9nv0j0.webp"
-            src={user.photo}
-            alt="User Icon"
-          />
-
-          <svg
-            className={`w-4 h-4 text-white transition-transform ${
-              showMenu ? 'rotate-180' : ''
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      {user && (
+        <div className="relative">
+          <div
+            className="flex items-center space-x-2 cursor-pointer"
+            onClick={() => setShowMenu(!showMenu)}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
+            <img
+              className="w-10 h-10 rounded-md object-cover"
+              // src="https://wallpapers.com/images/high/netflix-profile-pictures-1000-x-1000-qo9h82134t9nv0j0.webp"
+              src={user.photo}
+              alt="User Icon"
             />
-          </svg>
-        </div>
 
-        {/* Dropdown Menu */}
-        {showMenu && (
-          <ul className="absolute top-12 right-0 w-40 bg-black bg-opacity-90 text-white shadow-lg rounded-md py-2 z-50">
-            <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
-              Profile
-            </li>
-            <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
-              Settings
-            </li>
-            <li className="border-t border-gray-600 my-1"></li>
-            <button
-              className="px-4 w-40 py-2 text-red-400 hover:bg-red-600 cursor-pointer hover:text-black"
-              onClick={handleSignOut}
+            <svg
+              className={`w-4 h-4 text-white transition-transform ${
+                showMenu ? 'rotate-180' : ''
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              Sign Out
-            </button>
-          </ul>
-        )}
-      </div>}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </div>
+
+          {/* Dropdown Menu */}
+          {showMenu && (
+            <ul className="absolute top-12 right-0 w-40 bg-black bg-opacity-90 text-white shadow-lg rounded-md py-2 z-50">
+              <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
+                Profile
+              </li>
+              <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
+                Settings
+              </li>
+              <li className="border-t border-gray-600 my-1"></li>
+              <button
+                className="px-4 w-40 py-2 text-red-400 hover:bg-red-600 cursor-pointer hover:text-black"
+                onClick={handleSignOut}
+              >
+                Sign Out
+              </button>
+            </ul>
+          )}
+        </div>
+      )}
     </header>
   )
 }
