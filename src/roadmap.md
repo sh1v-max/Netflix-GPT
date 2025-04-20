@@ -60,3 +60,5 @@
   - getting api from TMDB
   - adding the API_OPTIONS in constant file
   - making api call in browse.js file
+  - creating moviesSlice
+  - adding moviesSlice to redux store
