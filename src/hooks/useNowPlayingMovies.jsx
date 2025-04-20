@@ -12,7 +12,7 @@ const useNowPlayingMovies = () => {
       API_OPTIONS
     )
     const json = await data.json()
-    console.log(json.results)
+    // console.log(json.results)
     // adding data into the store
     dispatch(addNowPlayingMovies(json.results))
   }
