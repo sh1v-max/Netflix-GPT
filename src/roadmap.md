@@ -53,6 +53,10 @@
     - BugFix: if the user is not logged in Redirect/browse to login page and vice versa
     - redirected using onAuthStateChanged 
     - unsubscribed to the onAuthStateChanged callback
-  - added hardcoded values to the constant files
+  - added
+   hardcoded values to the constant files
 - browse (after authentication)
   - header
+  - getting api from TMDB
+  - adding the API_OPTIONS in constant file
+  - making api call in browse.js file

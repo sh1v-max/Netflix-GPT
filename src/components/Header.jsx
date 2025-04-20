@@ -12,7 +12,7 @@ const Header = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const user = useSelector((store) => store.user)
-  console.log(user)
+  // console.log(user)
   // console.log(user.photo)
   const handleSignOut = () => {
     // Logic to sign out the user
