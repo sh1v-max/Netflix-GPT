@@ -10,7 +10,7 @@ const VideoTitle = ({ title, overview }) => {
       <p className="text-lg w-1/2 leading-relaxed mb-6 drop-shadow-md">
         {overview}
       </p>
-
+      
       {/* Buttons */}
       <div className="flex gap-4">
         <button className="bg-white text-black py-2 px-6 rounded-md text-lg font-semibold hover:bg-opacity-80 transition">
