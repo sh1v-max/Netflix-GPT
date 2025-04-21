@@ -16,7 +16,7 @@ export const VideoBackground = ({ movieId }) => {
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden -z-10">
+    <div className="relative w-full h-full overflow-hidden z-10">
       {/* Video Background */}
       <iframe
         className="w-full h-full absolute top-0 left-0 scale-[1.5] pointer-events-none" // Disable iframe pointer events to allow button interaction
