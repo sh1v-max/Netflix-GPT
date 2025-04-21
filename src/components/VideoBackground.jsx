@@ -1,8 +1,13 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { API_OPTIONS } from '../utils/constant'
+import { useDispatch, useSelector } from 'react-redux'
+import { addTrailerVideo } from '../Utils/moviesSlice'
 
 export const VideoBackground = ({ movieId }) => {
-  const [trailerKey, setTrailerKey] = useState(null)
+  // but we won't be using states, we'll rather use redux store
+  // const [trailerKey, setTrailerKey] = useState(null)
+  const trailerVideo = useSelector(store => store.movies?.trailerVideo)
+  const dispatch = useDispatch()
   //  fetch trailer video
 
   const getMovieVideos = async () => {
@@ -16,9 +21,7 @@ export const VideoBackground = ({ movieId }) => {
     const filterData = json.results.filter((video) => video.type === 'Trailer')
     // if no trailer found
     const trailer = filterData.length ? filterData[0] : json.results[0]
-    if (trailer) {
-      setTrailerKey(trailer.key)
-    }
+    dispatch(addTrailerVideo(trailer))
     console.log(trailer)
   }
 
@@ -31,7 +34,7 @@ export const VideoBackground = ({ movieId }) => {
       <iframe
         width="560"
         height="315"
-        src={`https://www.youtube.com/embed/${trailerKey}?si=PNj9WG1WzL7MyUGN`}
+        src={`https://www.youtube.com/embed/${trailerVideo?.key}?si=PNj9WG1WzL7MyUGN`}
         title="YouTube video player"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         referrerpolicy="strict-origin-when-cross-origin"
