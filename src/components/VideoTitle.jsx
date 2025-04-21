@@ -1,27 +1,27 @@
-import React from "react";
+import React from 'react'
 
 const VideoTitle = ({ title, overview }) => {
   return (
-    <div className="pt-[20%] px-12 absolute text-white bg-gradient-to-r from-black w-full h-full">
+    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-black to-transparent text-white px-10 pt-[35%] z-20">
       {/* Title */}
-      <h1 className="text-4xl font-bold mb-4 drop-shadow-lg">{title}</h1>
-      
-      {/* Overview */}
-      <p className="text-lg w-1/2 leading-relaxed mb-6 drop-shadow-md">
-        {overview}
-      </p>
-      
-      {/* Buttons */}
-      <div className="flex gap-4">
-        <button className="bg-white text-black py-2 px-6 rounded-md text-lg font-semibold hover:bg-opacity-80 transition">
-          ▶️ Play
-        </button>
-        <button className="bg-gray-700 bg-opacity-70 text-white py-2 px-6 rounded-md text-lg font-semibold hover:bg-gray-600 transition">
-          ℹ️ More Info
-        </button>
+      <div>
+        <h1 className="text-5xl font-bold mb-6">{title}</h1>
+
+        {/* Overview */}
+        <p className="text-base max-w-xl mb-6">{overview}</p>
+
+        {/* Buttons */}
+        <div className="flex gap-4">
+          <button className="bg-white text-black py-2 px-5 cursor-pointer rounded hover:bg-opacity-80">
+            ▶️ Play
+          </button>
+          <button className="bg-gray-700 text-white py-2 px-5 cursor-pointer rounded hover:bg-gray-600">
+            ℹ️ More Info
+          </button>
+        </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default VideoTitle;
+export default VideoTitle
