@@ -57,13 +57,15 @@
    hardcoded values to the constant files
 - browse (after authentication)
   - header
-  - getting api from TMDB
-  - adding the API_OPTIONS in constant file
-  - making api call in browse.js file
-  - creating moviesSlice
-  - adding moviesSlice to redux store
-  - we created a custom store
-  - updated and fetched the movieSlice with trailer video
-  - fetched data from store
-  - embedded the YouTube video and make it auto play
-  - styling video title and video trailer
+  - main container
+    - getting api from TMDB
+    - adding the API_OPTIONS in constant file
+    - making api call in browse.js file
+    - creating moviesSlice
+    - adding moviesSlice to redux store
+    - we created a custom store
+    - updated and fetched the movieSlice with trailer video
+    - fetched data from store
+    - embedded the YouTube video and make it auto play
+    - styling video title and video trailer
+  - second container
