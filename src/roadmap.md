@@ -66,7 +66,7 @@
     - we created a custom store
     - updated and fetched the movieSlice with trailer video
     - fetched data from store
-    - embedded the YouTube video and make it auto play
+    - embedded the YouTube video and made it auto play
     - styling video title and video trailer
   - second container
     - MovieList - popular
