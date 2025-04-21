@@ -69,3 +69,7 @@
     - embedded the YouTube video and make it auto play
     - styling video title and video trailer
   - second container
+    - MovieList - popular
+    - MovieList - now playing
+    - MovieList - trending
+    - MovieList - horror

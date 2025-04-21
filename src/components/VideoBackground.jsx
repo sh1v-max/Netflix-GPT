@@ -23,8 +23,6 @@ export const VideoBackground = ({ movieId }) => {
         src={`https://www.youtube.com/embed/${trailerVideo?.key}?autoplay=1&mute=${isMuted ? 1 : 0}&showinfo=0&rel=0&loop=1&playlist=${trailerVideo?.key}`}
         title="Movie Trailer"
         allow="autoplay; fullscreen"
-        allowFullScreen
-        frameBorder="0"
       ></iframe>
 
       {/* Volume Button */}
