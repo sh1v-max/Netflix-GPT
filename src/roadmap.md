@@ -62,3 +62,8 @@
   - making api call in browse.js file
   - creating moviesSlice
   - adding moviesSlice to redux store
+  - we created a custom store
+  - updated and fetched the movieSlice with trailer video
+  - fetched data from store
+  - embedded the YouTube video and make it auto play
+  - styling video title and video trailer
