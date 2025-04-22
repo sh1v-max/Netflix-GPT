@@ -6,9 +6,9 @@ import { addTopRatedMovies } from "../Utils/moviesSlice"
 const useTopRatedMovies = () => {
   // fetching data from TMDB and update store
   const dispatch = useDispatch()
-  const getNowPlaying = async () => {
+  const getTopRatedMovies = async () => {
     const data = await fetch(
-      'https://api.themoviedb.org/3/movie/now_playing?page=1',
+      'https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1',
       API_OPTIONS
     )
     const json = await data.json()
@@ -18,7 +18,7 @@ const useTopRatedMovies = () => {
   }
 
   useEffect(() => {
-    getNowPlaying()
+    getTopRatedMovies()
   }, [])
 }
 
