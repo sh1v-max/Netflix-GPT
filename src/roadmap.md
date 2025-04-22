@@ -68,8 +68,12 @@
     - fetched data from store
     - embedded the YouTube video and mad e it auto play
     - styling video title and video trailer
-  - second container
-    - MovieList - popular
-    - MovieList - now playing
-    - MovieList - trending
-    - MovieList - horror
+  - Build the second container
+    - build movies list
+    - build movie card
+    - build movie poster (TMDB image CDN)
+    - build movie trailer background
+    - and movie title and description
+    - Custom hooks for now playing, popular, top rated, and upcoming movies
+    - fetched all these api for respective hooks and added them to redux store
+    - fetched data back from redux store
