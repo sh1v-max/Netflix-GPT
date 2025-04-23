@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { addUser, removeUser } from '../utils/userSlice'
 import { LOGO } from '../utils/constant'
+import { toggleGptSearchView } from '../utils/gptSlice'
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false)
@@ -64,9 +65,10 @@ const Header = () => {
 
   const handleGptSearchClick = () => {
     //  toggle my gpt result
-    
+    dispatch(toggleGptSearchView())
+    console.log('toggle called')
   }
-  
+
   return (
     <header className="absolute top-0 left-0 w-full px-8 py-4 bg-gradient-to-b from-black z-30 flex items-center justify-between">
       {/* Logo */}
@@ -77,7 +79,7 @@ const Header = () => {
         <div className="flex gap-4">
           <button
             className="bg-white text-black py-2 px-5 cursor-pointer rounded hover:bg-opacity-100"
-            onClick={handleGptSearchClick()}
+            onClick={handleGptSearchClick}
           >
             StartGPT
           </button>
