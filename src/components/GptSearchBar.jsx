@@ -2,17 +2,21 @@ import React from 'react'
 
 const GptSearchBar = () => {
   return (
-    <div>
-      <form className=" p-2 m-30 border-black" action="">
+    <div className="flex justify-center items-center mt-20">
+      <form className="flex w-full max-w-3xl bg-black/60 backdrop-blur-sm p-4 rounded-lg shadow-lg">
         <input
           type="text"
-          className=" p-4 m-4 border-black"
-          placeholder="What do you like to watch today..."
+          className="flex-grow px-5 py-3 rounded-l-lg text-white bg-neutral-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 transition-all duration-300"
+          placeholder="What do you want to watch today?"
         />
-        <button className='p-2 m-2 border-black'>Search</button>
+        <button
+          className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-r-lg transition-all duration-300"
+        >
+          Search
+        </button>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default GptSearchBar
+export default GptSearchBar;
