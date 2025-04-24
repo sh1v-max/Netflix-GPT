@@ -19,7 +19,7 @@ const MovieCard = ({posterPath}) => {
         <div>
           {/* Play Button - Bottom Left */}
           <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-70 transition-opacity duration-300">
-            <button className="bg-gray-700 bg-opacity-70 text-white rounded-full p-2 shadow-lg hover:scale-110 cursor-pointer transition-transform duration-200">
+            <button className="bg-gray-700 bg-opacity-70 text-white rounded-full p-2 shadow-lg hover:scale-110 hover:bg-red-600 cursor-pointer transition-transform duration-200">
               <FaPlay size={18} />
             </button>
           </div>
