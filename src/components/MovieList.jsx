@@ -33,7 +33,7 @@ const MovieList = ({ title, movies }) => {
         onClick={() => scroll("left")}
         className="absolute left-0 top-[55%] -translate-y-1/2 bg-gray-700/50 hover:bg-gray-500/70 text-white p-3 rounded-full z-50 transition duration-300 backdrop-blur-sm shadow-lg"
       >
-        <HiChevronLeft size={28} />
+        <HiChevronLeft size={12} />
       </button>
 
       <div
@@ -51,7 +51,7 @@ const MovieList = ({ title, movies }) => {
         onClick={() => scroll("right")}
         className="absolute right-0 top-[55%] -translate-y-1/2 bg-gray-700/50 hover:bg-gray-500/70 text-white p-3 rounded-full z-50 transition duration-300 backdrop-blur-sm shadow-lg"
       >
-        <HiChevronRight size={28} />
+        <HiChevronRight size={12} />
       </button>
     </div>
   );

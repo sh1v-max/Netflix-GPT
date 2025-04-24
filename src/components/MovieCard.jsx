@@ -1,14 +1,14 @@
 import React from 'react'
-import { FaPlay } from "react-icons/fa";
-import { BsThreeDots } from "react-icons/bs";
+import { FaPlay } from 'react-icons/fa'
+import { BsThreeDots } from 'react-icons/bs'
 import { IMG_CDN_URL } from '../utils/constant'
 
-const MovieCard = ({posterPath}) => {
+const MovieCard = ({ posterPath }) => {
   console.log(posterPath)
 
   return (
-    <div className="w-48 relative group">
-      <div className="rounded-lg overflow-hidden shadow-md transform transition duration-300 group-hover:scale-95 group-hover:z-20 relative">
+    <div className="w-48 relative py-2 group">
+      <div className="rounded-lg overflow-hidden shadow-md transform transition duration-300 group-hover:scale-102 group-hover:z-20 relative">
         <img
           src={IMG_CDN_URL + posterPath}
           alt="Movie Card"
@@ -18,9 +18,9 @@ const MovieCard = ({posterPath}) => {
         {/* Hover Icons Container */}
         <div>
           {/* Play Button - Bottom Left */}
-          <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-70 transition-opacity duration-300">
-            <button className="bg-gray-700 bg-opacity-70 text-white rounded-full p-2 shadow-lg hover:scale-110 hover:bg-red-600 cursor-pointer transition-transform duration-200">
-              <FaPlay size={18} />
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-40 transition-opacity duration-300">
+            <button className="bg-gray-700 text-white rounded-full p-4 shadow-lg hover:scale-110  cursor-pointer transition-transform duration-300">
+              <FaPlay size={30} />
             </button>
           </div>
 
@@ -33,8 +33,8 @@ const MovieCard = ({posterPath}) => {
         </div>
       </div>
     </div>
-  );
-  
+  )
+
   // return (
   //   <div className = "w-48 pr-4">
   //     <img src={IMG_CDN_URL + posterPath} alt="Movie Card" />
