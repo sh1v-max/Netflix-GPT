@@ -19,7 +19,7 @@ export const VideoBackground = ({ movieId }) => {
     <div className="relative w-full h-full overflow-hidden z-10">
       {/* Video Background */}
       <iframe
-        className="w-full h-full absolute top-0 left-0 scale-[1.5] pointer-events-none" // Disable iframe pointer events to allow button interaction
+        className="w-full h-full absolute top-0 left-0 scale-[1.8] pointer-events-none" // Disable iframe pointer events to allow button interaction
         src={`https://www.youtube.com/embed/${trailerVideo?.key}?autoplay=1&mute=${isMuted ? 1 : 0}&showinfo=0&rel=0&loop=1&playlist=${trailerVideo?.key}`}
         title="Movie Trailer"
         allow="autoplay; fullscreen"
@@ -28,7 +28,7 @@ export const VideoBackground = ({ movieId }) => {
       {/* Volume Button */}
       <button
         onClick={toggleMute}
-        className="absolute bottom-8 right-8 bg-white text-black py-2 px-4 rounded-full shadow-lg cursor-pointer hover:bg-opacity-80 z-30"
+        className="absolute bottom-[20%] right-8 bg-white text-black py-2 px-4 rounded-full shadow-lg cursor-pointer hover:bg-opacity-80 z-100"
       >
         {isMuted ? '🔊' : '🔇'}
       </button>
