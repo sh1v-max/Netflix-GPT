@@ -18,9 +18,9 @@ const Browse = () => {
   useUpcomingMovies()
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div>
       <Header />
-      <div className="flex-grow">
+      <div>
         {showGptSearch ? (
           <GptSearch />
         ) : (

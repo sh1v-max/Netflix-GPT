@@ -12,13 +12,13 @@ const VideoTitle = ({ title, overview }) => {
 
         {/* Buttons */}
         <div className="flex gap-4">
-          <button className="bg-white text-black py-2 px-5 cursor-pointer rounded hover:bg-opacity-80">
-            ▶️ Play
-          </button>
-          <button className="bg-gray-700 text-white py-2 px-5 cursor-pointer rounded hover:bg-gray-600">
-            ℹ️ More Info
-          </button>
-        </div>
+        <button className="flex items-center gap-2 bg-white text-black py-2 px-6 rounded hover:bg-opacity-90 transition">
+          ▶️ <span className="font-medium">Play</span>
+        </button>
+        <button className="flex items-center gap-2 bg-gray-700 text-white py-2 px-6 rounded hover:bg-gray-600 transition">
+          ℹ️ <span className="font-medium">More Info</span>
+        </button>
+      </div>
       </div>
     </div>
   )
