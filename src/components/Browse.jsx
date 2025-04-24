@@ -18,22 +18,21 @@ const Browse = () => {
   useUpcomingMovies()
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Header />
-      {showGptSearch ? (
-        <GptSearch />
-      ) : ( 
-        // null
-        <>
-          <MainContainer />
-          <SecondaryContainer />
-        </>
-      )}
-      {/* <MainContainer />
-      <SecondaryContainer /> */}
+      <div className="flex-grow">
+        {showGptSearch ? (
+          <GptSearch />
+        ) : (
+          <>
+            <MainContainer />
+            <SecondaryContainer />
+          </>
+        )}
+      </div>
       <Footer />
     </div>
-  )
+  );
 }
 
 export default Browse

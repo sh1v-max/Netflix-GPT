@@ -2,8 +2,8 @@ import React from 'react'
 
 const GptSearchBar = () => {
   return (
-    <div className="flex justify-center items-center mt-20">
-      <form className="flex w-full max-w-3xl bg-black/60 backdrop-blur-sm p-4 rounded-lg shadow-lg">
+    <div className="flex justify-center items-center">
+      <form className="flex w-full max-w-3xl bg-black/60 backdrop-blur-sm p-4 mt-40 rounded-lg shadow-lg">
         <input
           type="text"
           className="flex-grow px-5 py-3 rounded-l-lg text-white bg-neutral-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 transition-all duration-300"
