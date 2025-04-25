@@ -108,3 +108,8 @@ rough draft
     - Custom hooks for now playing, popular, top rated, and upcoming movies
     - fetched all these api for respective hooks and added them to redux store
     - fetched data back from redux store
+- GPT search page
+  - build a great gpt search page
+  - added gpt search bar
+  - Multi-language feature (a huge feature update)
+  - integrate GPT apis (get open ai key)
