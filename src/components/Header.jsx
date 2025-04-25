@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { addUser, removeUser } from '../utils/userSlice'
 import { LOGO, SUPPORTED_LANG } from '../utils/constant'
 import { toggleGptSearchView } from '../utils/gptSlice'
+import { changeLanguages } from '../utils/configSlice'
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false)
@@ -72,7 +73,8 @@ const Header = () => {
   }
 
   const handleLanguageChange = (e) => {
-    console.log(e.target.value)
+    // console.log(e.target.value)
+    dispatch(changeLanguages(e.target.value))
   }
 
   return (
