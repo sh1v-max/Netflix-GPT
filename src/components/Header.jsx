@@ -101,7 +101,7 @@ const Header = () => {
             className="bg-white text-black py-2 px-5 cursor-pointer rounded transition-all duration-300 ease-in-out hover:shadow-[0_0_10px_rgba(255,255,255,0.8)]"
             onClick={handleGptSearchClick}
           >
-            {isGptActive ? 'CloseGPT' : 'StartGPT'}
+            {isGptActive ? 'Home' : 'StartGPT'}
           </button>
           <div className="relative">
             <div
