@@ -10,7 +10,7 @@ const GptSearchBar = () => {
           placeholder="What do you want to watch today?"
         />
         <button
-          className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-r-lg transition-all duration-300"
+          className="px-6 py-3 bg-red-700 hover:bg-red-600 hover:shadow-[0_0_10px_rgba(239,68,68,0.6)] text-white font-semibold rounded-r-lg transition-all duration-300 "
         >
           Search
         </button>
