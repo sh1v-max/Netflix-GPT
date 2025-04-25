@@ -5,7 +5,15 @@ export const USER_AVATAR =
 export const IMG_CDN_URL = 'https://image.tmdb.org/t/p/w500'
 export const IMG_BACKGROUND =
   'https://assets.nflxext.com/ffe/siteui/vlv3/fc164b4b-f085-44ee-bb7f-ec7df8539eff/d23a1608-7d90-4da1-93d6-bae2fe60a69b/IN-en-20230814-popsignuptwoweeks-perspective_alpha_website_large.jpg'
-
+  export const SUPPORTED_LANG = [
+    { identifier: "en", name: "English" },
+    { identifier: "hi", name: "Hindi" },
+    { identifier: "es", name: "Spanish" },
+    { identifier: "fr", name: "French" },
+    { identifier: "de", name: "German" },
+    { identifier: "ja", name: "Japanese" },
+    { identifier: "fl", name: "Filipino" },
+  ];
 export const API_OPTIONS = {
   method: 'GET',
   headers: {

@@ -5,12 +5,12 @@ import { auth } from '../utils/firebase'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { addUser, removeUser } from '../utils/userSlice'
-import { LOGO } from '../utils/constant'
+import { LOGO, SUPPORTED_LANG } from '../utils/constant'
 import { toggleGptSearchView } from '../utils/gptSlice'
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false)
-  const [isGptActive, setIsGptActive] = useState(false);
+  const [isGptActive, setIsGptActive] = useState(false)
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const user = useSelector((store) => store.user)
@@ -64,10 +64,9 @@ const Header = () => {
     }
   }, [])
 
-
   const handleGptSearchClick = () => {
     //  toggle my gpt result
-    setIsGptActive(!isGptActive);
+    setIsGptActive(!isGptActive)
     dispatch(toggleGptSearchView())
     console.log('toggle called')
   }
@@ -80,11 +79,20 @@ const Header = () => {
       {/* User Dropdown Container */}
       {user && (
         <div className="flex gap-4">
+          {isGptActive && (
+            <select className="bg-white text-black py-2 px-1 cursor-pointer rounded transition-all duration-300 ease-in-out hover:shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+              {SUPPORTED_LANG.map((lang) => (
+                <option key={lang.identifier} value={lang.identifier}>
+                  {lang.name}
+                </option>
+              ))}
+            </select>
+          )}
           <button
             className="bg-white text-black py-2 px-5 cursor-pointer rounded transition-all duration-300 ease-in-out hover:shadow-[0_0_10px_rgba(255,255,255,0.8)]"
             onClick={handleGptSearchClick}
           >
-            {isGptActive ? "CloseGPT" : "StartGPT"}
+            {isGptActive ? 'CloseGPT' : 'StartGPT'}
           </button>
           <div className="relative">
             <div
