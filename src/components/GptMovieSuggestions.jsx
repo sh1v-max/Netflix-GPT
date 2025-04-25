@@ -1,9 +1,7 @@
 import React from 'react'
 
 const GptMovieSuggestions = () => {
-  return (
-    <div>GptMovieSuggestions</div>
-  )
+  return <div className="text-white">GptMovieSuggestions</div>
 }
 
 export default GptMovieSuggestions

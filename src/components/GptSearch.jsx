@@ -13,7 +13,7 @@ const GptSearch = () => {
         />
       </div>
         <div className="absolute inset-0 bg-black bg-opacity-50 opacity-70 -z-10"></div>
-      <div className='text-white'>
+      <div>
         <GptSearchBar />
         <GptMovieSuggestions />
       </div>
