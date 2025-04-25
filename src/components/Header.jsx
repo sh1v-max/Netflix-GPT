@@ -68,7 +68,11 @@ const Header = () => {
     //  toggle my gpt result
     setIsGptActive(!isGptActive)
     dispatch(toggleGptSearchView())
-    console.log('toggle called')
+    // console.log('toggle called')
+  }
+
+  const handleLanguageChange = (e) => {
+    console.log(e.target.value)
   }
 
   return (
@@ -80,7 +84,10 @@ const Header = () => {
       {user && (
         <div className="flex gap-4">
           {isGptActive && (
-            <select className="bg-white text-black py-2 px-1 cursor-pointer rounded transition-all duration-300 ease-in-out hover:shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+            <select
+              className="bg-white text-black py-2 px-1 cursor-pointer rounded transition-all duration-300 ease-in-out hover:shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+              onChange={handleLanguageChange}
+            >
               {SUPPORTED_LANG.map((lang) => (
                 <option key={lang.identifier} value={lang.identifier}>
                   {lang.name}

@@ -4,7 +4,7 @@ import { BsThreeDots } from 'react-icons/bs'
 import { IMG_CDN_URL } from '../utils/constant'
 
 const MovieCard = ({ posterPath }) => {
-  console.log(posterPath)
+  // console.log(posterPath)
 
   return (
     <div className="w-48 relative py-2 group">
