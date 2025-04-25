@@ -10,6 +10,7 @@ import { toggleGptSearchView } from '../utils/gptSlice'
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false)
+  const [isGptActive, setIsGptActive] = useState(false);
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const user = useSelector((store) => store.user)
@@ -63,8 +64,10 @@ const Header = () => {
     }
   }, [])
 
+
   const handleGptSearchClick = () => {
     //  toggle my gpt result
+    setIsGptActive(!isGptActive);
     dispatch(toggleGptSearchView())
     console.log('toggle called')
   }
@@ -78,10 +81,10 @@ const Header = () => {
       {user && (
         <div className="flex gap-4">
           <button
-            className="bg-white text-black py-2 px-5 cursor-pointer rounded hover:bg-opacity-100"
+            className="bg-white text-black py-2 px-5 cursor-pointer rounded transition-all duration-300 ease-in-out hover:shadow-[0_0_10px_rgba(255,255,255,0.8)]"
             onClick={handleGptSearchClick}
           >
-            StartGPT
+            {isGptActive ? "CloseGPT" : "StartGPT"}
           </button>
           <div className="relative">
             <div
