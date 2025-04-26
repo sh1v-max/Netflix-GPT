@@ -2,10 +2,21 @@ import React, { useRef } from 'react'
 import { useSelector } from 'react-redux'
 import lang from '../utils/languageConstant'
 import openai from '../utils/openai'
+import { API_OPTIONS } from '../utils/constant'
 
 const GptSearchBar = () => {
   const langKey = useSelector((store) => store.config.lang)
   const searchText = useRef(null)
+
+  //  search movie in TMDB
+  const searchMovieTMDB = async (movie) => {
+    const data = await fetch(
+      "https://api.themoviedb.org/3/search/movie?query=" + movie+ "&include_adult=false&language=en-US&page=1",
+      API_OPTIONS
+    )
+    const json = await data.json()
+    return json.results
+  }
 
   const handleGptSearchClick = async () => {
     console.log(searchText.current.value)
@@ -13,7 +24,7 @@ const GptSearchBar = () => {
     // make an api call to gpt api and get movies results
 
     const gptQuery =
-      'Act as a Movie Recommendation system and suggest some movies for the query, only give me names of 5 movies, comma separated like the example result give ahead. Example results: A Minecraft Movie, Sholay, Snow White, Golmaal, Koi Mil Gaya'
+      'Act as a Movie Recommendation system and suggest some movies for the query, only give me names of 5 movies, comma separated like the example result give ahead. For example: result1,result2,result3,result4,result5. Notice there is no space between result1 and result2, etc. They are only comma separated. You need to give result in same format'
 
     const gptResults = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -23,9 +34,11 @@ const GptSearchBar = () => {
       ],
     })
 
-    if(!gptResults.choices) return
-    
-    console.log(gptResults.choices?.[0].message?.content)
+    if (!gptResults.choices) return
+    const gptMovies = gptResults.choices?.[0].message?.content.split(',')
+
+    const data =gptMovies.map((movie) => searchMovieTMDB(movie))
+    console.log(data)
   }
 
   return (
