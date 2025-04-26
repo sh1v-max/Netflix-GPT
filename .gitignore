@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+/src/utils/constantAPI.jsx
 *.local
 
 # Editor directories and files
