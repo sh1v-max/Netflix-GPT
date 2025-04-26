@@ -22,7 +22,10 @@ const GptSearchBar = () => {
         { role: 'user', content: searchText.current.value },
       ],
     })
-    console.log(gptResults.choices)
+
+    if(!gptResults.choices) return
+    
+    console.log(gptResults.choices?.[0].message?.content)
   }
 
   return (
