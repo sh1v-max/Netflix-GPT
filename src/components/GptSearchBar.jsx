@@ -1,12 +1,14 @@
 import React, { useRef } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import lang from '../utils/languageConstant'
 import openai from '../utils/openai'
 import { API_OPTIONS } from '../utils/constant'
+import { addGptMovieResult } from '../utils/gptSlice'
 
 const GptSearchBar = () => {
   const langKey = useSelector((store) => store.config.lang)
   const searchText = useRef(null)
+  const dispatch = useDispatch()
 
   //  search movie in TMDB
   const searchMovieTMDB = async (movie) => {
@@ -22,9 +24,8 @@ const GptSearchBar = () => {
     console.log(searchText.current.value)
 
     // make an api call to gpt api and get movies results
-
     const gptQuery =
-      'Act as a Movie Recommendation system and suggest some movies for the query, only give me names of 5 movies, comma separated like the example result give ahead. For example: result1,result2,result3,result4,result5. Notice there is no space between result1 and result2, etc. They are only comma separated. You need to give result in same format'
+      'Act as a Movie Recommendation system and suggest some movies for the query, only give me names of 20 movies, comma separated like the example result give ahead. For example: result1,result2,result3,result4,result5. Notice there is no space between result1 and result2, etc. They are only comma separated. You need to give result in same format'
 
     const gptResults = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -35,14 +36,19 @@ const GptSearchBar = () => {
     })
 
     if (!gptResults.choices) return
+
     const gptMovies = gptResults.choices?.[0].message?.content.split(',')
+    console.log(gptMovies)
 
     const PromiseArray =gptMovies.map((movie) => searchMovieTMDB(movie))
     //  this will return you five promises and not the result data
     //  [Promise, Promise, Promise, Promise, Promise]
     console.log(PromiseArray)
+
     const tmdbResults = await Promise.all(PromiseArray)
     console.log(tmdbResults)
+
+    dispatch(addGptMovieResult({movieNames: gptMovies, movieResults: tmdbResults}))
   }
 
   return (
