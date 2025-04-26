@@ -37,8 +37,12 @@ const GptSearchBar = () => {
     if (!gptResults.choices) return
     const gptMovies = gptResults.choices?.[0].message?.content.split(',')
 
-    const data =gptMovies.map((movie) => searchMovieTMDB(movie))
-    console.log(data)
+    const PromiseArray =gptMovies.map((movie) => searchMovieTMDB(movie))
+    //  this will return you five promises and not the result data
+    //  [Promise, Promise, Promise, Promise, Promise]
+    console.log(PromiseArray)
+    const tmdbResults = await Promise.all(PromiseArray)
+    console.log(tmdbResults)
   }
 
   return (
