@@ -32,10 +32,10 @@ export const VideoBackground = ({ movieId }) => {
       ></iframe>
 
       {/* Volume Button */}
-      <div className="pt-50 md:pt-168">
+      <div className="pt-52 md:pt-190">
         <button
           onClick={toggleMute}
-          className="absolute right-8 bg-black/10 backdrop-blur-lg text-white py-2 px-2 rounded-full shadow-lg cursor-pointer focus:outline-none hover:bg-opacity-80 z-100"
+          className="absolute right-3 bg-black/10 backdrop-blur-lg text-white py-2 px-2 rounded-full shadow-lg cursor-pointer focus:outline-none hover:bg-opacity-80 z-100"
         >
           {isMuted ? (
             <BsFillVolumeMuteFill className="h-3 w-3 md:h-8 md:w-8" />
