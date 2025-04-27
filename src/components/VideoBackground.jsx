@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import useMovieTrailer from '../hooks/useMovieTrailer'
 import { BsFillVolumeUpFill, BsFillVolumeMuteFill } from 'react-icons/bs'
+import { IMG_BACKGROUND } from '../utils/constant'
 
 export const VideoBackground = ({ movieId }) => {
   const trailerVideo = useSelector((store) => store.movies?.trailerVideo)
@@ -31,16 +32,18 @@ export const VideoBackground = ({ movieId }) => {
       ></iframe>
 
       {/* Volume Button */}
-      <button
-        onClick={toggleMute}
-        className="absolute bottom-[50%] right-8 bg-white text-black py-2 px-4 rounded-full shadow-lg cursor-pointer hover:bg-opacity-80 z-100"
-      >
-        {isMuted ? (
-        <BsFillVolumeUpFill className="h-5 w-5 md:h-6 md:w-6" />
-      ) : (
-        <BsFillVolumeMuteFill className="h-5 w-5 md:h-6 md:w-6" />
-      )}
-      </button>
+      <div className='pt-177'>
+        <button
+          onClick={toggleMute}
+          className="absolute right-8 bg-black text-white py-2 px-2 rounded-full shadow-lg cursor-pointer focus:outline-none hover:bg-opacity-80 z-100"
+        >
+          {isMuted ? (
+            <BsFillVolumeMuteFill className="h-2 w-2 md:h-4 md:w-4" />
+          ) : (
+            <BsFillVolumeUpFill className="h-2 w-2 md:h-4 md:w-4" />
+          )}
+        </button>
+      </div>
     </div>
   )
 }

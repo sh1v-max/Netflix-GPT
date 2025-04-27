@@ -4,7 +4,7 @@ import { FaFacebookF, FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa'
 const Footer = () => {
   return (
     <footer className="bg-black text-gray-400 px-8 md:px-16 pt-10 pb-6 text-sm">
-      {/* Social Media */}
+
       <div className="flex gap-6 mb-6">
         <FaFacebookF className="hover:text-white cursor-pointer" />
         <FaInstagram className="hover:text-white cursor-pointer" />
@@ -12,7 +12,6 @@ const Footer = () => {
         <FaYoutube className="hover:text-white cursor-pointer" />
       </div>
 
-      {/* Link Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <a href="#" className="hover:underline">Audio Description</a>
         <a href="#" className="hover:underline">Investor Relations</a>
@@ -28,7 +27,6 @@ const Footer = () => {
         <a href="#" className="hover:underline">Corporate Info</a>
       </div>
 
-      {/* Language Selector */}
       <div className="mb-6">
         <select className="bg-black border border-gray-500 text-white px-3 py-1">
           <option>English</option>
@@ -38,7 +36,6 @@ const Footer = () => {
         </select>
       </div>
 
-      {/* Bottom Info */}
       <p className="text-xs text-gray-500">&copy; 2025 Netflix Clone by You. All rights reserved.</p>
     </footer>
   )

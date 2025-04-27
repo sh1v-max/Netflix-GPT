@@ -139,7 +139,7 @@ const Header = () => {
 
             {/* Dropdown Menu */}
             {showMenu && (
-              <div className="absolute top-full right-0 w-34 md:w-42 backdrop-blur-lg bg-white/5 border border-white/20 rounded-xl shadow-lg py-2 z-50 mt-2">
+              <div className="absolute top-full right-0 w-34 md:w-42 backdrop-blur-lg bg-white/5 border border-white/20 rounded-xl shadow-lg py-2 z-500 mt-2">
                 <ul>
                   <li className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
                     Profile
