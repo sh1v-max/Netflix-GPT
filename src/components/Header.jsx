@@ -73,7 +73,6 @@ const Header = () => {
   }
 
   const handleLanguageChange = (e) => {
-    // console.log(e.target.value)
     dispatch(changeLanguages(e.target.value))
   }
 
@@ -85,18 +84,22 @@ const Header = () => {
       {/* User Dropdown Container */}
       {user && (
         <div className="flex gap-4">
+
+
           {isGptActive && (
             <select
-              className="bg-white text-black py-2 px-1 cursor-pointer rounded transition-all duration-300 ease-in-out hover:shadow-[0_0_10px_rgba(255,255,255,0.8)]"
-              onChange={handleLanguageChange}
-            >
-              {SUPPORTED_LANG.map((lang) => (
-                <option key={lang.identifier} value={lang.identifier}>
-                  {lang.name}
-                </option>
-              ))}
-            </select>
+            className="bg-white text-black py-2 px-2 pl-4 cursor-pointer focus:outline-none rounded-md transition-all duration-300 ease-in-out hover:shadow-[0_0_10px_rgba(255,255,255,0.8)]  appearance-none"
+            onChange={handleLanguageChange}
+          >
+            {SUPPORTED_LANG.map((lang) => (
+              <option key={lang.identifier} value={lang.identifier}>
+                {lang.name}
+              </option>
+            ))}
+          </select>
           )}
+
+          
           <button
             className="bg-white text-black py-2 px-5 cursor-pointer rounded transition-all duration-300 ease-in-out hover:shadow-[0_0_10px_rgba(255,255,255,0.8)]"
             onClick={handleGptSearchClick}
