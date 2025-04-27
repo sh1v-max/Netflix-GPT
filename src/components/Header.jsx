@@ -1,6 +1,5 @@
 import { onAuthStateChanged, signOut } from 'firebase/auth'
-import React, { useEffect } from 'react'
-import { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { auth } from '../utils/firebaseConfig'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
@@ -10,11 +9,12 @@ import { toggleGptSearchView } from '../store/gptSlice'
 import { changeLanguages } from '../store/configSlice'
 
 const Header = () => {
-  const [showMenu, setShowMenu] = useState(false)
-  const [isGptActive, setIsGptActive] = useState(false)
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const [isScrolled, setIsScrolled] = useState(false)
   const user = useSelector((store) => store.user)
+  const [showMenu, setShowMenu] = useState(false)
+  const [isGptActive, setIsGptActive] = useState(false)
   const [isFlipped, setIsFlipped] = useState(false)
   const handleSignOut = () => {
     signOut(auth)
@@ -53,6 +53,19 @@ const Header = () => {
     }
   }, [])
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true)
+      } else {
+        setIsScrolled(false)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   const handleGptSearchClick = () => {
     setIsGptActive(!isGptActive)
     dispatch(toggleGptSearchView())
@@ -63,25 +76,34 @@ const Header = () => {
   }
 
   return (
-    <header className="fixed top-0 left-0 w-full px-4 md:px-8 py-3 md:py-4 bg-gradient-to-b from-black to-transparent z-30 flex items-center justify-between">
+    <header
+      className={`fixed top-0 left-0 w-full z-30 flex items-center justify-between px-4 md:px-8 transition-all duration-900 ease-in-out ${
+        isScrolled
+          ? 'backdrop-blur-md bg-black/30 py-1 md:py-1'
+          : 'bg-gradient-to-b from-black to-transparent py-3 md:py-4'
+      }`}
+    >
       {/* Logo */}
       <img
         className="w-24 md:w-44 object-contain"
         src={LOGO}
         alt="Netflix Logo"
       />
-
       {/* User Dropdown Container */}
       {user && (
         <div className="flex items-center gap-2 md:gap-4">
           {/* Language Selector */}
           {isGptActive && (
             <select
-              className="bg-black md:bg-white text-white md:text-black border border-gray-600 md:border-none text-xs md:text-sm py-1 md:py-2 px-1 md:px-4 rounded-md cursor-pointer focus:outline-none transition-all duration-300 ease-in-out hover:bg-opacity-90 hover:shadow-md"
+              className="appearance-none backdrop-blur-md bg-white/10 text-white border border-white/20 text-xs md:text-sm py-1 md:py-2 px-3 md:px-4 rounded-md cursor-pointer focus:outline-none transition-all duration-300 ease-in-out hover:bg-white/20 shadow-md"
               onChange={handleLanguageChange}
             >
               {SUPPORTED_LANG.map((lang) => (
-                <option key={lang.identifier} value={lang.identifier}>
+                <option
+                  key={lang.identifier}
+                  value={lang.identifier}
+                  className="bg-black bg-opacity-30 text-white" // Option styling
+                >
                   {lang.name}
                 </option>
               ))}
@@ -111,16 +133,22 @@ const Header = () => {
                   transformStyle: 'preserve-3d',
                   transition: 'transform 0.5s ease',
                 }}
-                className="w-[26px] h-[26px] md:w-10 md:h-10 rounded-md object-cover border border-transparent hover:scale-[1.08] cursor-pointer"
+                className="w-[26px] h-[26px] md:w-10 md:h-10 rounded-md object-cover border border-transparent cursor-pointer"
               />
             </div>
 
             {/* Dropdown Menu */}
             {showMenu && (
-              <div className="absolute top-full right-0 w-34 md:w-42 backdrop-blur-lg bg-white/10 border border-white/20 rounded-xl shadow-lg py-2 z-50 mt-2">
+              <div className="absolute top-full right-0 w-34 md:w-42 backdrop-blur-lg bg-white/5 border border-white/20 rounded-xl shadow-lg py-2 z-50 mt-2">
                 <ul>
                   <li className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
                     Profile
+                  </li>
+                  <li className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
+                    Account
+                  </li>
+                  <li className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
+                    Premium
                   </li>
                   <li className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
                     Settings
