@@ -1,27 +1,31 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import useMovieTrailer from '../hooks/useMovieTrailer';
-import { BsFillVolumeUpFill, BsFillVolumeMuteFill } from 'react-icons/bs';
+import React, { useState } from 'react'
+import { useSelector } from 'react-redux'
+import useMovieTrailer from '../hooks/useMovieTrailer'
+import { BsFillVolumeUpFill, BsFillVolumeMuteFill } from 'react-icons/bs'
 
 export const VideoBackground = ({ movieId }) => {
-  const trailerVideo = useSelector((store) => store.movies?.trailerVideo);
-  useMovieTrailer(movieId);
+  const trailerVideo = useSelector((store) => store.movies?.trailerVideo)
+  useMovieTrailer(movieId)
 
-  const [isMuted, setIsMuted] = useState(true); // State to control volume (muted or not)
+  const [isMuted, setIsMuted] = useState(true) // State to control volume (muted or not)
 
-  if (!trailerVideo) return null;
+  if (!trailerVideo) return null
 
   // Toggle mute state
   const toggleMute = () => {
-    setIsMuted((prev) => !prev);
-  };
+    setIsMuted((prev) => !prev)
+  }
 
   return (
-    <div className="relative w-full h-full overflow-hidden z-10">
+    <div className="relative w-full h-full overflow-hidden bg-black z-10">
       {/* Video Background */}
       <iframe
-        className="w-full h-full absolute top-0 left-0 scale-[1.8] pointer-events-none" // Disable iframe pointer events to allow button interaction
-        src={`https://www.youtube.com/embed/${trailerVideo?.key}?autoplay=1&mute=${isMuted ? 1 : 0}&showinfo=0&rel=0&loop=1&playlist=${trailerVideo?.key}`}
+        className="md:w-full md:h-full w-[100%] h-[35%] absolute top-0 left-0 md:scale-[1.5] pointer-events-none" // Disable iframe pointer events to allow button interaction
+        src={`https://www.youtube.com/embed/${
+          trailerVideo?.key
+        }?autoplay=1&mute=${isMuted ? 1 : 0}&showinfo=0&rel=0&loop=1&playlist=${
+          trailerVideo?.key
+        }`}
         title="Movie Trailer"
         allow="autoplay; fullscreen"
       ></iframe>
@@ -38,7 +42,7 @@ export const VideoBackground = ({ movieId }) => {
       )}
       </button>
     </div>
-  );
-};
+  )
+}
 
-export default VideoBackground;
+export default VideoBackground
