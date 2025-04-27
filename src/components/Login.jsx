@@ -1,15 +1,15 @@
 import React, { useRef, useState } from 'react'
 import Header from './Header'
 import Footer from './Footer'
-import { checkValidateDate } from '../utils/validate'
+import { checkValidateDate } from '../utils/validateConfig'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth'
-import { auth } from '../utils/firebase'
+import { auth } from '../utils/firebaseConfig'
 import { useDispatch } from 'react-redux'
-import { addUser } from '../utils/userSlice'
+import { addUser } from '../store/userSlice'
 import { IMG_BACKGROUND, USER_AVATAR } from '../utils/constant'
 
 const Login = () => {

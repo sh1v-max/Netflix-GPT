@@ -1,13 +1,13 @@
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import React, { useEffect } from 'react'
 import { useState } from 'react'
-import { auth } from '../utils/firebase'
+import { auth } from '../utils/firebaseConfig'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { addUser, removeUser } from '../utils/userSlice'
 import { LOGO, SUPPORTED_LANG } from '../utils/constant'
-import { toggleGptSearchView } from '../utils/gptSlice'
-import { changeLanguages } from '../utils/configSlice'
+import { addUser, removeUser } from '../store/userSlice'
+import { toggleGptSearchView } from '../store/gptSlice'
+import { changeLanguages } from '../store/configSlice'
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false)
