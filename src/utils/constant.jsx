@@ -18,10 +18,11 @@ export const API_OPTIONS = {
   method: 'GET',
   headers: {
     accept: 'application/json',
-    Authorization:
-      'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhMzBmMWFhNGM3ODYwMmVmNDc1OGY3NzI0M2MxOTI4ZCIsIm5iZiI6MTc0NTEyNTkwMy42MTIsInN1YiI6IjY4MDQ4MjBmNmUxYTc2OWU4MWVlMDUzNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.HUr4lYeOV_hP-FsLQaRSN6yWQZo4a6s7iz6SQ2qwVak',
+    Authorization: `Bearer ${import.meta.env.VITE_TMDB_KEY}`,
   },
-}
+};
+export const OPENAI_KEY = import.meta.env.VITE_OPENAI_KEY
+
 export const OPENAI_SYSTEM_INSTRUCTION =
   'You will be provided with statement, and your task is to find best 5 results in comma separated format without any spaces. For example: result1,result2,result3,result4,result5. Notice there is no space between result1 and result2, etc. They are only comma seperated. You need to give result in same format.'
 
