@@ -2,7 +2,7 @@ import React, { useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import lang from '../utils/languageConstant'
 import openai from '../utils/openaiConfig'
-import { API_OPTIONS } from '../utils/constant'
+import { API_OPTIONS, GPT_QUERY } from '../utils/constant'
 import { addGptMovieResult } from '../store/gptSlice'
 
 const GptSearchBar = () => {
@@ -21,33 +21,18 @@ const GptSearchBar = () => {
   }
 
   const handleGptSearchClick = async () => {
-    console.log(searchText.current.value)
-
-    // make an api call to gpt api and get movies results
-    const gptQuery =
-      'Act as a Movie Recommendation system and suggest some movies for the query, only give me names of 20 movies, the first one should be the one same as the query, comma separated like the example result give ahead. For example: Result1,Result2,Result3,Result4,Result5. Notice there is no space between Result1 and Result2, etc. They are only comma separated. You need to give result in same format'
-
     const gptResults = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: gptQuery },
+        { role: 'system', content: GPT_QUERY },
         { role: 'user', content: searchText.current.value },
       ],
     })
 
     if (!gptResults.choices) return
-
     const gptMovies = gptResults.choices?.[0].message?.content.split(',')
-    console.log(gptMovies)
-
     const PromiseArray =gptMovies.map((movie) => searchMovieTMDB(movie))
-    //  this will return you five promises and not the result data
-    //  [Promise, Promise, Promise, Promise, Promise]
-    console.log(PromiseArray)
-
     const tmdbResults = await Promise.all(PromiseArray)
-    console.log(tmdbResults)
-
     dispatch(addGptMovieResult({movieNames: gptMovies, movieResults: tmdbResults}))
   }
 

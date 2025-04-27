@@ -15,17 +15,13 @@ const Header = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const user = useSelector((store) => store.user)
-  // console.log(user)
-  // console.log(user.photo)
   const handleSignOut = () => {
-    // Logic to sign out the user
     signOut(auth)
       .then(() => {
         // Sign-out successful.
         navigate('/')
       })
       .catch((error) => {
-        // An error happened.
         navigate('/error')
         console.error('Sign out error:', error)
       })
@@ -35,10 +31,6 @@ const Header = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // User is signed in
-        // see docs for a list of available properties
-        // https://firebase.google.com/docs/reference/js/auth.user
-        // const uid = user.uid;
         const { uid, email, displayName, photoURL } = user
         dispatch(
           addUser({
@@ -48,28 +40,21 @@ const Header = () => {
             photo: photoURL,
           })
         )
-        // when user sign in, i'm navigating him to the browse page
         navigate('/browse')
       } else {
-        // User is signed out
         dispatch(removeUser())
-        // when user sign out, navigate him to main page
         navigate('/')
-        // this will return an error, why? cause we are using navigate outside the routerProvider
       }
     })
 
-    // this will unsubscribe the event listener when component unmounts
     return () => {
       unsubscribe()
     }
   }, [])
 
   const handleGptSearchClick = () => {
-    //  toggle my gpt result
     setIsGptActive(!isGptActive)
     dispatch(toggleGptSearchView())
-    // console.log('toggle called')
   }
 
   const handleLanguageChange = (e) => {
@@ -77,49 +62,53 @@ const Header = () => {
   }
 
   return (
-    <header className="absolute top-0 left-0 w-full px-8 py-4 bg-gradient-to-b from-black z-30 flex items-center justify-between">
+    <header className="fixed top-0 left-0 w-full px-4 md:px-8 py-3 md:py-4 bg-gradient-to-b from-black to-transparent z-30 flex items-center justify-between">
       {/* Logo */}
-      <img className="w-44 object-contain" src={LOGO} alt="Netflix Logo" />
-
+      <img 
+        className="w-24 md:w-44 object-contain" 
+        src={LOGO} 
+        alt="Netflix Logo" 
+      />
+  
       {/* User Dropdown Container */}
       {user && (
-        <div className="flex gap-4">
-
-
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Language Selector */}
           {isGptActive && (
             <select
-            className="bg-white text-black py-2 px-2 pl-4 cursor-pointer focus:outline-none rounded-md transition-all duration-300 ease-in-out hover:shadow-[0_0_10px_rgba(255,255,255,0.8)]  appearance-none"
-            onChange={handleLanguageChange}
-          >
-            {SUPPORTED_LANG.map((lang) => (
-              <option key={lang.identifier} value={lang.identifier}>
-                {lang.name}
-              </option>
-            ))}
-          </select>
+              className="bg-black md:bg-white text-white md:text-black border border-gray-600 md:border-none text-xs md:text-sm py-1 md:py-2 px-1 md:px-4 rounded-md cursor-pointer focus:outline-none transition-all duration-300 ease-in-out hover:bg-opacity-90 hover:shadow-md"
+              onChange={handleLanguageChange}
+            >
+              {SUPPORTED_LANG.map((lang) => (
+                <option key={lang.identifier} value={lang.identifier}>
+                  {lang.name}
+                </option>
+              ))}
+            </select>
           )}
-
           
+          {/* GPT Toggle Button */}
           <button
-            className="bg-white text-black py-2 px-5 cursor-pointer rounded transition-all duration-300 ease-in-out hover:shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+            className="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm py-1 md:py-2 px-2 md:px-5 rounded-md cursor-pointer transition-all duration-300 ease-in-out hover:shadow-md"
             onClick={handleGptSearchClick}
           >
             {isGptActive ? 'Home' : 'StartGPT'}
           </button>
+  
+          {/* User Profile Menu */}
           <div className="relative">
             <div
-              className="flex items-center space-x-2 cursor-pointer"
+              className="flex items-center space-x-1 md:space-x-2 cursor-pointer"
               onClick={() => setShowMenu(!showMenu)}
             >
               <img
-                className="w-10 h-10 rounded-md object-cover"
-                // src="https://wallpapers.com/images/high/netflix-profile-pictures-1000-x-1000-qo9h82134t9nv0j0.webp"
+                className="w-8 h-8 md:w-10 md:h-10 rounded-md object-cover border border-transparent hover:border-white"
                 src={user.photo}
                 alt="User Icon"
               />
-
+  
               <svg
-                className={`w-4 h-4 text-white transition-transform ${
+                className={`w-3 h-3 md:w-4 md:h-4 text-white transition-transform ${
                   showMenu ? 'rotate-180' : ''
                 }`}
                 fill="none"
@@ -134,19 +123,19 @@ const Header = () => {
                 />
               </svg>
             </div>
-
+  
             {/* Dropdown Menu */}
             {showMenu && (
-              <ul className="absolute top-12 right-0 w-40 bg-black bg-opacity-90 text-white shadow-lg rounded-md py-2 z-50">
-                <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
+              <ul className="absolute top-full right-0 w-32 md:w-40 bg-black bg-opacity-90 text-white shadow-lg rounded-md py-2 z-50 mt-1 border border-gray-700">
+                <li className="px-3 py-2 text-sm hover:bg-gray-800 cursor-pointer transition-colors">
                   Profile
                 </li>
-                <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
+                <li className="px-3 py-2 text-sm hover:bg-gray-800 cursor-pointer transition-colors">
                   Settings
                 </li>
-                <li className="border-t border-gray-600 my-1"></li>
+                <li className="border-t border-gray-700 my-1"></li>
                 <button
-                  className="px-4 w-40 py-2 text-red-400 hover:bg-red-600 cursor-pointer hover:text-black"
+                  className="px-3 w-full text-left py-2 text-sm text-red-500 hover:bg-red-600 hover:text-white cursor-pointer transition-colors"
                   onClick={handleSignOut}
                 >
                   Sign Out
@@ -157,7 +146,7 @@ const Header = () => {
         </div>
       )}
     </header>
-  )
+  );
 }
 
 export default Header
