@@ -7,6 +7,19 @@ import { LOGO, SUPPORTED_LANG } from '../utils/constant'
 import { addUser, removeUser } from '../store/userSlice'
 import { toggleGptSearchView } from '../store/gptSlice'
 import { changeLanguages } from '../store/configSlice'
+import {
+  FaHome,
+  FaSearch,
+  FaTv,
+  FaPlus,
+  FaRegCalendarAlt,
+  FaUser,
+  FaUserCog,
+  FaCog,
+  FaSignOutAlt,
+  FaStar,
+} from 'react-icons/fa'
+import { MdCast } from 'react-icons/md'
 
 const Header = () => {
   const navigate = useNavigate()
@@ -91,7 +104,7 @@ const Header = () => {
         alt="Netflix Logo"
       />
       {user && (
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-2">
           {isGptActive && (
             <select
               className="appearance-none backdrop-blur-md bg-white/10 text-white border border-white/20 text-xs md:text-sm py-1 md:py-1.5 px-3 md:pr-2 md:pl-5 rounded-md cursor-pointer focus:outline-none transition-all duration-300 ease-in-out hover:bg-white/20 shadow-md"
@@ -109,11 +122,42 @@ const Header = () => {
             </select>
           )}
 
+          {/* <div>
+            <button className="relative group text-white/70 p-2 md:p-3 cursor-pointer transition-all duration-300 ease-in-out">
+              <FaTv size={22} />
+              <span className="absolute left-1 right-1 bottom-0 h-1 bg-red-600 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
+            </button>
+
+            <button className="relative group text-white/70 p-2 md:p-3 cursor-pointer transition-all duration-300 ease-in-out">
+              <FaRegCalendarAlt size={20} />
+              <span className="absolute left-1 right-1 bottom-0 h-1 bg-red-600 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
+            </button>
+
+            <button className="relative group text-white/70 p-2 md:p-3 cursor-pointer transition-all duration-300 ease-in-out">
+              <FaPlus size={20} />
+              <span className="absolute left-1 right-1 bottom-0 h-1 bg-red-600 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
+            </button>
+
+            <button className="relative group text-white/70 p-2 md:p-3 cursor-pointer transition-all duration-300 ease-in-out">
+              <MdCast size={24} />
+              <span className="absolute left-1 right-1 bottom-0 h-1 bg-red-600 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
+            </button>
+
+            <button
+              className="relative group text-white/70 p-2 md:p-3 cursor-pointer transition-all duration-300 ease-in-out"
+              onClick={handleGptSearchClick}
+            >
+              {isGptActive ? <FaHome size={22} /> : <FaSearch size={20} />}
+              <span className="absolute left-1 right-1 bottom-0 h-1 bg-red-600 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
+            </button>
+          </div> */}
+
           <button
-            className="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm py-1 md:py-1.5 px-2 md:px-4 rounded-md cursor-pointer transition-all duration-300 ease-in-out hover:shadow-md"
+            className="relative group text-white/70 p-2 md:p-3 cursor-pointer transition-all duration-300 ease-in-out"
             onClick={handleGptSearchClick}
           >
-            {isGptActive ? 'Home' : 'StartGPT'}
+            {isGptActive ? <FaHome size={22} /> : <FaSearch size={20} />}
+            <span className="absolute left-1 right-1 bottom-0 h-1 bg-red-600 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
           </button>
 
           <div className="relative">
@@ -138,23 +182,33 @@ const Header = () => {
             {showMenu && (
               <div className="absolute top-full right-0 w-34 md:w-42 backdrop-blur-lg bg-white/5 border border-white/20 rounded-xl shadow-lg py-2 z-500 mt-2">
                 <ul>
-                  <li className="px-10 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
+                  <li className="pl-5 md:pl-8 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                    <FaUser size={14} />
+                    <div className="border-r border-white/30 h-5"></div>
                     Profile
                   </li>
-                  <li className="px-10 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
+                  <li className="pl-5 md:pl-8 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                    <FaUserCog size={14} />
+                    <div className="border-r border-white/30 h-5"></div>
                     Account
                   </li>
-                  <li className="px-10 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
+                  <li className="pl-5 md:pl-8 py-2 text-sm text-yellow-300 hover:bg-white/20 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                    <FaStar size={14} />
+                    <div className="border-r border-white/30 h-5"></div>
                     Premium
                   </li>
-                  <li className="px-10 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
+                  <li className="pl-5 md:pl-8 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                    <FaCog size={14} />
+                    <div className="border-r border-white/30 h-5"></div>
                     Settings
                   </li>
                   <li className="border-t border-white/20 my-2 mx-4"></li>
                   <button
-                    className="px-10 w-full text-left py-2 text-sm text-red-500 hover:bg-red-600 hover:text-white rounded-md cursor-pointer transition-colors"
+                    className="pl-5 md:pl-8 w-full text-left py-2 text-sm text-red-500 hover:bg-red-600 hover:text-white rounded-md cursor-pointer transition-colors flex items-center gap-2"
                     onClick={handleSignOut}
                   >
+                    <FaSignOutAlt size={14} />
+                    <div className="border-r border-white/30 h-5"></div>
                     Sign Out
                   </button>
                 </ul>
