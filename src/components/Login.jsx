@@ -109,24 +109,24 @@ const Login = () => {
   return (
     <div>
       <Header />
-
+  
       <div className="relative h-screen w-full">
         <img
           src={IMG_BACKGROUND}
           alt="Background"
-          className="w-full h-full object-cover absolute inset-0 -z-10"
+          className="fixed w-full h-full object-cover inset-0 -z-10"
         />
       </div>
-      
+  
       <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'>
         <form
           onSubmit={(e) => e.preventDefault()}
-          className="w-[500px] p-12 bg-black bg-opacity-80 text-white rounded-md shadow-lg z-10"
+          className="w-[350px] sm:w-[500px] p-6 sm:p-12 bg-black bg-opacity-80 text-white rounded-md shadow-lg z-10"
         >
-          <h2 className="text-3xl font-semibold mb-6">
+          <h2 className="text-2xl sm:text-3xl font-semibold mb-6">
             {isSignInForm ? 'Sign In' : 'Sign Up'}
           </h2>
-
+  
           {!isSignInForm && (
             <input
               ref={name}
@@ -164,7 +164,7 @@ const Login = () => {
               />
             </button>
           </div>
-
+  
           <p className="text-red-600 font-bold text-lg py-2">{errorMessage}</p>
           <button
             type="submit"
@@ -173,7 +173,7 @@ const Login = () => {
           >
             {isSignInForm ? 'Sign In' : 'Sign Up'}
           </button>
-
+  
           <div className="flex justify-between items-center text-sm text-gray-400 mt-4">
             <label className="flex items-center space-x-2">
               <input
@@ -186,7 +186,7 @@ const Login = () => {
               Need help?
             </button>
           </div>
-
+  
           <p className="text-gray-400 mt-6 text-sm">
             {isSignInForm ? 'New to Netflix? ' : 'Already have an account? '}
             <span
@@ -198,10 +198,11 @@ const Login = () => {
           </p>
         </form>
       </div>
-
+  
       <Footer />
     </div>
   )
+  
 }
 
 export default Login
