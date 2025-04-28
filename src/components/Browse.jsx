@@ -23,7 +23,7 @@ const Browse = () => {
       <Header />
       <div>
         <div className="relative w-full h-full">
-          <div className="fixed inset-0 bg-black opacity-50 -z-40"></div>
+          <div className="fixed inset-0 bg-black opacity-90 -z-40"></div>
 
           <img
             src={IMG_BACKGROUND}
@@ -36,7 +36,7 @@ const Browse = () => {
             ) : (
               <>
                 <MainContainer />
-                {/* <SecondaryContainer /> */}
+                <SecondaryContainer />
               </>
             )}
           </div>

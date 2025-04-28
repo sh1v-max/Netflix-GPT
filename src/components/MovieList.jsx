@@ -26,7 +26,7 @@ const MovieList = ({ title, movies }) => {
   
   return (
     <div className="relative px-6 mb-12">
-      <h1 className="text-3xl py-4 text-white font-semibold">{title}</h1>
+      <h1 className="text-sm md:text-3xl py-4 text-white font-semibold">{title}</h1>
 
       {/* Scroll Buttons */}
       <button
