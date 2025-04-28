@@ -19,7 +19,7 @@ const Browse = () => {
   useUpcomingMovies()
 
   return (
-    <div className='relative w-screen h-[100%]'>
+    <div className='relative w-screen min-h-screen'>
       <Header />
       <div>
         <div className="relative">
