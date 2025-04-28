@@ -35,7 +35,7 @@ export const VideoBackground = ({ movieId }) => {
       <div>
         <button
           onClick={toggleMute}
-          className="absolute right-3 bottom-20 md:right-10 md:bottom-10 bg-black/10 backdrop-blur-lg text-white py-2 px-2 md:px-3 md:py-3 rounded-full shadow-lg cursor-pointer focus:outline-none hover:bg-opacity-80 z-20"
+          className="absolute right-3 bottom-20 md:right-10 md:bottom-15 bg-black/10 backdrop-blur-lg text-white py-2 px-2 md:px-3 md:py-3 rounded-full shadow-lg cursor-pointer focus:outline-none hover:bg-opacity-80 z-20"
         >
           {isMuted ? (
             <BsFillVolumeMuteFill className="h-3 w-3 md:h-8 md:w-8" />
