@@ -3,7 +3,7 @@ import { FaFacebookF, FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa'
 
 const Footer = () => {
   return (
-    <footer className="absolute right-0 left-0 -bottom-80 md:-bottom-72 bg-black text-gray-400 px-8 md:px-16 pt-10 pb-6 text-sm">
+    <footer className="absolute right-0 left-0 -bottom-90 md:-bottom-72 bg-black text-gray-400 px-8 md:px-16 pt-10 pb-6 text-sm">
 
       <div className="flex gap-6 mb-6">
         <FaFacebookF className="hover:text-white cursor-pointer" />

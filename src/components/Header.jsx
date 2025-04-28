@@ -80,7 +80,7 @@ const Header = () => {
       className={`fixed top-0 left-0 w-full z-30 flex items-center justify-between px-4 md:px-8 transition-all duration-500 ease-in-out ${
         isScrolled
           ? 'backdrop-blur-md bg-black/20 py-1 md:py-1'
-          : !isGptActive
+          : isGptActive
           ? 'bg-gradient-to-b from-black to-transparent py-3 md:py-4'
           : 'bg-black py-3 md:py-4'
       }`}
