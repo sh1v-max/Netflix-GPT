@@ -6,7 +6,7 @@ const GptMovieSuggestions = () => {
   const { movieResults, movieNames } = useSelector((store) => store.gpt)
   console.log(movieResults)
   console.log(movieNames)
-  if (!movieNames) return
+  if (!movieNames) return <div className='h-full'></div>
 
   return (
     <div className="w-full h-full p-[10%]">

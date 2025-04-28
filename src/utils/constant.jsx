@@ -23,8 +23,5 @@ export const API_OPTIONS = {
 };
 export const OPENAI_KEY = import.meta.env.VITE_OPENAI_KEY
 
-export const OPENAI_SYSTEM_INSTRUCTION =
-  'You will be provided with statement, and your task is to find best 5 results in comma separated format without any spaces. For example: result1,result2,result3,result4,result5. Notice there is no space between result1 and result2, etc. They are only comma seperated. You need to give result in same format.'
-
 export const GPT_MODEL = 'gpt-3.5-turbo'
-export const GPT_QUERY = 'Act as a Movie Recommendation system and suggest some movies for the query, only give me names of 20 movies, the first one should be the one same as the query, comma separated like the example result give ahead. For example: Result1,Result2,Result3,Result4,Result5. Notice there is no space between Result1 and Result2, etc. They are only comma separated. You need to give result in same format'
+export const GPT_QUERY = 'Act as a Movie Recommendation system and suggest some movies for the query, only give me names of 5 movies, the first one should be the one same as the query, comma separated like the example result give ahead. For example: Result1,Result2,Result3,Result4,Result5. Notice there is no space between Result1 and Result2, etc. They are only comma separated. You need to give result in same format'

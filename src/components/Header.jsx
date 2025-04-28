@@ -11,8 +11,8 @@ import { changeLanguages } from '../store/configSlice'
 const Header = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const [isScrolled, setIsScrolled] = useState(false)
   const user = useSelector((store) => store.user)
+  const [isScrolled, setIsScrolled] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
   const [isGptActive, setIsGptActive] = useState(false)
   const [isFlipped, setIsFlipped] = useState(false)
@@ -77,22 +77,21 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 w-full z-30 flex items-center justify-between px-4 md:px-8 transition-all duration-900 ease-in-out ${
+      className={`fixed top-0 left-0 w-full z-30 flex items-center justify-between px-4 md:px-8 transition-all duration-500 ease-in-out ${
         isScrolled
-          ? 'backdrop-blur-md bg-black/30 py-1 md:py-1'
-          : 'bg-gradient-to-b from-black to-transparent py-3 md:py-4'
+          ? 'backdrop-blur-md bg-black/20 py-1 md:py-1'
+          : isGptActive
+          ? 'bg-gradient-to-b from-black to-transparent py-3 md:py-4'
+          : 'bg-black py-3 md:py-4'
       }`}
     >
-      {/* Logo */}
       <img
         className="w-24 md:w-44 object-contain"
         src={LOGO}
         alt="Netflix Logo"
       />
-      {/* User Dropdown Container */}
       {user && (
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Language Selector */}
           {isGptActive && (
             <select
               className="appearance-none backdrop-blur-md bg-white/10 text-white border border-white/20 text-xs md:text-sm py-1 md:py-2 px-3 md:px-4 rounded-md cursor-pointer focus:outline-none transition-all duration-300 ease-in-out hover:bg-white/20 shadow-md"
@@ -110,7 +109,6 @@ const Header = () => {
             </select>
           )}
 
-          {/* GPT Toggle Button */}
           <button
             className="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm py-1 md:py-2 px-2 md:px-5 rounded-md cursor-pointer transition-all duration-300 ease-in-out hover:shadow-md"
             onClick={handleGptSearchClick}
@@ -118,7 +116,6 @@ const Header = () => {
             {isGptActive ? 'Home' : 'StartGPT'}
           </button>
 
-          {/* User Profile Menu */}
           <div className="relative">
             <div
               className="flex items-center space-x-1 md:space-x-2 cursor-pointer"
