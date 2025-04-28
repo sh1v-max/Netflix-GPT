@@ -22,15 +22,15 @@ const Browse = () => {
     <div className='relative w-screen min-h-screen'>
       <Header />
       <div>
-        <div className="relative">
-          <div className="fixed inset-0 bg-black opacity-85 -z-20"></div>
+        <div className="relative w-full h-full">
+          <div className="fixed inset-0 bg-black opacity-50 -z-40"></div>
 
           <img
             src={IMG_BACKGROUND}
             alt="Background"
             className="fixed inset-0 w-full h-full object-cover -z-50 opacity-100"
           />
-          <div className="relative z-20">
+          <div className="relative h-full">
             {showGptSearch ? (
               <GptSearch />
             ) : (

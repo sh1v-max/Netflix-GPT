@@ -86,7 +86,7 @@ const Header = () => {
       }`}
     >
       <img
-        className="w-24 md:w-44 object-contain"
+        className="w-24 md:w-34 object-contain"
         src={LOGO}
         alt="Netflix Logo"
       />
@@ -94,7 +94,7 @@ const Header = () => {
         <div className="flex items-center gap-2 md:gap-4">
           {isGptActive && (
             <select
-              className="appearance-none backdrop-blur-md bg-white/10 text-white border border-white/20 text-xs md:text-sm py-1 md:py-2 px-3 md:px-4 rounded-md cursor-pointer focus:outline-none transition-all duration-300 ease-in-out hover:bg-white/20 shadow-md"
+              className="appearance-none backdrop-blur-md bg-white/10 text-white border border-white/20 text-xs md:text-sm py-1 md:py-1.5 px-3 md:pr-2 md:pl-5 rounded-md cursor-pointer focus:outline-none transition-all duration-300 ease-in-out hover:bg-white/20 shadow-md"
               onChange={handleLanguageChange}
             >
               {SUPPORTED_LANG.map((lang) => (
@@ -110,7 +110,7 @@ const Header = () => {
           )}
 
           <button
-            className="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm py-1 md:py-2 px-2 md:px-5 rounded-md cursor-pointer transition-all duration-300 ease-in-out hover:shadow-md"
+            className="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm py-1 md:py-1.5 px-2 md:px-4 rounded-md cursor-pointer transition-all duration-300 ease-in-out hover:shadow-md"
             onClick={handleGptSearchClick}
           >
             {isGptActive ? 'Home' : 'StartGPT'}
@@ -130,7 +130,7 @@ const Header = () => {
                   transformStyle: 'preserve-3d',
                   transition: 'transform 0.5s ease',
                 }}
-                className="w-[26px] h-[26px] md:w-10 md:h-10 rounded-md object-cover border border-transparent cursor-pointer"
+                className="w-[26px] h-[26px] md:w-8 md:h-8 rounded-md object-cover border border-transparent cursor-pointer"
               />
             </div>
 
@@ -138,21 +138,21 @@ const Header = () => {
             {showMenu && (
               <div className="absolute top-full right-0 w-34 md:w-42 backdrop-blur-lg bg-white/5 border border-white/20 rounded-xl shadow-lg py-2 z-500 mt-2">
                 <ul>
-                  <li className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
+                  <li className="px-10 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
                     Profile
                   </li>
-                  <li className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
+                  <li className="px-10 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
                     Account
                   </li>
-                  <li className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
+                  <li className="px-10 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
                     Premium
                   </li>
-                  <li className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
+                  <li className="px-10 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors">
                     Settings
                   </li>
                   <li className="border-t border-white/20 my-2 mx-4"></li>
                   <button
-                    className="px-4 w-full text-left py-2 text-sm text-red-500 hover:bg-red-600 hover:text-white rounded-md cursor-pointer transition-colors"
+                    className="px-10 w-full text-left py-2 text-sm text-red-500 hover:bg-red-600 hover:text-white rounded-md cursor-pointer transition-colors"
                     onClick={handleSignOut}
                   >
                     Sign Out
