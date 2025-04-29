@@ -110,3 +110,4 @@ rough draft
   - integrate GPT apis (get open ai key)
   - Gpt Search api call
   - Fetched movies movies suggestions from TMDB api
+  - reused movieList component
