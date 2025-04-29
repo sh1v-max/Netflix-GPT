@@ -46,11 +46,6 @@
   - useUpcomingMovies  
 - Stored & retrieved all movie data via Redux  
 
-
-
-
-
-
 rough draft
 
 ## Timeline
@@ -112,10 +107,3 @@ rough draft
   - build a great gpt search page
   - added gpt search bar
   - Multi-language feature (a huge feature update)
-  - integrate GPT apis (get open ai key)
-  - Gpt Search api call
-  - Fetched movies movies suggestions from TMDB api
-  - reused movieList component
-  - Memoisation (why calling api all the time if we already have the data)
-  - adding .env files and gitignore
-  - responsive website
