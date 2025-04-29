@@ -112,3 +112,4 @@ rough draft
   - Fetched movies movies suggestions from TMDB api
   - reused movieList component
   - Memoisation (why calling api all the time if we already have the data)
+  - adding .env files and gitignore
