@@ -113,3 +113,4 @@ rough draft
   - reused movieList component
   - Memoisation (why calling api all the time if we already have the data)
   - adding .env files and gitignore
+  - responsive website
