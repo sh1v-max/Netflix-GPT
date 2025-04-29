@@ -111,3 +111,4 @@ rough draft
   - Gpt Search api call
   - Fetched movies movies suggestions from TMDB api
   - reused movieList component
+  - Memoisation (why calling api all the time if we already have the data)
