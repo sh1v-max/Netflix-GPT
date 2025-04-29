@@ -109,3 +109,4 @@ rough draft
   - Multi-language feature (a huge feature update)
   - integrate GPT apis (get open ai key)
   - Gpt Search api call
+  - Fetched movies movies suggestions from TMDB api
