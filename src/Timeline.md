@@ -107,3 +107,4 @@ rough draft
   - build a great gpt search page
   - added gpt search bar
   - Multi-language feature (a huge feature update)
+  - integrate GPT apis (get open ai key)
