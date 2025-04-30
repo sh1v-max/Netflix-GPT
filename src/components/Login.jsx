@@ -39,9 +39,10 @@ const Login = () => {
     setErrorMessage(message)
 
     if (message) return
-    if (!isSignInForm) {
-      // Sign up logic
 
+    // checking if it's for sign up or sign in
+    if (!isSignInForm) {
+      // continuing with
       createUserWithEmailAndPassword(
         auth,
         email.current.value,
