@@ -88,7 +88,7 @@ const Login = () => {
       )
         .then(() => {
           // Signed in
-          
+          // log to the home page
         })
         .catch((error) => {
           const errorCode = error.code
