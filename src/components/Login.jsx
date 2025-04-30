@@ -88,6 +88,7 @@ const Login = () => {
       )
         .then(() => {
           // Signed in
+          
         })
         .catch((error) => {
           const errorCode = error.code
