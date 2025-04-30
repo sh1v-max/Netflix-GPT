@@ -42,7 +42,7 @@ const Login = () => {
 
     // checking if it's for sign up or sign in
     if (!isSignInForm) {
-      // continuing with
+      // continuing with the logic... sign in
       createUserWithEmailAndPassword(
         auth,
         email.current.value,
