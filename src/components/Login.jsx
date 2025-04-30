@@ -53,14 +53,12 @@ const Login = () => {
           //? Signed up
           const user = userCredential.user
 
-          // will update user using user api from firebase
           updateProfile(user, {
             displayName: name.current.value,
             photoURL: USER_AVATAR,
           })
             .then(() => {
               const { uid, email, displayName, photoURL } = auth.currentUser
-              // auth.currentUser is the updated user
               dispatch(
                 addUser({
                   uid: uid,
