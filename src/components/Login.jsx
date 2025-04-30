@@ -67,10 +67,6 @@ const Login = () => {
                   photo: photoURL,
                 })
               )
-              // Profile updated!
-              // and once out profile is updated, we can navigate
-              // navigate('/browse')
-              // now we are navigating from header, by checking auth state
             })
             .catch((error) => {
               setErrorMessage(error.message)
