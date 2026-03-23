@@ -21,7 +21,7 @@ export const API_OPTIONS = {
     Authorization: `Bearer ${import.meta.env.VITE_TMDB_KEY}`,
   },
 };
-export const OPENAI_KEY = import.meta.env.VITE_OPENAI_KEY
+export const OPENROUTER_KEY = import.meta.env.VITE_OPENROUTER_KEY
 
-export const GPT_MODEL = 'gpt-3.5-turbo'
+export const GPT_MODEL = 'stepfun/step-3.5-flash:free'
 export const GPT_QUERY = 'Act as a Movie Recommendation system and suggest some movies for the query, only give me names of 10 movies, the first one should be the one same as the query, comma separated like the example result give ahead. For example: Result1,Result2,Result3,Result4,Result5. Notice there is no space between Result1 and Result2, etc. They are only comma separated. You need to give result in same format'

@@ -1,8 +1,9 @@
 import OpenAI from 'openai'
-import {OPENAI_KEY} from "./constant"
+import {OPENROUTER_KEY} from "./constant"
 
 const openai = new OpenAI({
-  apiKey: OPENAI_KEY,
+  apiKey: OPENROUTER_KEY,
+  baseURL: 'https://openrouter.ai/api/v1',
   dangerouslyAllowBrowser: true,
 })
 

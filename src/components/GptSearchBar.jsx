@@ -2,7 +2,7 @@ import React, { useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import lang from '../utils/languageConstant'
 import openai from '../utils/openaiConfig'
-import { API_OPTIONS, GPT_QUERY } from '../utils/constant'
+import { API_OPTIONS, GPT_QUERY, GPT_MODEL } from '../utils/constant'
 import { addGptMovieResult } from '../store/gptSlice'
 
 const GptSearchBar = () => {
@@ -22,7 +22,7 @@ const GptSearchBar = () => {
 
   const handleGptSearchClick = async () => {
     const gptResults = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: GPT_MODEL,
       messages: [
         { role: 'system', content: GPT_QUERY },
         { role: 'user', content: searchText.current.value },
