@@ -16,8 +16,16 @@
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
   </p>
 
-</div>
+  <p>
+    <img src="https://img.shields.io/badge/React-18.2.0-blue?logo=react" alt="React">
+    <img src="https://img.shields.io/badge/Vite-5.0.0-purple?logo=vite" alt="Vite">
+    <img src="https://img.shields.io/badge/Redux_Toolkit-2.0.0-764ABC?logo=redux" alt="Redux Toolkit">
+    <img src="https://img.shields.io/badge/Tailwind_CSS-3.4.0-38B2AC?logo=tailwind-css" alt="Tailwind CSS">
+    <img src="https://img.shields.io/badge/Firebase-10.7.0-FFCA28?logo=firebase" alt="Firebase">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+  </p>
 
+</div>
 
 > This project is a demonstration of modern frontend architecture, showcasing best practices in state management, component design, and build tooling.
 
@@ -30,7 +38,6 @@
 - **Foundation for AI-Powered Search:** The application is architected to support a future GPT-based search feature, allowing users to find movies using natural language queries.
 - **Performance-First Development:** Built with Vite for near-instant development server startup and lightning-fast Hot Module Replacement (HMR). Production builds are highly optimized by Rollup.
 
-
 ## 🚀 Live Demo
 
 Experience the application live:
@@ -40,22 +47,20 @@ Experience the application live:
 <!-- For a recruiter, it's powerful to add a high-quality GIF of the app in action here. -->
 <!-- ![Netflix-GPT Demo GIF](link_to_your_demo.gif) -->
 
-
 ## 🛠️ Technology Stack
 
 This project is built with a curated selection of modern, industry-standard technologies to ensure performance, scalability, and an excellent developer experience.
 
-| Category             | Technology                                                                                                    |
-| -------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Frontend Library** | [React](https://reactjs.org/)                                                                                 |
-| **Build Tool**       | [Vite](https://vitejs.dev/)                                                                                   |
-| **Styling**          | [Tailwind CSS](https://tailwindcss.com/)                                                                      |
-| **State Management** | [Redux Toolkit](https://redux-toolkit.js.org/)                                                                |
-| **Routing**          | [React Router](https://reactrouter.com/)                                                                      |
-| **Backend Services** | [Firebase](https://firebase.google.com/) (Authentication, Hosting)                                            |
-| **Data Source**      | [The Movie Database (TMDB) API](https://www.themoviedb.org/documentation/api)                                 |
-| **Deployment**       | [Firebase Hosting](https://firebase.google.com/docs/hosting)                                                  |
-
+| Category             | Technology                                                                    |
+| -------------------- | ----------------------------------------------------------------------------- |
+| **Frontend Library** | [React](https://reactjs.org/)                                                 |
+| **Build Tool**       | [Vite](https://vitejs.dev/)                                                   |
+| **Styling**          | [Tailwind CSS](https://tailwindcss.com/)                                      |
+| **State Management** | [Redux Toolkit](https://redux-toolkit.js.org/)                                |
+| **Routing**          | [React Router](https://reactrouter.com/)                                      |
+| **Backend Services** | [Firebase](https://firebase.google.com/) (Authentication, Hosting)            |
+| **Data Source**      | [The Movie Database (TMDB) API](https://www.themoviedb.org/documentation/api) |
+| **Deployment**       | [Firebase Hosting](https://firebase.google.com/docs/hosting)                  |
 
 ## 🏁 Getting Started
 
@@ -71,12 +76,14 @@ To get a local copy up and running, please follow these simple steps.
 ### Installation & Setup
 
 1.  **Clone the repository:**
+
     ```
     git clone https://github.com/sh1v-max/Netflix-GPT.git
     cd Netflix-GPT
     ```
 
 2.  **Install dependencies:**
+
     ```
     npm install
     ```
@@ -96,6 +103,7 @@ To get a local copy up and running, please follow these simple steps.
     # TMDB API Read Access Token
     VITE_TMDB_API_KEY="YOUR_TMDB_API_KEY"
     ```
+
     > **Security Note:** The `VITE_` prefix is required for Vite to expose these variables to the client-side code. Ensure your `.env` file is included in `.gitignore`.
 
 4.  **Run the development server:**
@@ -103,7 +111,6 @@ To get a local copy up and running, please follow these simple steps.
     npm run dev
     ```
     Your application should now be running on `http://localhost:5173`.
-
 
 ## 🏗️ Architectural Decisions
 
@@ -125,21 +132,19 @@ This project wasn't just built; it was engineered. Here are some of the key arch
 4.  **Utility-First Styling with Tailwind CSS:**
     Tailwind CSS was chosen over traditional CSS-in-JS or CSS Modules to enable rapid UI development. By applying utility classes directly in the JSX, we maintain styling consistency, reduce context-switching, and benefit from Tailwind's highly effective purging of unused styles, resulting in a minimal production CSS bundle.
 
-
 ## 🛣️ Future Roadmap
 
 This project serves as a strong foundation for several exciting future enhancements:
 
--   [ ] **Full GPT Search Integration:** Implement the backend logic (e.g., via a Firebase Cloud Function) to securely call the OpenAI API and translate natural language queries into movie recommendations.
--   [ ] **Personalized User Watchlist:** Develop a "My List" feature, allowing users to add/remove movies. This will be persisted in a **Firestore** database, tied to the user's account.
--   [ ] **Enhanced UI/UX:**
-    -   Integrate **Framer Motion** for fluid page transitions and micro-interactions.
-    -   Implement **loading skeletons** to improve perceived performance during data fetching.
-    -   Refine responsiveness for a flawless experience on all mobile and tablet devices.
--   [ ] **Comprehensive Testing Suite:**
-    -   Write unit tests for utility functions and custom hooks using **Jest** and **React Testing Library**.
-    -   Develop integration tests for key user flows like authentication and movie browsing.
-
+- [ ] **Full GPT Search Integration:** Implement the backend logic (e.g., via a Firebase Cloud Function) to securely call the OpenAI API and translate natural language queries into movie recommendations.
+- [ ] **Personalized User Watchlist:** Develop a "My List" feature, allowing users to add/remove movies. This will be persisted in a **Firestore** database, tied to the user's account.
+- [ ] **Enhanced UI/UX:**
+  - Integrate **Framer Motion** for fluid page transitions and micro-interactions.
+  - Implement **loading skeletons** to improve perceived performance during data fetching.
+  - Refine responsiveness for a flawless experience on all mobile and tablet devices.
+- [ ] **Comprehensive Testing Suite:**
+  - Write unit tests for utility functions and custom hooks using **Jest** and **React Testing Library**.
+  - Develop integration tests for key user flows like authentication and movie browsing.
 
 ## 🤝 Contributing
 
@@ -151,11 +156,9 @@ Contributions are welcome! If you have suggestions for improvements, please fork
 4.  **Push to the Branch** (`git push origin feature/NewFeature`)
 5.  **Open a Pull Request**
 
-
 ## 📄 License
 
 This project is licensed under the MIT License. See the `LICENSE` file for more information.
-
 
 <div align="center">
   <p>Developed with ❤️ by Shiv Shankar Singh</p>
