@@ -5,7 +5,7 @@ import VideoBackground from './VideoBackground'
 const MainContainer = ({ movies, mediaType = 'movie' }) => {
   if (!movies) {
     return (
-      <div className="relative w-full h-[350px] md:h-screen bg-black animate-pulse" />
+      <div className="relative w-full h-[350px] md:h-screen bg-ink-elevated animate-pulse" />
     )
   }
 

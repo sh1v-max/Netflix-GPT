@@ -1,4 +1,65 @@
 @import "tailwindcss";
+
+@theme {
+  /* Surfaces */
+  --color-ink: #0b0b0f;
+  --color-ink-elevated: #16161c;
+  --color-paper: #f6f3ed;
+  --color-paper-elevated: #ede8de;
+
+  /* Accent — the one color allowed to draw attention */
+  --color-accent: #d4a054;
+  --color-accent-strong: #b9853f;
+  --color-accent-soft: #e9c98b;
+
+  /* Signal — reserved for like/dislike, nothing else */
+  --color-rust: #c1553b;
+
+  /* Fixed — does NOT swap with theme. For text placed on top of the
+     accent color itself (buttons), which is always the same gold
+     regardless of light/dark mode. */
+  --color-on-accent: #17161a;
+
+  /* Text */
+  --color-text-dark: #f5f1ea;
+  --color-text-dark-muted: #9a9691;
+  --color-text-light: #17161a;
+  --color-text-light-muted: #6b665d;
+
+  /* Type */
+  --font-display: 'Space Grotesk', ui-sans-serif, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* Shape & motion */
+  --radius-card: 0.5rem;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:root {
+  color-scheme: dark;
+}
+
+/*
+ * Components are styled with `bg-ink`, `text-text-dark`, etc. directly
+ * rather than a separate "surface"/"fg" alias layer. To make the light
+ * theme apply everywhere without renaming every class, we redefine what
+ * those tokens *point to* under `[data-theme='light']` — same class
+ * names, different values depending on theme.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-ink: var(--color-paper);
+  --color-ink-elevated: var(--color-paper-elevated);
+  --color-text-dark: var(--color-text-light);
+  --color-text-dark-muted: var(--color-text-light-muted);
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-ink);
+  color: var(--color-text-dark);
+  transition: background-color 200ms var(--ease-standard), color 200ms var(--ease-standard);
+}
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -6,4 +67,10 @@
 .no-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none;    /* Firefox */
+}
+
+.hero-gradient {
+  background:
+    radial-gradient(ellipse 80% 60% at 80% -10%, color-mix(in srgb, var(--color-accent) 20%, transparent), transparent 70%),
+    var(--color-ink);
 }

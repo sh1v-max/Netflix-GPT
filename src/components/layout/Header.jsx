@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import { auth } from '../../utils/firebaseConfig'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { LOGO, SUPPORTED_LANG } from '../../utils/constant'
+import { SUPPORTED_LANG } from '../../utils/constant'
+import Logo from './Logo'
 import { addUser, removeUser } from '../../store/userSlice'
 import { toggleGptSearchView } from '../../store/gptSlice'
 import { changeLanguages } from '../../store/configSlice'
@@ -15,6 +16,8 @@ import {
   FaCog,
   FaSignOutAlt,
   FaStar,
+  FaSun,
+  FaMoon,
 } from 'react-icons/fa'
 
 const Header = () => {
@@ -22,11 +25,27 @@ const Header = () => {
   const location = useLocation()
   const dispatch = useDispatch()
   const user = useSelector((store) => store.user)
+  const showGptSearch = useSelector((store) => store.gpt.showGptSearch)
+  // The GPT search toggle only has meaning on /browse — on /shows there's
+  // nothing listening to this flag yet, so don't show the app as "in search
+  // mode" there.
+  const isGptActive = showGptSearch && location.pathname === '/browse'
   const [isScrolled, setIsScrolled] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
-  const [isGptActive, setIsGptActive] = useState(false)
   const [isFlipped, setIsFlipped] = useState(false)
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem('cinegraph-theme') || 'dark'
+  )
   const menuRef = useRef(null)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('cinegraph-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
+  }
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
@@ -50,14 +69,19 @@ const Header = () => {
             photo: photoURL,
           })
         )
-        // Only redirect away from the login page — don't yank the user
-        // back to /browse when this listener re-fires on /shows, etc.
-        if (location.pathname === '/') {
+        // Only redirect away from the landing/login pages — don't yank the
+        // user back to /browse when this listener re-fires on /shows, etc.
+        if (location.pathname === '/' || location.pathname === '/login') {
           navigate('/browse')
         }
       } else {
         dispatch(removeUser())
-        navigate('/')
+        // Only kick the user off protected pages — don't force a redirect
+        // away from '/' or '/login' themselves, or landing there while
+        // logged out (the normal case) bounces straight back to '/'.
+        if (location.pathname === '/browse' || location.pathname === '/shows') {
+          navigate('/')
+        }
       }
     })
 
@@ -91,7 +115,10 @@ const Header = () => {
   }, [])
 
   const handleGptSearchClick = () => {
-    setIsGptActive(!isGptActive)
+    if (location.pathname !== '/browse') {
+      navigate('/browse')
+      return
+    }
     dispatch(toggleGptSearchView())
   }
 
@@ -101,28 +128,26 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 w-full z-30 flex items-center justify-between px-4 md:px-8 transition-all duration-500 ease-in-out ${
+      className={`fixed top-0 left-0 w-full z-30 flex items-center justify-between px-4 md:px-8 transition-all duration-500 ${
         isScrolled
-          ? 'backdrop-blur-md bg-black/20 py-1 md:py-1'
+          ? 'backdrop-blur-md bg-ink/60 py-1 md:py-1'
           : isGptActive
-          ? 'bg-gradient-to-b from-black to-transparent py-3 md:py-4'
-          : 'bg-black py-3 md:py-4'
+          ? 'bg-gradient-to-b from-ink to-transparent py-3 md:py-4'
+          : 'bg-ink py-3 md:py-4'
       }`}
     >
       <div className="flex items-center gap-4 md:gap-8">
-        <img
-          className="w-24 md:w-34 object-contain"
-          src={LOGO}
-          alt="Netflix Logo"
-        />
+        <Link to={user ? '/browse' : '/'}>
+          <Logo className="text-text-dark" />
+        </Link>
         {user && !isGptActive && (
           <nav className="hidden sm:flex items-center gap-4 text-sm">
             <Link
               to="/browse"
               className={`transition-colors ${
                 location.pathname === '/browse'
-                  ? 'text-white font-semibold'
-                  : 'text-white/60 hover:text-white'
+                  ? 'text-text-dark font-semibold'
+                  : 'text-text-dark-muted hover:text-text-dark'
               }`}
             >
               Home
@@ -131,8 +156,8 @@ const Header = () => {
               to="/shows"
               className={`transition-colors ${
                 location.pathname === '/shows'
-                  ? 'text-white font-semibold'
-                  : 'text-white/60 hover:text-white'
+                  ? 'text-text-dark font-semibold'
+                  : 'text-text-dark-muted hover:text-text-dark'
               }`}
             >
               TV Shows
@@ -140,18 +165,34 @@ const Header = () => {
           </nav>
         )}
       </div>
-      {user && (
-        <div className="flex items-center gap-2 md:gap-2">
+      <div className="flex items-center gap-2 md:gap-2">
+        <button
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          className="text-text-dark-muted hover:text-text-dark p-2 md:p-3 cursor-pointer transition-colors"
+        >
+          {theme === 'dark' ? <FaSun size={18} /> : <FaMoon size={18} />}
+        </button>
+        {!user && location.pathname !== '/login' && (
+          <Link
+            to="/login"
+            className="bg-accent hover:bg-accent-strong text-on-accent text-sm font-semibold px-4 py-2 rounded-[--radius-card] transition-colors"
+          >
+            Sign In
+          </Link>
+        )}
+        {user && (
+          <>
           {isGptActive && (
             <select
-              className="appearance-none backdrop-blur-md bg-white/10 text-white border border-white/20 text-xs md:text-sm py-1 md:py-1.5 px-3 md:pr-2 md:pl-5 rounded-md cursor-pointer focus:outline-none transition-all duration-300 ease-in-out hover:bg-white/20 shadow-md"
+              className="appearance-none backdrop-blur-md bg-white/10 text-text-dark border border-white/20 text-xs md:text-sm py-1 md:py-1.5 px-3 md:pr-2 md:pl-5 rounded-[--radius-card] cursor-pointer focus:outline-none transition-all duration-300 hover:bg-white/20 shadow-md"
               onChange={handleLanguageChange}
             >
               {SUPPORTED_LANG.map((lang) => (
                 <option
                   key={lang.identifier}
                   value={lang.identifier}
-                  className="bg-black bg-opacity-30 text-white" // Option styling
+                  className="bg-ink-elevated text-text-dark"
                 >
                   {lang.name}
                 </option>
@@ -160,12 +201,12 @@ const Header = () => {
           )}
 
           <button
-            className="relative group text-white/70 hover:text-white p-2 md:p-3 cursor-pointer transition-all duration-300 ease-in-out"
+            className="relative group text-text-dark-muted hover:text-text-dark p-2 md:p-3 cursor-pointer transition-all duration-300"
             onClick={handleGptSearchClick}
             aria-label={isGptActive ? 'Back to home' : 'Search with GPT'}
           >
             {isGptActive ? <FaHome size={22} /> : <FaSearch size={20} />}
-            <span className="absolute left-1 right-1 bottom-0 h-1 bg-red-600 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
+            <span className="absolute left-1 right-1 bottom-0 h-1 bg-accent scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
           </button>
 
           <div className="relative" ref={menuRef}>
@@ -188,43 +229,44 @@ const Header = () => {
 
             {/* Dropdown Menu */}
             {showMenu && (
-              <div className="absolute top-full right-0 w-34 md:w-42 backdrop-blur-lg bg-white/5 border border-white/20 rounded-xl shadow-lg py-2 z-500 mt-2">
+              <div className="absolute top-full right-0 w-34 md:w-42 backdrop-blur-lg bg-ink-elevated/90 border border-white/10 rounded-xl shadow-lg py-2 z-500 mt-2">
                 <ul>
-                  <li className="pl-5 md:pl-8 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                  <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
                     <FaUser size={14} />
-                    <div className="border-r border-white/30 h-5"></div>
+                    <div className="border-r border-white/20 h-5"></div>
                     Profile
                   </li>
-                  <li className="pl-5 md:pl-8 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                  <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
                     <FaUserCog size={14} />
-                    <div className="border-r border-white/30 h-5"></div>
+                    <div className="border-r border-white/20 h-5"></div>
                     Account
                   </li>
-                  <li className="pl-5 md:pl-8 py-2 text-sm text-yellow-300 hover:bg-white/20 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                  <li className="pl-5 md:pl-8 py-2 text-sm text-accent hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
                     <FaStar size={14} />
-                    <div className="border-r border-white/30 h-5"></div>
+                    <div className="border-r border-white/20 h-5"></div>
                     Premium
                   </li>
-                  <li className="pl-5 md:pl-8 py-2 text-sm text-white hover:bg-white/20 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                  <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
                     <FaCog size={14} />
-                    <div className="border-r border-white/30 h-5"></div>
+                    <div className="border-r border-white/20 h-5"></div>
                     Settings
                   </li>
-                  <li className="border-t border-white/20 my-2 mx-4"></li>
+                  <li className="border-t border-white/10 my-2 mx-4"></li>
                   <button
-                    className="pl-5 md:pl-8 w-full text-left py-2 text-sm text-red-500 hover:bg-red-600 hover:text-white rounded-md cursor-pointer transition-colors flex items-center gap-2"
+                    className="pl-5 md:pl-8 w-full text-left py-2 text-sm text-rust hover:bg-rust hover:text-text-dark rounded-md cursor-pointer transition-colors flex items-center gap-2"
                     onClick={handleSignOut}
                   >
                     <FaSignOutAlt size={14} />
-                    <div className="border-r border-white/30 h-5"></div>
+                    <div className="border-r border-white/20 h-5"></div>
                     Sign Out
                   </button>
                 </ul>
               </div>
             )}
           </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </header>
   )
 }

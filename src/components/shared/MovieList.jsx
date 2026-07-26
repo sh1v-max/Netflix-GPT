@@ -26,10 +26,10 @@ const MovieList = ({ title, movies }) => {
   
   return (
     <div className="relative px-6 mb-6 md:mb-12">
-      <h1 className="text-sm md:text-3xl py-1 md:py-4 text-white font-semibold">{title}</h1>
+      <h1 className="font-display text-sm md:text-3xl py-1 md:py-4 text-text-dark font-semibold">{title}</h1>
 
       <button
-        className="hidden md:block absolute left-0 top-[59%] -translate-y-1/2 bg-gray-700/50 hover:bg-gray-500/70 text-white p-3 rounded-full z-50 transition duration-300 backdrop-blur-sm shadow-lg"
+        className="hidden md:block absolute left-0 top-[59%] -translate-y-1/2 bg-ink-elevated/60 hover:bg-ink-elevated text-text-dark p-3 rounded-full z-50 transition duration-300 backdrop-blur-sm shadow-lg"
         onClick={() => scroll("left")}
       >
         <HiChevronLeft />
@@ -51,7 +51,7 @@ const MovieList = ({ title, movies }) => {
       </div>
 
       <button
-        className="hidden md:block absolute right-0 top-[55%] -translate-y-1/2 bg-gray-700/50 hover:bg-gray-500/70 text-white p-3 rounded-full z-50 transition duration-300 backdrop-blur-sm shadow-lg"
+        className="hidden md:block absolute right-0 top-[55%] -translate-y-1/2 bg-ink-elevated/60 hover:bg-ink-elevated text-text-dark p-3 rounded-full z-50 transition duration-300 backdrop-blur-sm shadow-lg"
         onClick={() => scroll("right")}
       >
         <HiChevronRight/>

@@ -8,7 +8,6 @@ import useAiringTodayShows from '../../hooks/useAiringTodayShows'
 import { useSelector } from 'react-redux'
 import MainContainer from '../browse/MainContainer'
 import ShowsSecondaryContainer from './ShowsSecondaryContainer'
-import { IMG_BACKGROUND } from '../../utils/constant'
 
 const Shows = () => {
   const onTheAirShows = useSelector((store) => store.tv?.onTheAirShows)
@@ -22,13 +21,7 @@ const Shows = () => {
       <Header />
       <div>
         <div className="relative w-full h-full">
-          <div className="fixed inset-0 bg-black opacity-90 -z-40"></div>
-
-          <img
-            src={IMG_BACKGROUND}
-            alt="Background"
-            className="fixed inset-0 w-full h-full object-cover -z-50 opacity-100"
-          />
+          <div className="hero-gradient fixed inset-0 -z-40" />
           <div className="relative h-full">
             <MainContainer movies={onTheAirShows} mediaType="tv" />
             <ShowsSecondaryContainer />

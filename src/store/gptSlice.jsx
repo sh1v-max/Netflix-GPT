@@ -3,7 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const gptSlice = createSlice({
   name: 'gpt',
   initialState: {
-    showGptSearch: false,
+    // Search-first landing: Cinegraph opens on AI search, not a carousel wall
+    showGptSearch: true,
     movieNames: null,
     movieResults: null,
   },

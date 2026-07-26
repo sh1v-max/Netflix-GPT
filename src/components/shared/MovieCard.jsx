@@ -24,9 +24,9 @@ const MovieCard = ({ posterPath, title }) => {
 
         {/* Hover Icons Container */}
         <div>
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/30 transition-opacity duration-300">
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-ink/40 transition-opacity duration-300">
             <button
-              className="bg-white/90 text-black rounded-full p-4 shadow-lg hover:scale-110 hover:bg-white cursor-pointer transition-transform duration-300"
+              className="bg-accent text-on-accent rounded-full p-4 shadow-lg hover:scale-110 hover:bg-accent-strong cursor-pointer transition-transform duration-300"
               aria-label={title ? `Play ${title}` : 'Play'}
             >
               <FaPlay size={20} />
@@ -35,7 +35,7 @@ const MovieCard = ({ posterPath, title }) => {
 
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-70 transition-opacity duration-300">
             <button
-              className="bg-gray-700 bg-opacity-70 text-white rounded-full p-1 px-2 shadow-md hover:bg-opacity-80 cursor-pointer"
+              className="bg-ink-elevated/70 text-text-dark rounded-full p-1 px-2 shadow-md hover:bg-ink-elevated cursor-pointer"
               aria-label="More options"
             >
               <BsThreeDots size={18} />
@@ -44,8 +44,8 @@ const MovieCard = ({ posterPath, title }) => {
         </div>
 
         {title && (
-          <div className="hidden md:block absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent px-2 pt-6 pb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <p className="text-white text-xs font-medium truncate">{title}</p>
+          <div className="hidden md:block absolute bottom-0 left-0 right-0 bg-gradient-to-t from-ink/90 to-transparent px-2 pt-6 pb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <p className="text-text-dark text-xs font-medium truncate">{title}</p>
           </div>
         )}
       </div>

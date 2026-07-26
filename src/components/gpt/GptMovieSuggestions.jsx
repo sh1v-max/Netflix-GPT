@@ -8,7 +8,7 @@ const GptMovieSuggestions = () => {
   if (!movieNames) {
     return (
       <div className="h-[60vh] flex items-center justify-center px-4">
-        <p className="text-gray-400 text-sm md:text-lg text-center max-w-md">
+        <p className="text-text-dark-muted text-sm md:text-lg text-center max-w-md">
           Search for a movie, mood, or genre above to get GPT-powered
           recommendations.
         </p>

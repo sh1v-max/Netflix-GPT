@@ -52,19 +52,19 @@ const GptSearchBar = () => {
   return (
     <div className="flex flex-col items-center px-2 md:px-4">
       <form
-        className="flex w-full max-w-3xl bg-black/60 backdrop-blur-sm p-3 md:p-4 mt-15 md:mt-25 rounded-lg shadow-lg"
+        className="flex w-full max-w-3xl bg-ink-elevated/80 backdrop-blur-sm p-3 md:p-4 mt-15 md:mt-25 rounded-[--radius-card] shadow-lg"
         onSubmit={(e) => e.preventDefault()}
       >
         <input
           ref={searchText}
           type="text"
           disabled={isSearching}
-          className="flex-grow px-3 py-2 md:px-5 md:py-3 text-xs md:text-base rounded-l-lg text-white bg-neutral-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 transition-all duration-300 disabled:opacity-60"
+          className="flex-grow px-3 py-2 md:px-5 md:py-3 text-xs md:text-base rounded-l-[--radius-card] text-text-dark bg-ink placeholder-text-dark-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300 disabled:opacity-60"
           placeholder={lang[langKey].gptSearchPlaceHolder}
         />
         <button
           disabled={isSearching}
-          className="flex items-center justify-center gap-2 px-3 py-2 md:px-6 md:py-3 bg-red-700 hover:bg-red-600 disabled:bg-red-800/70 disabled:cursor-not-allowed hover:shadow-[0_0_10px_rgba(239,68,68,0.6)] text-white font-semibold text-xs md:text-base rounded-r-lg transition-all duration-300"
+          className="flex items-center justify-center gap-2 px-3 py-2 md:px-6 md:py-3 bg-accent hover:bg-accent-strong disabled:bg-accent/50 disabled:cursor-not-allowed text-on-accent font-semibold text-xs md:text-base rounded-r-[--radius-card] transition-all duration-300"
           onClick={handleGptSearchClick}
         >
           {isSearching && <ImSpinner8 className="animate-spin" size={14} />}
@@ -72,7 +72,7 @@ const GptSearchBar = () => {
         </button>
       </form>
       {error && (
-        <p className="max-w-3xl w-full text-red-500 text-xs md:text-sm mt-2 px-1">
+        <p className="max-w-3xl w-full text-rust text-xs md:text-sm mt-2 px-1">
           {error}
         </p>
       )}

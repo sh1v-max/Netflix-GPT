@@ -9,7 +9,6 @@ import useUpcomingMovies from '../../hooks/useUpcomingMovies'
 import GptSearch from '../gpt/GptSearch'
 import { useSelector } from 'react-redux'
 import MainContainer from './MainContainer'
-import { IMG_BACKGROUND } from '../../utils/constant'
 
 const Browse = () => {
   const showGptSearch = useSelector((store) => store.gpt.showGptSearch)
@@ -24,13 +23,7 @@ const Browse = () => {
       <Header />
       <div>
         <div className="relative w-full h-full">
-          <div className="fixed inset-0 bg-black opacity-90 -z-40"></div>
-
-          <img
-            src={IMG_BACKGROUND}
-            alt="Background"
-            className="fixed inset-0 w-full h-full object-cover -z-50 opacity-100"
-          />
+          <div className="hero-gradient fixed inset-0 -z-40" />
           <div className="relative h-full">
             {showGptSearch ? (
               <GptSearch />

@@ -94,37 +94,42 @@ drift back into the old style):
 
 ### 0.3 — Rebrand tasks (in order)
 
-1. [ ] Upgrade `tailwindcss` / `@tailwindcss/cli` / `@tailwindcss/vite`
-       from 4.1 → 4.3 first (bugfixes to the `@theme` system land in that
-       range) — see the dependency-audit conversation for the full list
-2. [ ] Add the `@theme` block above to `src/index.css`
-3. [ ] Build a `<Logo />` component (text wordmark in `font-display`,
-       "Cine" in `text-*` + "graph" in `text-accent`) — replaces the `LOGO`
-       image import entirely
-4. [ ] Remove `LOGO` and `IMG_BACKGROUND` from `src/utils/constant.jsx`
-       (both currently point at Netflix's own CDN — stop serving their
-       assets)
-5. [ ] Replace the hero background: a CSS gradient/noise texture using
-       `--color-ink` / `--color-accent-soft` tokens, not a photo — fits
-       the minimal direction and removes the last Netflix-sourced asset
-6. [ ] Sweep every component for hardcoded `red-*`, `bg-black`,
-       `bg-gray-800` Tailwind classes and replace with the new tokens —
-       touches `Header`, `Login`, `MovieCard`, `MovieList`, `GptSearchBar`,
-       `VideoTitle`, `Footer` at minimum
-7. [ ] Rewrite `Footer.jsx`: drop the fake `#` links (Investor Relations,
-       Gift Cards, Jobs, etc.) — keep it to 3–4 real links (GitHub repo,
-       About/How it works, maybe a contact link) plus the copyright line
-       already fixed
-8. [ ] Restructure the homepage IA (**Option A** from the earlier
-       brainstorm): the GPT search box becomes the primary landing
-       experience — centered, minimal chrome — with 1-2 curated rows
-       below it (Trending Today, New This Week). The full carousel wall
-       moves to the Discover page built in Phase 1, it's no longer the
-       default view
-9. [ ] Light theme: a `data-theme` attribute toggle (stored in
-       `localStorage`), swapping `--color-ink`/`--color-paper` roles —
-       doesn't need to be default, just needs to exist and not look like
-       an afterthought
+1. [x] Upgrade `tailwindcss` / `@tailwindcss/cli` / `@tailwindcss/vite`
+       from 4.1 → 4.3
+2. [x] Add the `@theme` block above to `src/index.css` (plus a fixed
+       `--color-on-accent` token for text placed on the accent color
+       itself — buttons need a non-swapping dark text regardless of theme)
+3. [x] Build a `<Logo />` component (`components/layout/Logo.jsx`) —
+       replaces the `LOGO` image import entirely
+4. [x] Remove `LOGO` and `IMG_BACKGROUND` from `src/utils/constant.jsx`
+5. [x] Replace the hero background with `.hero-gradient` (CSS radial
+       gradient using `--color-ink`/`--color-accent`) — used in `Login`,
+       `Browse`, `Shows`
+6. [x] Swept `Header`, `Login`, `MovieCard`, `MovieList`, `GptSearchBar`,
+       `GptMovieSuggestions`, `VideoTitle`, `VideoBackground`,
+       `MainContainer` for hardcoded `red-*`/`bg-black`/`bg-gray-*` classes
+7. [x] Rewrote `Footer.jsx` — dropped the fake link grid, kept a GitHub
+       link + honest copyright line
+8. [x] Homepage is search-first: `gptSlice`'s `showGptSearch` now
+       defaults to `true` (was `false`). Also fixed a latent state-sync
+       bug this exposed — `Header` had its own local `isGptActive` state
+       duplicating the Redux flag, which would've shown the wrong
+       icon/nav on load; it now derives directly from the store, scoped
+       to `/browse` only (the toggle jumps to `/browse` first if clicked
+       from `/shows`, since Shows doesn't have this feature yet)
+9. [x] Light theme: toggle button in `Header` (sun/moon icon, always
+       visible regardless of login state), persisted via
+       `localStorage`, applied via `data-theme` on `<html>`. Implemented
+       by redefining `--color-ink`/`--color-ink-elevated`/
+       `--color-text-dark`/`--color-text-dark-muted` under
+       `[data-theme='light']` rather than renaming every class — same
+       `bg-ink`/`text-text-dark` utility names work in both themes
+
+**Verified**: lint clean (only pre-existing warnings), production build
+succeeds. Not yet done: visual browser check — no browser automation
+available in this environment, so give it a look yourself (`npm run
+dev`) before moving on, especially the light theme toggle and the
+search-first landing.
 
 ---
 

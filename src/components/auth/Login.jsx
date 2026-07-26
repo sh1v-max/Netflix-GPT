@@ -10,7 +10,7 @@ import {
 import { auth } from '../../utils/firebaseConfig'
 import { useDispatch } from 'react-redux'
 import { addUser } from '../../store/userSlice'
-import { IMG_BACKGROUND, USER_AVATAR } from '../../utils/constant'
+import { USER_AVATAR } from '../../utils/constant'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { ImSpinner8 } from 'react-icons/im'
 
@@ -102,18 +102,12 @@ const Login = () => {
     <div>
       <Header />
   
-      <div className="relative h-screen w-full">
-        <img
-          src={IMG_BACKGROUND}
-          alt="Background"
-          className="fixed w-full h-full object-cover inset-0 -z-10"
-        />
-      </div>
-  
+      <div className="hero-gradient fixed inset-0 -z-10 h-screen w-full" />
+
       <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'>
         <form
           onSubmit={(e) => e.preventDefault()}
-          className="w-[350px] sm:w-[500px] p-6 sm:p-12 bg-black bg-opacity-80 text-white rounded-md shadow-lg z-10"
+          className="w-[350px] sm:w-[500px] p-6 sm:p-12 bg-ink-elevated/90 text-text-dark rounded-[--radius-card] shadow-lg z-10"
         >
           <h2 className="text-2xl sm:text-3xl font-semibold mb-6">
             {isSignInForm ? 'Sign In' : 'Sign Up'}
@@ -125,7 +119,7 @@ const Login = () => {
               type="text"
               autoComplete="name"
               placeholder="Full Name"
-              className="w-full p-3 mb-4 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600 transition-shadow"
+              className="w-full p-3 mb-4 bg-ink text-text-dark rounded focus:outline-none focus:ring-2 focus:ring-accent transition-shadow"
             />
           )}
           <input
@@ -133,7 +127,7 @@ const Login = () => {
             type="text"
             autoComplete="email"
             placeholder="Email or phone number"
-            className="w-full p-3 mb-4 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600 transition-shadow"
+            className="w-full p-3 mb-4 bg-ink text-text-dark rounded focus:outline-none focus:ring-2 focus:ring-accent transition-shadow"
           />
           <div className="relative mb-8">
             <input
@@ -141,27 +135,27 @@ const Login = () => {
               type={showPassword ? 'text' : 'password'}
               autoComplete={isSignInForm ? 'current-password' : 'new-password'}
               placeholder="Password"
-              className="w-full p-3 pr-11 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600 transition-shadow"
+              className="w-full p-3 pr-11 bg-ink text-text-dark rounded focus:outline-none focus:ring-2 focus:ring-accent transition-shadow"
             />
             <button
               type="button"
               onClick={togglePasswordVisibility}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white cursor-pointer transition-colors"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-dark-muted hover:text-text-dark cursor-pointer transition-colors"
             >
               {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
             </button>
           </div>
 
           {errorMessage && (
-            <p className="text-red-500 text-sm font-medium py-2 -mt-4 mb-2">
+            <p className="text-rust text-sm font-medium py-2 -mt-4 mb-2">
               {errorMessage}
             </p>
           )}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-800/70 disabled:cursor-not-allowed font-semibold py-3 rounded transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent-strong disabled:bg-accent/50 disabled:cursor-not-allowed text-on-accent font-semibold py-3 rounded-[--radius-card] transition-colors"
             onClick={handleButtonClick}
           >
             {isSubmitting && <ImSpinner8 className="animate-spin" size={16} />}
@@ -174,11 +168,11 @@ const Login = () => {
               : 'Sign Up'}
           </button>
 
-          <div className="flex justify-between items-center text-sm text-gray-400 mt-4">
+          <div className="flex justify-between items-center text-sm text-text-dark-muted mt-4">
             <label className="flex items-center space-x-2 cursor-pointer">
               <input
                 type="checkbox"
-                className="accent-red-600 cursor-pointer"
+                className="accent-accent cursor-pointer"
               />
               <span>Remember me</span>
             </label>
@@ -187,10 +181,10 @@ const Login = () => {
             </button>
           </div>
 
-          <p className="text-gray-400 mt-6 text-sm">
-            {isSignInForm ? 'New to Netflix? ' : 'Already have an account? '}
+          <p className="text-text-dark-muted mt-6 text-sm">
+            {isSignInForm ? 'New here? ' : 'Already have an account? '}
             <span
-              className="text-white hover:underline cursor-pointer"
+              className="text-text-dark hover:underline cursor-pointer"
               onClick={toggleSighInForm}
             >
               {isSignInForm ? 'Sign up now.' : 'Sign in now.'}

@@ -1,4 +1,5 @@
 import React from 'react'
+import Home from './home/Home'
 import Login from './auth/Login'
 import Browse from './browse/Browse'
 import Shows from './shows/Shows'
@@ -9,6 +10,10 @@ const Body = () => {
   const appRouter = createBrowserRouter([
     {
       path: '/',
+      element: <Home />,
+    },
+    {
+      path: '/login',
       element: <Login />,
     },
     {
