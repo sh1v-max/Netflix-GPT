@@ -36,7 +36,9 @@ const Footer = () => {
         </select>
       </div>
 
-      <p className="text-xs text-gray-500">&copy; 2025 Netflix Clone by You. All rights reserved.</p>
+      <p className="text-xs text-gray-500">
+        &copy; {new Date().getFullYear()} NetflixGPT. Built for learning purposes — not affiliated with Netflix, Inc.
+      </p>
     </footer>
   )
 }

@@ -13,6 +13,7 @@ import { IMG_BACKGROUND } from '../utils/constant'
 
 const Browse = () => {
   const showGptSearch = useSelector((store) => store.gpt.showGptSearch)
+  const nowPlayingMovies = useSelector((store) => store.movies?.nowPlayingMovies)
   useNowPlayingMovies()
   usePopularMovies()
   useTopRatedMovies()
@@ -35,7 +36,7 @@ const Browse = () => {
               <GptSearch />
             ) : (
               <>
-                <MainContainer />
+                <MainContainer movies={nowPlayingMovies} mediaType="movie" />
                 <SecondaryContainer />
               </>
             )}

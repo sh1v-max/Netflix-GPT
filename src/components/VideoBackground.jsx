@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import useMovieTrailer from '../hooks/useMovieTrailer'
+import useTrailer from '../hooks/useTrailer'
 import { BsFillVolumeUpFill, BsFillVolumeMuteFill } from 'react-icons/bs'
 import { IMG_BACKGROUND } from '../utils/constant'
 
-export const VideoBackground = ({ movieId }) => {
-  const trailerVideo = useSelector((store) => store.movies?.trailerVideo)
-  useMovieTrailer(movieId)
+export const VideoBackground = ({ movieId, mediaType = 'movie' }) => {
+  const trailerVideo = useSelector((store) =>
+    mediaType === 'tv' ? store.tv?.trailerVideo : store.movies?.trailerVideo
+  )
+  useTrailer(mediaType, movieId)
 
   const [isMuted, setIsMuted] = useState(true) // State to control volume (muted or not)
 

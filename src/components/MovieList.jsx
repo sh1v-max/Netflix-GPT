@@ -41,7 +41,11 @@ const MovieList = ({ title, movies }) => {
       >
         <div className="flex gap-2 md:gap-4">
           {movies.map((movie) => (
-            <MovieCard key={movie.id} posterPath={movie.poster_path} />
+            <MovieCard
+              key={movie.id}
+              posterPath={movie.poster_path}
+              title={movie.title || movie.name}
+            />
           ))}
         </div>
       </div>

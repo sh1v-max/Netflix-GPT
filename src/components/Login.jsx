@@ -11,26 +11,25 @@ import { auth } from '../utils/firebaseConfig'
 import { useDispatch } from 'react-redux'
 import { addUser } from '../store/userSlice'
 import { IMG_BACKGROUND, USER_AVATAR } from '../utils/constant'
+import { FaEye, FaEyeSlash } from 'react-icons/fa'
+import { ImSpinner8 } from 'react-icons/im'
 
 const Login = () => {
   const dispatch = useDispatch()
   const [isSignInForm, setIsSignInForm] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const name = useRef(null)
   const email = useRef(null)
   const password = useRef(null)
 
   const toggleSighInForm = () => {
+    setErrorMessage('')
     setIsSignInForm(!isSignInForm)
   }
 
   const handleButtonClick = () => {
-    // form validations
-    // where to get email and password?
-    // we can either use state variables or we can use state reference
-    //? we can use useRef() to do that
-    // we need reference to the input fields to do so
     const message = checkValidateDate(
       email.current.value,
       password.current.value,
@@ -40,17 +39,15 @@ const Login = () => {
 
     if (message) return
 
-    // checking if it's for sign up or sign in
+    setIsSubmitting(true)
+
     if (!isSignInForm) {
-      // continuing with the logic... sign in
       createUserWithEmailAndPassword(
         auth,
         email.current.value,
         password.current.value
       )
-        // this is basically email and password we need to pass
         .then((userCredential) => {
-          //? Signed up
           const user = userCredential.user
 
           updateProfile(user, {
@@ -70,30 +67,29 @@ const Login = () => {
             })
             .catch((error) => {
               setErrorMessage(error.message)
+              setIsSubmitting(false)
             })
-
-          console.log(user) // user
         })
         .catch((error) => {
           const errorCode = error.code
           const errorMessage = error.message
           setErrorMessage(errorCode + ' ' + errorMessage)
+          setIsSubmitting(false)
         })
     } else {
-      //? Sign in logic
       signInWithEmailAndPassword(
         auth,
         email.current.value,
         password.current.value
       )
         .then(() => {
-          // Signed in
-          // log to the home page
+          // navigation handled by onAuthStateChanged in Header
         })
         .catch((error) => {
           const errorCode = error.code
           const errorMessage = error.message
           setErrorMessage(errorCode + ' ' + errorMessage)
+          setIsSubmitting(false)
         })
     }
   }
@@ -101,7 +97,7 @@ const Login = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
   }
-  
+
   return (
     <div>
       <Header />
@@ -122,56 +118,64 @@ const Login = () => {
           <h2 className="text-2xl sm:text-3xl font-semibold mb-6">
             {isSignInForm ? 'Sign In' : 'Sign Up'}
           </h2>
-  
+
           {!isSignInForm && (
             <input
               ref={name}
               type="text"
+              autoComplete="name"
               placeholder="Full Name"
-              className="w-full p-3 mb-4 bg-gray-800 text-white rounded"
+              className="w-full p-3 mb-4 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600 transition-shadow"
             />
           )}
           <input
             ref={email}
             type="text"
+            autoComplete="email"
             placeholder="Email or phone number"
-            className="w-full p-3 mb-4 bg-gray-800 text-white rounded"
+            className="w-full p-3 mb-4 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600 transition-shadow"
           />
           <div className="relative mb-8">
             <input
               ref={password}
               type={showPassword ? 'text' : 'password'}
+              autoComplete={isSignInForm ? 'current-password' : 'new-password'}
               placeholder="Password"
-              className="w-full p-3 bg-gray-800 text-white rounded"
+              className="w-full p-3 pr-11 bg-gray-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-600 transition-shadow"
             />
             <button
               type="button"
               onClick={togglePasswordVisibility}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white cursor-pointer transition-colors"
             >
-              <img
-                src={
-                  showPassword
-                    ? 'https://cdn-icons-png.flaticon.com/512/709/709612.png'
-                    : 'https://cdn-icons-png.flaticon.com/512/2767/2767146.png'
-                }
-                alt="Toggle Password"
-                className="w-5 h-5 cursor-pointer filter invert"
-              />
+              {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
             </button>
           </div>
-  
-          <p className="text-red-600 font-bold text-lg py-2">{errorMessage}</p>
+
+          {errorMessage && (
+            <p className="text-red-500 text-sm font-medium py-2 -mt-4 mb-2">
+              {errorMessage}
+            </p>
+          )}
           <button
             type="submit"
-            className="w-full bg-red-600 hover:bg-red-700 font-semibold py-3 rounded"
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-800/70 disabled:cursor-not-allowed font-semibold py-3 rounded transition-colors"
             onClick={handleButtonClick}
           >
-            {isSignInForm ? 'Sign In' : 'Sign Up'}
+            {isSubmitting && <ImSpinner8 className="animate-spin" size={16} />}
+            {isSubmitting
+              ? isSignInForm
+                ? 'Signing In...'
+                : 'Signing Up...'
+              : isSignInForm
+              ? 'Sign In'
+              : 'Sign Up'}
           </button>
-  
+
           <div className="flex justify-between items-center text-sm text-gray-400 mt-4">
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input
                 type="checkbox"
                 className="accent-red-600 cursor-pointer"
@@ -182,7 +186,7 @@ const Login = () => {
               Need help?
             </button>
           </div>
-  
+
           <p className="text-gray-400 mt-6 text-sm">
             {isSignInForm ? 'New to Netflix? ' : 'Already have an account? '}
             <span
@@ -194,7 +198,7 @@ const Login = () => {
           </p>
         </form>
       </div>
-  
+
       <Footer />
     </div>
   )
