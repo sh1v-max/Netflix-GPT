@@ -1,4 +1,4 @@
-import MovieList from './MovieList'
+import MovieList from '../shared/MovieList'
 import { useSelector } from 'react-redux'
 
 const ShowsSecondaryContainer = () => {

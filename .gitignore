@@ -25,3 +25,7 @@ dist-ssr
 *.sw?
 
 .github
+
+# Claude Code session transcripts — never commit these, they can contain
+# the full raw content of everything read/discussed in a chat
+*.jsonl

@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import useTrailer from '../hooks/useTrailer'
+import useTrailer from '../../hooks/useTrailer'
 import { BsFillVolumeUpFill, BsFillVolumeMuteFill } from 'react-icons/bs'
-import { IMG_BACKGROUND } from '../utils/constant'
+import { IMG_BACKGROUND } from '../../utils/constant'
 
 export const VideoBackground = ({ movieId, mediaType = 'movie' }) => {
   const trailerVideo = useSelector((store) =>

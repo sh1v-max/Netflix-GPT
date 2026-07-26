@@ -1,12 +1,12 @@
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import React, { useEffect, useRef, useState } from 'react'
-import { auth } from '../utils/firebaseConfig'
+import { auth } from '../../utils/firebaseConfig'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { LOGO, SUPPORTED_LANG } from '../utils/constant'
-import { addUser, removeUser } from '../store/userSlice'
-import { toggleGptSearchView } from '../store/gptSlice'
-import { changeLanguages } from '../store/configSlice'
+import { LOGO, SUPPORTED_LANG } from '../../utils/constant'
+import { addUser, removeUser } from '../../store/userSlice'
+import { toggleGptSearchView } from '../../store/gptSlice'
+import { changeLanguages } from '../../store/configSlice'
 import {
   FaHome,
   FaSearch,

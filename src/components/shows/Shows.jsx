@@ -1,14 +1,14 @@
 import React from 'react'
-import Header from './Header'
-import Footer from './Footer'
-import useOnTheAirShows from '../hooks/useOnTheAirShows'
-import usePopularShows from '../hooks/usePopularShows'
-import useTopRatedShows from '../hooks/useTopRatedShows'
-import useAiringTodayShows from '../hooks/useAiringTodayShows'
+import Header from '../layout/Header'
+import Footer from '../layout/Footer'
+import useOnTheAirShows from '../../hooks/useOnTheAirShows'
+import usePopularShows from '../../hooks/usePopularShows'
+import useTopRatedShows from '../../hooks/useTopRatedShows'
+import useAiringTodayShows from '../../hooks/useAiringTodayShows'
 import { useSelector } from 'react-redux'
-import MainContainer from './MainContainer'
+import MainContainer from '../browse/MainContainer'
 import ShowsSecondaryContainer from './ShowsSecondaryContainer'
-import { IMG_BACKGROUND } from '../utils/constant'
+import { IMG_BACKGROUND } from '../../utils/constant'
 
 const Shows = () => {
   const onTheAirShows = useSelector((store) => store.tv?.onTheAirShows)

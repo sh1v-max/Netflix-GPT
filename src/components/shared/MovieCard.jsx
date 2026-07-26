@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { FaPlay } from 'react-icons/fa'
 import { BsThreeDots } from 'react-icons/bs'
-import { IMG_CDN_URL } from '../utils/constant'
+import { IMG_CDN_URL } from '../../utils/constant'
 
 const MovieCard = ({ posterPath, title }) => {
   const [imgError, setImgError] = useState(false)

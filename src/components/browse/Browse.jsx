@@ -1,15 +1,15 @@
 import React from 'react'
-import Header from './Header'
-import Footer from './Footer'
+import Header from '../layout/Header'
+import Footer from '../layout/Footer'
 import SecondaryContainer from './SecondaryContainer'
-import useNowPlayingMovies from '../hooks/useNowPlayingMovies'
-import usePopularMovies from '../hooks/usePopularMovies'
-import useTopRatedMovies from '../hooks/useTopRatedMovies'
-import useUpcomingMovies from '../hooks/useUpcomingMovies'
-import GptSearch from './GptSearch'
+import useNowPlayingMovies from '../../hooks/useNowPlayingMovies'
+import usePopularMovies from '../../hooks/usePopularMovies'
+import useTopRatedMovies from '../../hooks/useTopRatedMovies'
+import useUpcomingMovies from '../../hooks/useUpcomingMovies'
+import GptSearch from '../gpt/GptSearch'
 import { useSelector } from 'react-redux'
 import MainContainer from './MainContainer'
-import { IMG_BACKGROUND } from '../utils/constant'
+import { IMG_BACKGROUND } from '../../utils/constant'
 
 const Browse = () => {
   const showGptSearch = useSelector((store) => store.gpt.showGptSearch)

@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import lang from '../utils/languageConstant'
-import openai from '../utils/openaiConfig'
-import { API_OPTIONS, GPT_QUERY, GPT_MODEL } from '../utils/constant'
-import { addGptMovieResult } from '../store/gptSlice'
+import lang from '../../utils/languageConstant'
+import openai from '../../utils/openaiConfig'
+import { API_OPTIONS, GPT_QUERY, GPT_MODEL } from '../../utils/constant'
+import { addGptMovieResult } from '../../store/gptSlice'
 import { ImSpinner8 } from 'react-icons/im'
 
 const GptSearchBar = () => {

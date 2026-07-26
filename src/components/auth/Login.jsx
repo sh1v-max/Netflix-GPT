@@ -1,16 +1,16 @@
 import React, { useRef, useState } from 'react'
-import Header from './Header'
-import Footer from './Footer'
-import { checkValidateDate } from '../utils/validateConfig'
+import Header from '../layout/Header'
+import Footer from '../layout/Footer'
+import { checkValidateDate } from '../../utils/validateConfig'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth'
-import { auth } from '../utils/firebaseConfig'
+import { auth } from '../../utils/firebaseConfig'
 import { useDispatch } from 'react-redux'
-import { addUser } from '../store/userSlice'
-import { IMG_BACKGROUND, USER_AVATAR } from '../utils/constant'
+import { addUser } from '../../store/userSlice'
+import { IMG_BACKGROUND, USER_AVATAR } from '../../utils/constant'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { ImSpinner8 } from 'react-icons/im'
 
