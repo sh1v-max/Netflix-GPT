@@ -95,10 +95,12 @@ const Home = () => {
             <div className="h-px bg-white/10 mb-4" />
             <p className="text-xs text-text-dark-muted mb-2">Cinegraph finds:</p>
             <div className="flex gap-2">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="flex-1 aspect-2/3 bg-ink rounded-sm border border-white/5"
+              {posters.slice(12, 15).map((movie) => (
+                <img
+                  key={movie.id}
+                  src={IMG_CDN_URL + movie.poster_path}
+                  alt=""
+                  className="flex-1 min-w-0 aspect-2/3 object-cover rounded-sm border border-white/5"
                 />
               ))}
             </div>
