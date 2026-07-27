@@ -166,18 +166,47 @@ hooks would've otherwise each repeated the same base URL string.
 build succeeds.
 
 ### 1.2 — Detail page
-- [ ] Add route `/title/:mediaType/:id` in `Body.jsx`
-- [ ] `DetailPage.jsx` (new `components/detail/` folder): hero section
-      reusing the `VideoBackground` pattern for the trailer, then title,
-      tagline, genres as chips, runtime/seasons, release date, overview
-- [ ] `CastGrid.jsx`: horizontal scroll row (reuse `MovieList`'s scroll
-      mechanics) of headshot + name + character
-- [ ] Similar/recommended titles row — reuse `MovieList`/`MovieCard`
+- [x] Route `/title/:mediaType/:id` in `Body.jsx` → `DetailPage.jsx`
+- [x] `DetailPage.jsx` (`components/detail/`): hero reusing
+      `VideoBackground` for the trailer (falls back to the backdrop image
+      when no trailer exists, e.g. Breaking Bad), title, tagline, genre
+      chips, runtime/seasons, release year, rating, overview
+- [x] `CastGrid.jsx`: horizontal scroll row of headshot + name +
+      character, with a `FaUser` fallback for cast members with no photo
+- [x] Similar/recommended titles row — reused `MovieList`/`MovieCard`
       directly, no new component needed
-- [ ] Watch-providers badge row (logos + "streaming on" label)
-- [ ] Wrap `MovieCard`'s poster in a `Link` to
-      `/title/${mediaType}/${id}` — this is the single most important
-      fix in this phase, since right now nothing is clickable
+- [x] Watch-providers badge row (provider logos, "Not currently
+      available to stream" fallback when TMDB has no US entry)
+- [x] `MovieCard`'s poster now wraps in a `Link` to
+      `/title/${mediaType}/${id}` — clicking any poster anywhere in the
+      app (Browse, Shows, GPT search results) now actually goes
+      somewhere
+
+**Follow-on changes this required**:
+- `MovieList`/`MovieCard` gained `mediaType`/`id` props so the link
+  target is correct — `ShowsSecondaryContainer` now passes
+  `mediaType="tv"` explicitly; `MovieList` also checks
+  `movie.media_type` first (for future multi-search results that carry
+  their own type per item)
+- Added `BACKDROP_CDN_URL`/`PROFILE_CDN_URL` to `constant.jsx`
+  (backdrops/headshots need different TMDB image sizes than posters)
+- `Header`'s logged-out redirect guard now also covers `/title/*`, so a
+  logged-out visitor hitting a detail-page URL directly gets bounced to
+  `/` the same way `/browse`/`/shows` already were
+
+**Bug caught during visual verification**: the hero's title/tagline text
+was nearly unreadable against the trailer video — `VideoBackground`'s
+internal iframe/gradients use `-z-20`/`z-10`, and since neither its own
+root nor the hero wrapper establishes a stacking context, those values
+escape their local scope. My overlay gradient and text had no z-index at
+all, so they lost. Fixed by giving both explicit `z-20`, matching the
+pattern `VideoTitle` already uses on the Browse hero for the same
+reason. Verified with real TMDB titles (Inception, Breaking Bad) via
+Playwright before and after the fix.
+
+**Verified**: lint clean (same pre-existing warnings only), production
+build succeeds, both movie and TV detail pages render correctly
+end-to-end with real data.
 
 ### 1.3 — Discover / browse page
 - [ ] Route `/discover`

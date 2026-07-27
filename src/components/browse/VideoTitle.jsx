@@ -1,30 +1,56 @@
 import React from 'react'
-import { FaPlay } from 'react-icons/fa'
-import { AiOutlineInfoCircle } from 'react-icons/ai'
+import { Link } from 'react-router-dom'
+import { FaArrowRight } from 'react-icons/fa'
+import useGenres from '../../hooks/useGenres'
 
-const VideoTitle = ({ title, overview }) => {
-  return ( 
-    <div className="absolute px-4 pb-4 md:px-0 md:pb-0 top-70 md:top-140 md:left-5 w-full md:w-[800px] bg-ink md:bg-transparent text-text-dark z-20">
-      <h1 className="font-display text-xl md:text-4xl lg:text-5xl font-semibold mb-3 md:mb-6 drop-shadow-lg">
-        {title}
-      </h1>
+const VideoTitle = ({ id, mediaType = 'movie', title, overview, genreIds, voteAverage }) => {
+  const genres = useGenres(mediaType)
+  const genreNames = genres && genreIds
+    ? genreIds
+        .map((genreId) => genres.find((genre) => genre.id === genreId)?.name)
+        .filter(Boolean)
+        .slice(0, 3)
+    : []
 
-      {/* Scrollable Overview with consistent height */}
-      <div className="h-10 md:h-24 mb-4 md:mb-6 overflow-y-auto scrollbar-thin scrollbar-thumb-accent scrollbar-track-ink-elevated/50">
-        <p className="text-[12px] md:text-base drop-shadow-md pr-2 text-text-dark-muted">
+  const detailHref = `/title/${mediaType}/${id}`
+
+  return (
+    <div className="absolute bottom-4 left-4 right-4 md:bottom-10 md:left-10 md:right-auto md:max-w-sm z-20">
+      <div className="bg-ink-elevated/90 backdrop-blur-md border border-white/10 rounded-[--radius-card] shadow-lg p-4 md:p-6">
+        <p className="text-accent text-[11px] md:text-xs font-semibold tracking-widest uppercase mb-2">
+          Featured Now
+        </p>
+        <h1 className="font-display text-lg md:text-2xl font-semibold mb-2 leading-tight">
+          {title}
+        </h1>
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3">
+          {voteAverage > 0 && (
+            <span className="text-accent text-xs font-medium">
+              ★ {voteAverage.toFixed(1)}
+            </span>
+          )}
+          {genreNames.map((name) => (
+            <span
+              key={name}
+              className="text-[11px] bg-white/10 text-text-dark px-2.5 py-1 rounded-full"
+            >
+              {name}
+            </span>
+          ))}
+        </div>
+
+        <p className="hidden md:block text-sm text-text-dark-muted line-clamp-3 mb-4">
           {overview}
         </p>
-      </div>
 
-      <div className="flex gap-3 md:gap-4">
-        <button className="flex items-center gap-1 md:gap-2 bg-accent text-on-accent py-1 md:py-2 px-4 md:px-6 rounded-[--radius-card] transition-all duration-300 hover:bg-accent-strong cursor-pointer">
-          <FaPlay />
-          <span className="font-medium text-sm md:text-base">Play</span>
-        </button>
-        <button className="flex items-center gap-1 md:gap-2 bg-white/10 text-text-dark py-1 md:py-2 px-4 md:px-6 rounded-[--radius-card] hover:bg-white/20 cursor-pointer transition-all duration-300">
-          <AiOutlineInfoCircle size={18} />
-          <span className="font-medium text-sm md:text-base">More Info</span>
-        </button>
+        <Link
+          to={detailHref}
+          className="inline-flex items-center gap-2 text-accent hover:text-accent-strong text-sm font-medium transition-colors"
+        >
+          View Details
+          <FaArrowRight size={12} />
+        </Link>
       </div>
     </div>
   );

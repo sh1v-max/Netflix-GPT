@@ -19,7 +19,7 @@ export const VideoBackground = ({ movieId, mediaType = 'movie' }) => {
   }
 
   return (
-    <div className="relative w-screen h-87.5 md:h-full bg-ink overflow-hidden">
+    <div className="relative w-screen h-[350px] md:h-full bg-ink overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-ink to-transparent z-10"></div>
       <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent z-10"></div>
       <iframe

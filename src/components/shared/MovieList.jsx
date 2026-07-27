@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import MovieCard from './MovieCard'
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 
-const MovieList = ({ title, movies }) => {
+const MovieList = ({ title, movies, mediaType = 'movie' }) => {
   const scrollRef = useRef(null);
   if (!movies || movies.length === 0) return null
   // console.log(movies)
@@ -43,8 +43,10 @@ const MovieList = ({ title, movies }) => {
           {movies.map((movie) => (
             <MovieCard
               key={movie.id}
+              id={movie.id}
               posterPath={movie.poster_path}
               title={movie.title || movie.name}
+              mediaType={movie.media_type || mediaType}
             />
           ))}
         </div>

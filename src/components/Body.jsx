@@ -3,6 +3,7 @@ import Home from './home/Home'
 import Login from './auth/Login'
 import Browse from './browse/Browse'
 import Shows from './shows/Shows'
+import DetailPage from './detail/DetailPage'
 import { createBrowserRouter } from 'react-router-dom'
 import { RouterProvider } from 'react-router-dom'
 
@@ -23,6 +24,10 @@ const Body = () => {
     {
       path: '/shows',
       element: <Shows />,
+    },
+    {
+      path: '/title/:mediaType/:id',
+      element: <DetailPage />,
     },
   ])
 

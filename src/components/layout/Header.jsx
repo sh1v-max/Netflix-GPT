@@ -79,7 +79,11 @@ const Header = () => {
         // Only kick the user off protected pages — don't force a redirect
         // away from '/' or '/login' themselves, or landing there while
         // logged out (the normal case) bounces straight back to '/'.
-        if (location.pathname === '/browse' || location.pathname === '/shows') {
+        if (
+          location.pathname === '/browse' ||
+          location.pathname === '/shows' ||
+          location.pathname.startsWith('/title/')
+        ) {
           navigate('/')
         }
       }

@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { FaPlay } from 'react-icons/fa'
 import { BsThreeDots } from 'react-icons/bs'
 import { IMG_CDN_URL } from '../../utils/constant'
 
-const MovieCard = ({ posterPath, title }) => {
+const MovieCard = ({ id, posterPath, title, mediaType = 'movie' }) => {
   const [imgError, setImgError] = useState(false)
 
   if (!posterPath || imgError) return null
@@ -13,7 +14,9 @@ const MovieCard = ({ posterPath, title }) => {
       className="w-24 md:w-48 relative py-2 group"
       title={title}
     >
-      <div className="rounded-sm md:rounded-lg overflow-hidden shadow-md transform transition duration-300 group-hover:scale-102 group-hover:shadow-xl group-hover:z-20 relative">
+      <Link
+        to={`/title/${mediaType}/${id}`}
+        className="block rounded-sm md:rounded-lg overflow-hidden shadow-md transform transition duration-300 group-hover:scale-102 group-hover:shadow-xl group-hover:z-20 relative">
         <img
           src={IMG_CDN_URL + posterPath}
           alt={title ? `${title} poster` : 'Movie poster'}
@@ -48,7 +51,7 @@ const MovieCard = ({ posterPath, title }) => {
             <p className="text-text-dark text-xs font-medium truncate">{title}</p>
           </div>
         )}
-      </div>
+      </Link>
     </div>
   )
 }
