@@ -59,7 +59,7 @@ const Home = () => {
             ))}
           </div>
         )}
-        <div className="absolute inset-0 bg-linear-to-b from-ink/20 via-ink/60 to-ink" />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/20 via-ink/60 to-ink" />
 
         <div className="relative text-center px-6 max-w-2xl mx-auto w-full">
           <h1 className="font-display text-3xl md:text-5xl font-semibold mb-4 leading-tight">
@@ -98,7 +98,7 @@ const Home = () => {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="flex-1 aspect-2/3 bg-ink rounded-sm border border-white/5"
+                  className="flex-1 aspect-[2/3] bg-ink rounded-sm border border-white/5"
                 />
               ))}
             </div>

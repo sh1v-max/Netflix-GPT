@@ -98,7 +98,7 @@ const Home = () => {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="flex-1 aspect-2/3 bg-ink rounded-sm border border-white/5"
+                  className="flex-1 aspect-2/3] bg-ink rounded-sm border border-white/5"
                 />
               ))}
             </div>
