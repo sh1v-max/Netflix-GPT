@@ -139,16 +139,31 @@ Makes the app *do something* when you click a title, and gives Phase 2
 something to attach ratings to.
 
 ### 1.1 — Data layer (hooks, build these first)
-- [ ] `useMediaDetails(mediaType, id)` → `/movie/{id}` or `/tv/{id}`
-- [ ] `useCredits(mediaType, id)` → `/movie|tv/{id}/credits`
-- [ ] `useSimilarTitles(mediaType, id)` → `/movie|tv/{id}/similar`
-- [ ] `useWatchProviders(mediaType, id)` → `/movie|tv/{id}/watch/providers`
-- [ ] `useGenres(mediaType)` → `/genre/{mediaType}/list` (cache in Redux,
-      rarely changes)
-- [ ] `useDiscover(mediaType, filters)` → `/discover/{mediaType}` with
+- [x] `useMediaDetails(mediaType, id)` → `/movie/{id}` or `/tv/{id}`
+- [x] `useCredits(mediaType, id)` → `/movie|tv/{id}/credits`
+- [x] `useSimilarTitles(mediaType, id)` → `/movie|tv/{id}/similar`
+- [x] `useWatchProviders(mediaType, id)` → `/movie|tv/{id}/watch/providers`
+- [x] `useGenres(mediaType)` → `/genre/{mediaType}/list`
+- [x] `useDiscover(mediaType, filters)` → `/discover/{mediaType}` with
       `with_genres`, `primary_release_year`/`first_air_date_year`,
       `vote_average.gte`, `sort_by`, `page`
-- [ ] `useMultiSearch(query)` → `/search/multi`
+- [x] `useMultiSearch(query)` → `/search/multi`
+
+**Architecture note**: `useMediaDetails`/`useCredits`/`useSimilarTitles`/
+`useWatchProviders`/`useGenres` cache their results in a new
+`detailsSlice.jsx` (keyed by `${mediaType}_${id}`), following the
+existing "check store before fetching" pattern — but with a real
+`[mediaType, id]` effect dependency array, since these fetch per-title
+data that changes as you navigate between detail pages (unlike the
+existing list hooks' `[]`, which only ever fetch once). `useDiscover`
+and `useMultiSearch` deliberately do **not** use Redux — their results
+are page/filter-dependent and don't need cross-component caching, so
+they're self-contained hooks with local `results`/`isLoading`/`error`
+state instead. Added `TMDB_BASE_URL` to `constant.jsx` since these seven
+hooks would've otherwise each repeated the same base URL string.
+
+**Verified**: lint clean (same pre-existing warnings only), production
+build succeeds.
 
 ### 1.2 — Detail page
 - [ ] Add route `/title/:mediaType/:id` in `Body.jsx`
