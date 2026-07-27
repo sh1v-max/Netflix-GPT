@@ -44,9 +44,9 @@ const Home = () => {
       <Header />
 
       {/* Hero */}
-      <section className="relative pt-32 md:pt-40 pb-16 md:pb-24 overflow-hidden">
+      <section className="relative min-h-120 md:min-h-150 flex items-center pt-20 pb-16 overflow-hidden">
         {posters.length > 0 && (
-          <div className="absolute inset-0 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-9 gap-2 md:gap-3 px-4 opacity-25 -z-10">
+          <div className="absolute inset-0 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-9 gap-2 md:gap-3 px-4 opacity-60">
             {posters.map((movie, i) => (
               <img
                 key={movie.id}
@@ -59,9 +59,9 @@ const Home = () => {
             ))}
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/30 via-ink/80 to-ink -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/20 via-ink/60 to-ink" />
 
-        <div className="relative text-center px-6 max-w-2xl mx-auto">
+        <div className="relative text-center px-6 max-w-2xl mx-auto w-full">
           <h1 className="font-display text-3xl md:text-5xl font-semibold mb-4 leading-tight">
             Movies & shows, recommended by
             <span className="text-accent"> what you actually like.</span>
