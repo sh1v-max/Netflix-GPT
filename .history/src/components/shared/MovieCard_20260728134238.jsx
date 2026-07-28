@@ -47,7 +47,7 @@ const MovieCard = ({ id, posterPath, title, mediaType = 'movie', fill = false })
         </div>
 
         {title && (
-          <div className="hidden md:block absolute bottom-0 left-0 right-0 bg-linear-to-t from-ink/90 to-transparent px-2 pt-6 pb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="hidden md:block absolute bottom-0 left-0 right-0 bg-gradient-to-t from-ink/90 to-transparent px-2 pt-6 pb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <p className="text-text-dark text-xs font-medium truncate">{title}</p>
           </div>
         )}

@@ -137,7 +137,7 @@ const Header = () => {
         isScrolled
           ? 'backdrop-blur-md bg-ink/60 py-1 md:py-1'
           : isGptActive
-          ? 'bg-linear-to-b from-ink to-transparent py-3 md:py-4'
+          ? 'bg-gradient-to-b from-ink to-transparent py-3 md:py-4'
           : 'bg-ink py-3 md:py-4'
       }`}
     >
@@ -238,7 +238,7 @@ const Header = () => {
                   transformStyle: 'preserve-3d',
                   transition: 'transform 0.5s ease',
                 }}
-                className="w-6.5 h-6.5 md:w-8 md:h-8 rounded-md object-cover border border-transparent cursor-pointer"
+                className="w-[26px] h-[26px] md:w-8 md:h-8 rounded-md object-cover border border-transparent cursor-pointer"
               />
             </div>
 

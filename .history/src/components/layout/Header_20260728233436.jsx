@@ -238,7 +238,7 @@ const Header = () => {
                   transformStyle: 'preserve-3d',
                   transition: 'transform 0.5s ease',
                 }}
-                className="w-6.5 h-6.5 md:w-8 md:h-8 rounded-md object-cover border border-transparent cursor-pointer"
+                className="w-6.5 h-[26px] md:w-8 md:h-8 rounded-md object-cover border border-transparent cursor-pointer"
               />
             </div>
 
