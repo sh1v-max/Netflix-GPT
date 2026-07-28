@@ -15,8 +15,7 @@ const Footer = () => {
           Source on GitHub
         </a>
         <p className="text-xs text-text-dark-muted">
-          &copy; {new Date().getFullYear()} Cinegraph. Built for learning
-          purposes — not affiliated with Netflix, Inc.
+          &copy; {new Date().getFullYear()} Cinegraph. Built for learning purposes.
         </p>
       </div>
     </footer>

@@ -209,16 +209,47 @@ build succeeds, both movie and TV detail pages render correctly
 end-to-end with real data.
 
 ### 1.3 — Discover / browse page
-- [ ] Route `/discover`
-- [ ] `FilterBar.jsx` (new `components/discover/` folder): media-type
-      toggle (movie/tv), genre chip multi-select, year-range control,
-      min-rating slider, sort-by dropdown
-- [ ] `Discover.jsx`: responsive grid (not horizontal scroll — 2 cols
-      mobile up to 5-6 cols desktop) of `MovieCard`s
-- [ ] Pagination or infinite scroll using TMDB's `page` param
-- [ ] Homepage keeps 1-2 curated rows (per Phase 0 step 8); Discover is
-      where the old "Now Playing/Popular/Top Rated/Upcoming" rows'
-      functionality effectively lives on, but filterable instead of fixed
+- [x] Route `/discover` → `Discover.jsx`
+- [x] `FilterBar.jsx` (`components/discover/`): media-type toggle
+      (Movies/TV Shows), genre chip multi-select (OR logic — `with_genres`
+      pipe-separated, so "Action or Comedy" not "must be both"), real
+      year-*range* control (`.gte`/`.lte` date params, not TMDB's
+      single-year param), min-rating slider, sort-by dropdown
+      (mediaType-aware: movie sorts by `primary_release_date`, TV by
+      `first_air_date`)
+- [x] `Discover.jsx`: responsive grid (2 cols mobile → 6 cols desktop) —
+      `MovieCard` gained a `fill` prop so it can size to a grid cell
+      instead of its fixed carousel width
+- [x] Infinite scroll (chosen over numbered pagination) via
+      `IntersectionObserver` on a sentinel div, `rootMargin: '150px'`
+- [x] Nav link + protected-route guard added in `Header.jsx`, matching
+      `/browse`/`/shows`/`/title/*`
+
+**Deferred by request**: trimming Browse's homepage down to 1-2 curated
+rows (mentioned in Phase 0 step 8) — explicitly held off; Discover ships
+as an additional way to browse, Browse itself untouched for now.
+
+**`useDiscover` reworked from its 1.1 shape** — the version built in 1.1
+fetched one page per call, which doesn't fit infinite scroll (need to
+accumulate across pages, track `hasMore`, expose `loadMore`/`retry`).
+Now: `page` resets to 1 on any filter/mediaType change, the fetch effect
+replaces results on page 1 and appends otherwise, and a `retryToken`
+lets the UI force a refetch after an error without depending on `page`
+already being at a "changed" value.
+
+**Verified interactively with Playwright** (not just a static
+screenshot): genre-chip filtering actually reduces the result count,
+switching to TV Shows produces `/title/tv/...` links with TV-specific
+genres (confirming `useGenres` is correctly mediaType-aware), and real
+mouse-wheel scrolling loads additional pages (confirmed 80 real results
+loaded across 4 pages purely from scrolling). Caught one tuning issue
+in the process: the initial `rootMargin: '400px'` was generous enough
+that on a tall viewport with only 20 results, the sentinel was already
+within range on mount, eagerly loading a second page before any scroll
+happened — tightened to `150px`.
+
+**Verified**: lint clean (same pre-existing warnings only), production
+build succeeds.
 
 ### 1.4 — Unified search
 - [ ] Add a quick-search input (exact title lookup via `/search/multi`)

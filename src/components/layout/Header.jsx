@@ -82,6 +82,7 @@ const Header = () => {
         if (
           location.pathname === '/browse' ||
           location.pathname === '/shows' ||
+          location.pathname === '/discover' ||
           location.pathname.startsWith('/title/')
         ) {
           navigate('/')
@@ -165,6 +166,16 @@ const Header = () => {
               }`}
             >
               TV Shows
+            </Link>
+            <Link
+              to="/discover"
+              className={`transition-colors ${
+                location.pathname === '/discover'
+                  ? 'text-text-dark font-semibold'
+                  : 'text-text-dark-muted hover:text-text-dark'
+              }`}
+            >
+              Discover
             </Link>
           </nav>
         )}

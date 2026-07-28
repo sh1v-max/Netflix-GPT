@@ -4,14 +4,14 @@ import { FaPlay } from 'react-icons/fa'
 import { BsThreeDots } from 'react-icons/bs'
 import { IMG_CDN_URL } from '../../utils/constant'
 
-const MovieCard = ({ id, posterPath, title, mediaType = 'movie' }) => {
+const MovieCard = ({ id, posterPath, title, mediaType = 'movie', fill = false }) => {
   const [imgError, setImgError] = useState(false)
 
   if (!posterPath || imgError) return null
 
   return (
     <div
-      className="w-24 md:w-48 relative py-2 group"
+      className={`${fill ? 'w-full' : 'w-24 md:w-48'} relative py-2 group`}
       title={title}
     >
       <Link
