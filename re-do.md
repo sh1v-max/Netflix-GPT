@@ -252,10 +252,34 @@ happened — tightened to `150px`.
 build succeeds.
 
 ### 1.4 — Unified search
-- [ ] Add a quick-search input (exact title lookup via `/search/multi`)
-      as a fast-path, distinct from the natural-language GPT search box —
-      wire it into the header or a dedicated `/search` route
-- [ ] Search results link straight into detail pages
+- [x] `HeaderSearch.jsx` (`components/layout/`): icon that expands into
+      an input, usable from anywhere in the app (not just Discover) —
+      chosen over "built into Discover" or a dedicated `/search` route
+      since you shouldn't have to navigate somewhere first just to look
+      up a title
+- [x] Dropdown of up to 8 results (thumbnail, title, type, year), each
+      linking straight to `/title/${media_type}/${id}`
+- [x] Closes on outside click, on Escape, or on selecting a result;
+      gated behind `user` like the rest of the nav (Home/TV
+      Shows/Discover), consistent with everything else being logged-in-only
+
+**`useMultiSearch` gained debouncing internally** (350ms default, via
+`setTimeout`/`clearTimeout` in the effect cleanup) rather than in the
+component calling it — so any future consumer of this hook gets safe
+search-as-you-type behavior automatically instead of needing to
+remember to debounce it themselves.
+
+**Verified interactively with Playwright**: typed "spider", got a mixed
+movie/TV dropdown (Spider-Man: Brand New Day, Spider-Man 2002,
+Spider-Noir, etc. — real thumbnails, correct type/year), clicked a
+result, landed on its detail page with full data. Testing this required
+temporarily rendering `HeaderSearch` unconditionally (it's normally
+gated behind `user`, and there's no real Firebase session in a headless
+browser) — reverted after, confirmed via `grep` that exactly one
+(gated) instance remains in the file.
+
+**Verified**: lint clean (same pre-existing warnings only), production
+build succeeds.
 
 ---
 

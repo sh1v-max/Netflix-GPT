@@ -3,7 +3,9 @@ import { API_OPTIONS, TMDB_BASE_URL } from '../utils/constant'
 
 // Searches movies, TV shows, and people in one call — we only keep
 // movie/tv results since MovieCard/MovieList expect that shape.
-const useMultiSearch = (query) => {
+// Debounced internally so any consumer gets safe search-as-you-type
+// behavior without needing to remember to debounce it themselves.
+const useMultiSearch = (query, delay = 350) => {
   const [results, setResults] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -11,13 +13,14 @@ const useMultiSearch = (query) => {
   useEffect(() => {
     if (!query || !query.trim()) {
       setResults(null)
+      setIsLoading(false)
       return
     }
 
     let cancelled = false
+    setIsLoading(true)
 
-    const getSearchResults = async () => {
-      setIsLoading(true)
+    const timeout = setTimeout(async () => {
       setError('')
       try {
         const data = await fetch(
@@ -38,13 +41,13 @@ const useMultiSearch = (query) => {
       } finally {
         if (!cancelled) setIsLoading(false)
       }
-    }
+    }, delay)
 
-    getSearchResults()
     return () => {
       cancelled = true
+      clearTimeout(timeout)
     }
-  }, [query])
+  }, [query, delay])
 
   return { results, isLoading, error }
 }

@@ -5,6 +5,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { SUPPORTED_LANG } from '../../utils/constant'
 import Logo from './Logo'
+import HeaderSearch from './HeaderSearch'
 import { addUser, removeUser } from '../../store/userSlice'
 import { toggleGptSearchView } from '../../store/gptSlice'
 import { changeLanguages } from '../../store/configSlice'
@@ -198,6 +199,7 @@ const Header = () => {
         )}
         {user && (
           <>
+          <HeaderSearch />
           {isGptActive && (
             <select
               className="appearance-none backdrop-blur-md bg-white/10 text-text-dark border border-white/20 text-xs md:text-sm py-1 md:py-1.5 px-3 md:pr-2 md:pl-5 rounded-[--radius-card] cursor-pointer focus:outline-none transition-all duration-300 hover:bg-white/20 shadow-md"
