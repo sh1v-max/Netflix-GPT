@@ -21,7 +21,7 @@ export const VideoBackground = ({ movieId, mediaType = 'movie' }) => {
   return (
     <div className="relative w-screen h-87.5 md:h-full bg-ink overflow-hidden">
       <div className="absolute inset-0 bg-linear-to-r from-ink to-transparent z-10"></div>
-      <div className="absolute inset-0 bg-linear-to-t from-ink via-transparent to-transparent z-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent z-10"></div>
       <iframe
         className="w-full h-full md:h-screen aspect-video scale-[1.2] md:scale-[1.8] xl:scale-[1.2] pointer-events-none -z-20"
         src={`https://www.youtube.com/embed/${
