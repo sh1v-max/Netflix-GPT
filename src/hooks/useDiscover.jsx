@@ -1,17 +1,28 @@
 import { useEffect, useState } from 'react'
 import { API_OPTIONS, TMDB_BASE_URL } from '../utils/constant'
 
-// filters: { withGenres: [id, ...], minYear, maxYear, minRating, sortBy }
+// filters: { withGenres: [id, ...], baseGenres: [id, ...], minYear, maxYear,
+//            minRating, sortBy, originLanguage }
+//
+// `baseGenres` is for constraints a page always applies (e.g. the Anime page
+// forcing Animation) that the user can't remove — when present, the whole
+// genre list is comma-joined (AND — must match all), since a title needs to
+// satisfy the mandatory genre *and* any further picks. Without `baseGenres`,
+// `withGenres` alone stays pipe-joined (OR — match any), which is what plain
+// Discover wants ("show me Action or Comedy").
 const buildDiscoverParams = (filters = {}, page = 1) => {
   const params = new URLSearchParams({
     language: 'en-US',
     page,
     sort_by: filters.sortBy || 'popularity.desc',
   })
-  if (filters.withGenres?.length) {
-    // Pipe-separated = "any of these genres" (OR), not "all of these" (AND)
-    params.set('with_genres', filters.withGenres.join('|'))
+
+  const genreIds = [...(filters.baseGenres || []), ...(filters.withGenres || [])]
+  if (genreIds.length) {
+    const separator = filters.baseGenres?.length ? ',' : '|'
+    params.set('with_genres', genreIds.join(separator))
   }
+
   const dateField = filters.mediaType === 'tv' ? 'first_air_date' : 'primary_release_date'
   if (filters.minYear) {
     params.set(`${dateField}.gte`, `${filters.minYear}-01-01`)
@@ -21,6 +32,9 @@ const buildDiscoverParams = (filters = {}, page = 1) => {
   }
   if (filters.minRating) {
     params.set('vote_average.gte', filters.minRating)
+  }
+  if (filters.originLanguage) {
+    params.set('with_original_language', filters.originLanguage)
   }
   return params.toString()
 }

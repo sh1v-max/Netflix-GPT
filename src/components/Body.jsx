@@ -5,6 +5,7 @@ import Browse from './browse/Browse'
 import Shows from './shows/Shows'
 import DetailPage from './detail/DetailPage'
 import Discover from './discover/Discover'
+import Anime from './anime/Anime'
 import { createBrowserRouter } from 'react-router-dom'
 import { RouterProvider } from 'react-router-dom'
 
@@ -33,6 +34,10 @@ const Body = () => {
     {
       path: '/discover',
       element: <Discover />,
+    },
+    {
+      path: '/anime',
+      element: <Anime />,
     },
   ])
 

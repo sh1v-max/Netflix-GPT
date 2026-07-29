@@ -14,17 +14,25 @@ const MEDIA_TYPES = [
   { value: 'tv', label: 'TV Shows' },
 ]
 
-const DEFAULT_FILTERS = {
-  withGenres: [],
-  minYear: null,
-  maxYear: null,
-  minRating: null,
-  sortBy: 'popularity.desc',
-}
+const Discover = ({
+  title = 'Discover',
+  subtitle = 'Browse the full catalog — filter by genre, year, and rating, or search for something specific.',
+  baseGenres = [],
+  originLanguage = null,
+  excludeGenreIds = [],
+}) => {
+  const defaultFilters = {
+    withGenres: [],
+    baseGenres,
+    originLanguage,
+    minYear: null,
+    maxYear: null,
+    minRating: null,
+    sortBy: 'popularity.desc',
+  }
 
-const Discover = () => {
   const [mediaType, setMediaType] = useState('movie')
-  const [filters, setFilters] = useState(DEFAULT_FILTERS)
+  const [filters, setFilters] = useState(defaultFilters)
   const [searchQuery, setSearchQuery] = useState('')
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const sentinelRef = useRef(null)
@@ -51,8 +59,9 @@ const Discover = () => {
   const handleMediaTypeChange = (type) => {
     setMediaType(type)
     // Genre ids differ between movie/tv, so a movie genre selection
-    // wouldn't mean anything once switched to TV — reset clean.
-    setFilters(DEFAULT_FILTERS)
+    // wouldn't mean anything once switched to TV — reset clean (but keep
+    // this page's own fixed constraints, e.g. Anime's baseGenres).
+    setFilters(defaultFilters)
   }
 
   const handleFiltersChange = (partial) => {
@@ -112,10 +121,9 @@ const Discover = () => {
         <div className="absolute inset-0 bg-linear-to-b from-ink/20 via-ink/80 to-ink" />
 
         <div className="relative px-4 md:px-8">
-          <h1 className="font-display text-2xl md:text-4xl font-semibold mb-2">Discover</h1>
+          <h1 className="font-display text-2xl md:text-4xl font-semibold mb-2">{title}</h1>
           <p className="text-text-dark-muted text-sm md:text-base mb-6 max-w-lg">
-            Browse the full catalog — filter by genre, year, and rating, or
-            search for something specific.
+            {subtitle}
           </p>
 
           <div className="relative max-w-xl">
@@ -223,6 +231,7 @@ const Discover = () => {
                     mediaType={mediaType}
                     filters={filters}
                     onFiltersChange={handleFiltersChange}
+                    excludeGenreIds={excludeGenreIds}
                   />
                 </div>
               )}
@@ -279,6 +288,7 @@ const Discover = () => {
                   mediaType={mediaType}
                   filters={filters}
                   onFiltersChange={handleFiltersChange}
+                  excludeGenreIds={excludeGenreIds}
                 />
               </div>
             </aside>

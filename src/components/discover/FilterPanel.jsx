@@ -6,8 +6,9 @@ const RATING_MAX = 9
 // Pure filter controls — no positioning/chrome of its own, so it can be
 // dropped into a permanent sidebar (desktop) or a dropdown (mobile)
 // without duplicating the genre/year/rating/sort logic in two places.
-const FilterPanel = ({ mediaType, filters, onFiltersChange }) => {
-  const genres = useGenres(mediaType)
+const FilterPanel = ({ mediaType, filters, onFiltersChange, excludeGenreIds = [] }) => {
+  const allGenres = useGenres(mediaType)
+  const genres = allGenres?.filter((genre) => !excludeGenreIds.includes(genre.id))
   const dateField = mediaType === 'tv' ? 'first_air_date' : 'primary_release_date'
   const sortOptions = [
     { value: 'popularity.desc', label: 'Popularity' },
