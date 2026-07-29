@@ -74,3 +74,43 @@ body {
     radial-gradient(ellipse 80% 60% at 80% -10%, color-mix(in srgb, var(--color-accent) 20%, transparent), transparent 70%),
     var(--color-ink);
 }
+
+/* Custom range slider — the fill color is set per-instance via an inline
+   background gradient (see FilterBar), this just handles track/thumb shape. */
+.styled-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  outline: none;
+}
+.styled-range::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 4px;
+  border-radius: 9999px;
+}
+.styled-range::-moz-range-track {
+  background: transparent;
+  height: 4px;
+  border-radius: 9999px;
+}
+.styled-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 9999px;
+  background: var(--color-accent);
+  cursor: pointer;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
+.styled-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 9999px;
+  background: var(--color-accent);
+  cursor: pointer;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
