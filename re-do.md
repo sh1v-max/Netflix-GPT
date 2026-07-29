@@ -252,31 +252,41 @@ happened — tightened to `150px`.
 build succeeds.
 
 ### 1.4 — Unified search
-- [x] `HeaderSearch.jsx` (`components/layout/`): icon that expands into
-      an input, usable from anywhere in the app (not just Discover) —
-      chosen over "built into Discover" or a dedicated `/search` route
-      since you shouldn't have to navigate somewhere first just to look
-      up a title
-- [x] Dropdown of up to 8 results (thumbnail, title, type, year), each
-      linking straight to `/title/${media_type}/${id}`
-- [x] Closes on outside click, on Escape, or on selecting a result;
-      gated behind `user` like the rest of the nav (Home/TV
-      Shows/Discover), consistent with everything else being logged-in-only
+- [x] ~~`HeaderSearch.jsx` in the header~~ — built first, then removed
+      per feedback (didn't want a search affordance living in the navbar).
+      Superseded by a search box built directly into `Discover.jsx`
+      instead, right above the filter bar
+- [x] Typing a query switches Discover into "search mode": the
+      genre/year/rating/sort filter bar and the discover grid hide, and
+      a grid of `useMultiSearch` results (movies + TV mixed, each
+      showing correct media type via `item.media_type`) takes over.
+      Clearing the query switches back to filtered browsing
+- [x] Each search result links straight into its detail page via the
+      same `MovieCard` component, `fill` mode, same as Discover's own grid
 
 **`useMultiSearch` gained debouncing internally** (350ms default, via
 `setTimeout`/`clearTimeout` in the effect cleanup) rather than in the
 component calling it — so any future consumer of this hook gets safe
 search-as-you-type behavior automatically instead of needing to
-remember to debounce it themselves.
+remember to debounce it themselves. This paid off immediately when the
+search UI moved from `HeaderSearch` to `Discover` — no debounce logic
+had to move with it.
 
-**Verified interactively with Playwright**: typed "spider", got a mixed
-movie/TV dropdown (Spider-Man: Brand New Day, Spider-Man 2002,
-Spider-Noir, etc. — real thumbnails, correct type/year), clicked a
-result, landed on its detail page with full data. Testing this required
-temporarily rendering `HeaderSearch` unconditionally (it's normally
-gated behind `user`, and there's no real Firebase session in a headless
-browser) — reverted after, confirmed via `grep` that exactly one
-(gated) instance remains in the file.
+**One correctness detail**: the infinite-scroll `IntersectionObserver`
+effect in `Discover.jsx` now includes `isSearching` in its dependency
+array, even though the observer logic itself doesn't use that value —
+it's needed so the effect re-attaches to the sentinel `<div>` when it
+remounts after switching back from search mode to browse mode (the
+sentinel unmounts entirely while searching, since that section of JSX
+isn't rendered).
+
+**Verified interactively with Playwright**: searched "batman" on
+Discover, got a real mixed movie/TV grid (Batman Returns, The Batman,
+Batman Beyond, etc.), confirmed the filter bar and its own grid were
+hidden while searching, cleared the search and confirmed the filter bar
+reappeared. Testing required temporarily loosening `/discover`'s and
+`/title/`'s auth guards (no real Firebase session in a headless
+browser) — reverted after.
 
 **Verified**: lint clean (same pre-existing warnings only), production
 build succeeds.
