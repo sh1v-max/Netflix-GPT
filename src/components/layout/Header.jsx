@@ -184,16 +184,6 @@ const Header = () => {
               TV Shows
             </Link>
             <Link
-              to="/discover"
-              className={`transition-colors ${
-                location.pathname === '/discover'
-                  ? 'text-text-dark font-semibold'
-                  : 'text-text-dark-muted hover:text-text-dark'
-              }`}
-            >
-              Discover
-            </Link>
-            <Link
               to="/anime"
               className={`transition-colors ${
                 location.pathname === '/anime'
@@ -202,6 +192,16 @@ const Header = () => {
               }`}
             >
               Anime
+            </Link>
+            <Link
+              to="/discover"
+              className={`transition-colors ${
+                location.pathname === '/discover'
+                  ? 'text-text-dark font-semibold'
+                  : 'text-text-dark-muted hover:text-text-dark'
+              }`}
+            >
+              Discover
             </Link>
           </nav>
         )}
