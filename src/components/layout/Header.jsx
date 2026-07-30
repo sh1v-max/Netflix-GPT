@@ -6,10 +6,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { SUPPORTED_LANG } from '../../utils/constant'
 import Logo from './Logo'
 import { addUser, removeUser } from '../../store/userSlice'
-import { toggleGptSearchView } from '../../store/gptSlice'
+import { toggleGptSearchView, setShowGptSearch } from '../../store/gptSlice'
 import { changeLanguages } from '../../store/configSlice'
 import {
-  FaHome,
+  FaFilm,
   FaSearch,
   FaUser,
   FaUserCog,
@@ -143,20 +143,35 @@ const Header = () => {
       }`}
     >
       <div className="flex items-center gap-4 md:gap-8">
-        <Link to={user ? '/browse' : '/'}>
+        <Link
+          to={user ? '/browse' : '/'}
+          onClick={() => user && dispatch(setShowGptSearch(true))}
+        >
           <Logo className="text-text-dark" />
         </Link>
         {user && !isGptActive && (
           <nav className="hidden sm:flex items-center gap-4 text-sm">
             <Link
               to="/browse"
+              onClick={() => dispatch(setShowGptSearch(true))}
               className={`transition-colors ${
-                location.pathname === '/browse'
+                location.pathname === '/browse' && showGptSearch
                   ? 'text-text-dark font-semibold'
                   : 'text-text-dark-muted hover:text-text-dark'
               }`}
             >
               Home
+            </Link>
+            <Link
+              to="/browse"
+              onClick={() => dispatch(setShowGptSearch(false))}
+              className={`transition-colors ${
+                location.pathname === '/browse' && !showGptSearch
+                  ? 'text-text-dark font-semibold'
+                  : 'text-text-dark-muted hover:text-text-dark'
+              }`}
+            >
+              Movies
             </Link>
             <Link
               to="/shows"
@@ -229,9 +244,9 @@ const Header = () => {
           <button
             className="relative group text-text-dark-muted hover:text-text-dark p-2 md:p-3 cursor-pointer transition-all duration-300"
             onClick={handleGptSearchClick}
-            aria-label={isGptActive ? 'Back to home' : 'Search with GPT'}
+            aria-label={isGptActive ? 'Browse movies' : 'Search with AI'}
           >
-            {isGptActive ? <FaHome size={22} /> : <FaSearch size={20} />}
+            {isGptActive ? <FaFilm size={20} /> : <FaSearch size={20} />}
             <span className="absolute left-1 right-1 bottom-0 h-1 bg-accent scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
           </button>
 
