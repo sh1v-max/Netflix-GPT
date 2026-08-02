@@ -1,165 +1,187 @@
 <div align="center">
 
-  <!-- It's highly recommended to create a custom logo for your project -->
-  <!-- <img src="https://raw.githubusercontent.com/sh1v-max/Netflix-GPT/main/public/logo.png" alt="Netflix GPT Logo" width="200"/> -->
-
-  <h1>Netflix-GPT</h1>
-  <p>A Netflix-inspired, full-stack streaming application built with React, Vite, and Redux Toolkit. Features secure Firebase authentication, dynamic movie carousels via the TMDB API, and a foundation for an intelligent, GPT-powered movie search.</p>
-
-  <!-- Badges -->
-  <p>
-    <img src="https://img.shields.io/badge/React-18.2.0-blue?logo=react" alt="React">
-    <img src="https://img.shields.io/badge/Vite-5.0.0-purple?logo=vite" alt="Vite">
-    <img src="https://img.shields.io/badge/Redux_Toolkit-2.0.0-764ABC?logo=redux" alt="Redux Toolkit">
-    <img src="https://img.shields.io/badge/Tailwind_CSS-3.4.0-38B2AC?logo=tailwind-css" alt="Tailwind CSS">
-    <img src="https://img.shields.io/badge/Firebase-10.7.0-FFCA28?logo=firebase" alt="Firebase">
-    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
-  </p>
+  <h1>Cinegraph</h1>
+  <p>An AI movie & show recommendation engine built on your own taste graph — not another feed of what's popular this week.</p>
 
   <p>
-    <img src="https://img.shields.io/badge/React-18.2.0-blue?logo=react" alt="React">
-    <img src="https://img.shields.io/badge/Vite-5.0.0-purple?logo=vite" alt="Vite">
-    <img src="https://img.shields.io/badge/Redux_Toolkit-2.0.0-764ABC?logo=redux" alt="Redux Toolkit">
-    <img src="https://img.shields.io/badge/Tailwind_CSS-3.4.0-38B2AC?logo=tailwind-css" alt="Tailwind CSS">
-    <img src="https://img.shields.io/badge/Firebase-10.7.0-FFCA28?logo=firebase" alt="Firebase">
+    <img src="https://img.shields.io/badge/React-19-149ECA?logo=react" alt="React 19">
+    <img src="https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white" alt="Vite 6">
+    <img src="https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?logo=tailwind-css&logoColor=white" alt="Tailwind CSS 4">
+    <img src="https://img.shields.io/badge/Redux_Toolkit-2-764ABC?logo=redux" alt="Redux Toolkit">
+    <img src="https://img.shields.io/badge/Firebase-12-FFCA28?logo=firebase" alt="Firebase 12">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
   </p>
 
 </div>
 
-> This project is a demonstration of modern frontend architecture, showcasing best practices in state management, component design, and build tooling.
+## Live demo
 
-## ✨ Key Features
+**[https://netflixgpt-e671d.web.app](https://netflixgpt-e671d.web.app)**
 
-- **Dynamic & Immersive UI:** A pixel-perfect clone of the Netflix browse page, featuring categorized movie carousels (`Now Playing`, `Popular`, etc.) and a hero section with an auto-playing, muted video background.
-- **Secure User Authentication:** Robust sign-up/sign-in flow powered by Firebase Authentication. User session persistence is managed centrally, providing a seamless experience across browser sessions.
-- **Centralized State Management:** Utilizes Redux Toolkit for a predictable and scalable state container, managing everything from user authentication status to cached API responses.
-- **Optimized Data Fetching:** Employs a custom hook-based strategy to fetch data from The Movie Database (TMDB). API calls are memoized to prevent redundant network requests, ensuring a fast and efficient user experience.
-- **Foundation for AI-Powered Search:** The application is architected to support a future GPT-based search feature, allowing users to find movies using natural language queries.
-- **Performance-First Development:** Built with Vite for near-instant development server startup and lightning-fast Hot Module Replacement (HMR). Production builds are highly optimized by Rollup.
+## What this is
 
-## 🚀 Live Demo
+Cinegraph is three pillars, working together:
 
-Experience the application live:
+1. **A real movie/show database** — browse, filter, search, and drill into
+   detail pages backed by [TMDB](https://www.themoviedb.org/documentation/api),
+   not a fixed carousel of the same ten titles.
+2. **A preference graph** *(in progress)* — the app learns what you
+   actually like from your ratings, and turns that into a visible taste
+   profile rather than a hidden backend number.
+3. **An AI recommendation layer** — GPT-powered natural-language search
+   that will read your preference graph before answering, so results get
+   personal and explain *why* they were picked.
 
-**[https://netflixgpt-e671d.firebaseapp.com/](https://netflixgpt-e671d.firebaseapp.com/)**
+It deliberately isn't a Netflix clone. No borrowed logo, no borrowed
+palette, no borrowed layout — the identity, design system, and
+information architecture were all built from scratch around what this
+app actually does.
 
-<!-- For a recruiter, it's powerful to add a high-quality GIF of the app in action here. -->
-<!-- ![Netflix-GPT Demo GIF](link_to_your_demo.gif) -->
+## Features
 
-## 🛠️ Technology Stack
+**Movie & TV database**
+- Browse (movies) and TV Shows pages with curated rows (Now Playing,
+  Popular, Top Rated, and more)
+- **Discover** — a real filterable/searchable catalog: genre chips,
+  year range, minimum rating, sort order, and infinite scroll, with a
+  desktop sidebar / mobile dropdown filter layout
+- **Anime** — Discover's engine reused with Animation genre + Japanese
+  original-language constraints baked in, since TMDB has no first-class
+  "anime" type
+- **Detail pages** for every title — cast, trailer (autoplaying, falls
+  back to a backdrop image when TMDB has no trailer), watch providers,
+  and a "More Like This" row
+- Search reachable from anywhere Discover is used, debounced,
+  mixed movie/TV results
 
-This project is built with a curated selection of modern, industry-standard technologies to ensure performance, scalability, and an excellent developer experience.
+**AI search**
+- Natural-language movie search ("something like Inception, but
+  shorter") powered by GPT via OpenRouter
 
-| Category             | Technology                                                                    |
-| -------------------- | ----------------------------------------------------------------------------- |
-| **Frontend Library** | [React](https://reactjs.org/)                                                 |
-| **Build Tool**       | [Vite](https://vitejs.dev/)                                                   |
-| **Styling**          | [Tailwind CSS](https://tailwindcss.com/)                                      |
-| **State Management** | [Redux Toolkit](https://redux-toolkit.js.org/)                                |
-| **Routing**          | [React Router](https://reactrouter.com/)                                      |
-| **Backend Services** | [Firebase](https://firebase.google.com/) (Authentication, Hosting)            |
-| **Data Source**      | [The Movie Database (TMDB) API](https://www.themoviedb.org/documentation/api) |
-| **Deployment**       | [Firebase Hosting](https://firebase.google.com/docs/hosting)                  |
+**Accounts & platform**
+- Firebase Authentication (email/password), with session persistence
+- Firestore database, provisioned and locked down with per-user
+  security rules (`users/{uid}/...`, enforced server-side)
+- Light/dark theme, persisted, built on a real design-token system —
+  not a hardcoded color swap
 
-## 🏁 Getting Started
+## Tech stack
 
-To get a local copy up and running, please follow these simple steps.
+| Category | Technology |
+| --- | --- |
+| **Frontend** | [React 19](https://react.dev/) |
+| **Build tool** | [Vite 6](https://vitejs.dev/) |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) — token-based `@theme` design system, no `tailwind.config.js` |
+| **State management** | [Redux Toolkit](https://redux-toolkit.js.org/) |
+| **Routing** | [React Router 7](https://reactrouter.com/) |
+| **Backend** | [Firebase](https://firebase.google.com/) — Authentication, Firestore, Hosting |
+| **Movie/TV data** | [TMDB API](https://www.themoviedb.org/documentation/api) |
+| **AI search** | GPT via [OpenRouter](https://openrouter.ai/) |
+| **Testing (visual verification)** | [Playwright](https://playwright.dev/) |
+
+## Architecture
+
+Components are organized by domain, not dumped in one flat folder:
+
+```
+src/components/
+├── home/       marketing landing page (logged-out)
+├── auth/       login / sign-up
+├── layout/     Header, Footer, Logo — shared chrome
+├── browse/     movies homepage (hero, rows)
+├── shows/      TV shows homepage
+├── discover/   filterable catalog (also powers the Anime page)
+├── anime/      thin wrapper around Discover with fixed genre/language filters
+├── detail/     per-title detail page + cast grid
+├── shared/     MovieCard / MovieList — reused everywhere posters appear
+└── gpt/        AI search box + results
+```
+
+Side effects live in custom hooks (`src/hooks/`) — one hook per TMDB
+endpoint, each checking the Redux store before fetching so navigating
+back to already-loaded data doesn't refetch. Per-title data
+(details/credits/similar/watch-providers/genres) is cached in Redux,
+keyed by `${mediaType}_${id}`; filter/search results are **not**
+cached globally, since they're inherently tied to whatever's currently
+typed/selected.
+
+The design system lives entirely in `src/index.css` as a Tailwind v4
+`@theme` block — one accent color, one radius scale, one easing curve.
+Light/dark theme works by redefining what the *same* token names point
+to under `[data-theme='light']`, rather than maintaining two parallel
+class sets.
+
+## Getting started
 
 ### Prerequisites
+- Node.js 18+
+- A [TMDB](https://www.themoviedb.org/documentation/api) API read
+  access token
+- An [OpenRouter](https://openrouter.ai/) API key (used for AI search)
+- A Firebase project, if you want auth/Firestore to work against your
+  own backend rather than this one
 
-- **Node.js:** v18.0.0 or higher.
-- **npm/yarn/pnpm:** A Node.js package manager.
-- **Firebase Account:** To set up authentication and hosting.
-- **TMDB API Key:** To fetch movie data.
+### Setup
 
-### Installation & Setup
+```bash
+git clone https://github.com/sh1v-max/Netflix-GPT.git
+cd Netflix-GPT
+npm install
+```
 
-1.  **Clone the repository:**
+Create a `.env` file in the project root:
 
-    ```
-    git clone https://github.com/sh1v-max/Netflix-GPT.git
-    cd Netflix-GPT
-    ```
+```
+VITE_TMDB_KEY="your-tmdb-read-access-token"
+VITE_OPENROUTER_KEY="your-openrouter-api-key"
+```
 
-2.  **Install dependencies:**
+Firebase's client config (`src/utils/firebaseConfig.jsx`) is currently
+inline rather than env-driven, since Firebase web config values aren't
+secret — swap them for your own project's config if forking this.
 
-    ```
-    npm install
-    ```
+```bash
+npm run dev
+```
 
-3.  **Configure Environment Variables:**
-    Create a `.env` file in the project root. Populate it with your Firebase and TMDB API credentials.
+Runs at `http://localhost:5173`.
 
-    ```
-    # Firebase Web App Configuration
-    VITE_FIREBASE_API_KEY="YOUR_API_KEY"
-    VITE_FIREBASE_AUTH_DOMAIN="YOUR_AUTH_DOMAIN"
-    VITE_FIREBASE_PROJECT_ID="YOUR_PROJECT_ID"
-    VITE_FIREBASE_STORAGE_BUCKET="YOUR_STORAGE_BUCKET"
-    VITE_FIREBASE_MESSAGING_SENDER_ID="YOUR_SENDER_ID"
-    VITE_FIREBASE_APP_ID="YOUR_APP_ID"
+### Deploying
 
-    # TMDB API Read Access Token
-    VITE_TMDB_API_KEY="YOUR_TMDB_API_KEY"
-    ```
+```bash
+npm run build
+npx firebase deploy --only hosting,firestore:rules
+```
 
-    > **Security Note:** The `VITE_` prefix is required for Vite to expose these variables to the client-side code. Ensure your `.env` file is included in `.gitignore`.
+## Roadmap
 
-4.  **Run the development server:**
-    ```
-    npm run dev
-    ```
-    Your application should now be running on `http://localhost:5173`.
+Currently mid-way through building the preference graph:
 
-## 🏗️ Architectural Decisions
+- [x] **Identity & design system** — Cinegraph branding, token-based
+      theme, light/dark mode
+- [x] **Movie/show database** — Discover, Anime, detail pages, search
+- [x] **Firestore provisioned** — database live, security rules
+      deployed and verified
+- [ ] **Ratings & watchlist** — like/dislike on every poster and detail
+      page, a `/watchlist` page
+- [ ] **Computed taste profile** — top genres, favorite eras, a
+      `/profile` page with real charts, not a settings screen
+- [ ] **Personalized AI recommendations** — GPT prompts that read your
+      taste profile, with a one-line "why this was picked" on every
+      result
+- [ ] **Move the AI call server-side** — currently client-side via
+      OpenRouter; a Cloud Function will hold the key instead
+- [ ] **Tests, CI, accessibility pass, code-splitting**
 
-This project wasn't just built; it was engineered. Here are some of the key architectural choices that were made:
+## Contributing
 
-1.  **Component-Driven UI with a Modular Structure:**
-    The application follows a strict component-based architecture. UI elements are broken down into logical, reusable components (`Header`, `MovieCard`, etc.), and the file structure separates concerns clearly into `components`, `hooks`, and `utils`. This makes the codebase easy to navigate, maintain, and scale.
+Contributions are welcome — fork the repo, create a feature branch, and
+open a PR.
 
-2.  **Centralized vs. Local State:**
-    - **Redux Toolkit** was chosen for global state management (e.g., user authentication status, cached movie lists). This provides a single source of truth and avoids prop-drilling. Its integration with Redux DevTools is invaluable for debugging complex state interactions.
-    - **Local Component State** (`useState`, `useRef`) is used for UI-specific state that doesn't need to be shared globally (e.g., form input values, toggle states), adhering to the principle of keeping state as close as possible to where it's used.
+## License
 
-3.  **Abstracting Business Logic with Custom Hooks:**
-    All side effects, particularly API calls, are encapsulated within custom React hooks (e.g., `useNowPlayingMovies`). This strategic decision provides several benefits:
-    - **Decouples UI from Logic:** Components are only responsible for rendering data, not fetching it.
-    - **Reusability:** The same hook can be used in multiple components.
-    - **Memoization:** Hooks include logic to check the Redux store before making a network request, effectively caching data and preventing redundant API calls.
-
-4.  **Utility-First Styling with Tailwind CSS:**
-    Tailwind CSS was chosen over traditional CSS-in-JS or CSS Modules to enable rapid UI development. By applying utility classes directly in the JSX, we maintain styling consistency, reduce context-switching, and benefit from Tailwind's highly effective purging of unused styles, resulting in a minimal production CSS bundle.
-
-## 🛣️ Future Roadmap
-
-This project serves as a strong foundation for several exciting future enhancements:
-
-- [ ] **Full GPT Search Integration:** Implement the backend logic (e.g., via a Firebase Cloud Function) to securely call the OpenAI API and translate natural language queries into movie recommendations.
-- [ ] **Personalized User Watchlist:** Develop a "My List" feature, allowing users to add/remove movies. This will be persisted in a **Firestore** database, tied to the user's account.
-- [ ] **Enhanced UI/UX:**
-  - Integrate **Framer Motion** for fluid page transitions and micro-interactions.
-  - Implement **loading skeletons** to improve perceived performance during data fetching.
-  - Refine responsiveness for a flawless experience on all mobile and tablet devices.
-- [ ] **Comprehensive Testing Suite:**
-  - Write unit tests for utility functions and custom hooks using **Jest** and **React Testing Library**.
-  - Develop integration tests for key user flows like authentication and movie browsing.
-
-## 🤝 Contributing
-
-Contributions are welcome! If you have suggestions for improvements, please fork the repository and create a pull request, or open an issue with the "enhancement" tag.
-
-1.  **Fork the Project**
-2.  **Create your Feature Branch** (`git checkout -b feature/NewFeature`)
-3.  **Commit your Changes** (`git commit -m 'feat: Add some NewFeature'`)
-4.  **Push to the Branch** (`git push origin feature/NewFeature`)
-5.  **Open a Pull Request**
-
-## 📄 License
-
-This project is licensed under the MIT License. See the `LICENSE` file for more information.
+MIT. See the `LICENSE` file.
 
 <div align="center">
-  <p>Developed with ❤️ by Shiv Shankar Singh</p>
+  <p>Built by Shiv Shankar Singh</p>
 </div>

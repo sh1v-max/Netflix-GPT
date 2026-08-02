@@ -296,18 +296,40 @@ build succeeds.
 ## Phase 2 — Preference Graph
 
 This is the differentiator. Needs Firestore — a small addition to the
-Firebase project you already have (auth is already wired up). **Do the
-`firebase` v11 → v12 dependency bump (from the dependency audit) right
-before starting this phase**, not in isolation earlier — no point writing
-Firestore code against v11 and migrating it right after.
+Firebase project you already have (auth is already wired up).
+
+**`firebase` v11 → v12 migration**: done, first — matches the plan's
+"do this right before starting Phase 2, not in isolation earlier."
+Low-risk since the codebase was already on the modular API
+(`firebase/app`, `firebase/auth`), which v12 continues to build on.
+Verified via lint/build and a runtime smoke test (no console/page
+errors on load). Incidentally fixed a pre-existing lint error too —
+`firebaseConfig.jsx`'s `analytics` variable was assigned but never
+used; `getAnalytics(app)` is now called without being stored.
 
 ### 2.1 — Firestore setup
-- [ ] Enable Firestore in the Firebase console for this project
-- [ ] Security rules: `match /users/{uid}/{document=**} { allow read,
-      write: if request.auth.uid == uid; }` — every user can only ever
-      touch their own subtree
-- [ ] `firestoreConfig.jsx` alongside the existing `firebaseConfig.jsx`,
-      exporting a `db` instance
+- [x] Firestore database created in the Firebase console
+      (`netflixgpt-e671d`), production mode (locked down by default,
+      not the 30-day-open test mode)
+- [x] Security rules written and **deployed**:
+      `match /users/{uid}/{document=**} { allow read, write: if
+      request.auth != null && request.auth.uid == uid; }` — every user
+      can only ever touch their own subtree. Lives in `firestore.rules`
+      at the repo root, referenced from `firebase.json` alongside a new
+      (currently empty) `firestore.indexes.json`
+- [x] `firestoreConfig.jsx` alongside `firebaseConfig.jsx`, exporting a
+      `db` instance — built on the *same* Firebase `app` instance as
+      auth (`firebaseConfig.jsx` now explicitly exports `app`, which it
+      wasn't doing before, to avoid a second app instance)
+- [x] `firebase-tools` installed as a devDependency (wasn't available
+      at all before — global install wasn't found either), so
+      `npx firebase <command>` works directly from the project folder
+- [x] **Deployed and verified live**: `npx firebase deploy --only
+      hosting,firestore:rules` — both the Firestore rules and the full
+      current build (everything through Phase 1 + the Home/Movies nav
+      fix) are live. Confirmed via `curl` that the live site serves the
+      Cinegraph build, not the old cached Netflix-clone version. Live
+      at `https://netflixgpt-e671d.web.app`
 
 ### 2.2 — Data model
 ```
