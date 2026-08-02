@@ -347,6 +347,38 @@ UI (two icons vs. a star picker), simpler aggregation math, and it's
 enough signal to build genre/decade preferences from. A star scale is a
 straightforward upgrade later if binary feels too coarse.
 
+- [x] `firestorePaths.jsx` (`src/utils/`) — turns the schema above into
+      real reusable reference helpers (`userDoc`, `ratingsCollection`,
+      `ratingDoc`, `watchlistCollection`, `watchlistDoc`), all built on
+      the `mediaDocId(mediaType, mediaId)` convention, so 2.3+ never
+      hand-roll a Firestore path inline
+- [x] `users/{uid}/profile` from the schema sketch is implemented as
+      fields merged directly onto the `users/{uid}` document itself
+      (via `userDoc`), not a separate subdocument — `users/{uid}/profile`
+      as literally written has an odd path-segment count, which
+      Firestore treats as a collection reference, not a document. The
+      existing security rule (`users/{uid}/{document=**}`) already
+      covers the parent doc too, since Firestore's recursive wildcard
+      matches zero-or-more segments — no rules change needed
+
+**Real bug caught while verifying**: importing `firebase/firestore` for
+the first time threw `Service firestore is not available` at runtime,
+even though the build succeeded and lint was clean. Root cause: Vite
+pre-bundles and caches dependencies, and adding a brand-new Firebase
+submodule import can create a stale cache mismatch with the
+already-cached `firebase/app`/`firebase/auth` chunks from earlier dev
+server runs. Fixed by clearing `node_modules/.vite` and restarting —
+confirmed fixed via a temporary import + runtime check, then reverted.
+**Worth remembering**: if a future session adds another new `firebase/*`
+submodule (e.g. `firebase/functions` in Phase 3) and hits the same
+"Service X is not available" error, clear the Vite cache before
+assuming anything more exotic is wrong.
+
+**Verified**: lint clean (16 warnings, 0 errors — down from 17 problems
+since the firebase v12 fix removed the `analytics` error), production
+build succeeds, and — critically — a runtime check (not just a
+build/lint check) confirmed `getFirestore(app)` actually works.
+
 ### 2.3 — Ratings
 - [ ] `addRating(mediaType, id, rating, genreIds)` utility function
       (writes to Firestore, triggers profile recompute)
