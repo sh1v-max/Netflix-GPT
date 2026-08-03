@@ -46,7 +46,7 @@ const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], 
             </button>
           </div>
 
-          <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute top-2 left-2">
             <RatingControl mediaType={mediaType} id={id} genreIds={genreIds} size={12} />
           </div>
         </div>

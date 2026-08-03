@@ -418,15 +418,12 @@ Home, Discover, and a detail page (Inception) — zero console errors,
 real content loads correctly, and `RatingControl` correctly renders
 nothing (not a crash) for a logged-out session.
 
-**Known gap, can't close it myself**: the actual *write* path (clicking
-like/dislike) is untested end-to-end. Doing that requires a real
-authenticated Firebase session — Firestore's security rules would
-reject an unauthenticated write attempt regardless, so there's no way
-to exercise this from a headless browser. **Needs a manual check**: log
-in, click like/dislike on a poster and on a detail page, confirm the
-button's active state updates, then check the
-[Firestore console](https://console.firebase.google.com/project/netflixgpt-e671d/firestore/data)
-to confirm a document actually landed under `users/{your-uid}/ratings/`.
+**Manually verified end-to-end** (couldn't be done from a headless
+browser — needs a real authenticated session): clicked like/dislike
+while logged in, confirmed real documents landed in the Firestore
+console under `users/{uid}/ratings/`, correctly keyed as
+`movie_1108427`, `movie_634649` etc. — matching the `${mediaType}_${mediaId}`
+convention exactly. The write path works.
 
 ### 2.4 — Watchlist
 - [ ] `toggleWatchlist(mediaType, id)` utility
