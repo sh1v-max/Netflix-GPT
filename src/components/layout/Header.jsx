@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import { auth } from '../../utils/firebaseConfig'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import { motion, AnimatePresence } from 'motion/react'
+import { Button } from '@/components/ui/button'
 import { SUPPORTED_LANG } from '../../utils/constant'
 import Logo from './Logo'
 import { addUser, removeUser } from '../../store/userSlice'
@@ -10,16 +12,18 @@ import { toggleGptSearchView, setShowGptSearch } from '../../store/gptSlice'
 import { changeLanguages } from '../../store/configSlice'
 import usePreferencesSync from '../../hooks/usePreferencesSync'
 import {
-  FaFilm,
-  FaSearch,
-  FaUser,
-  FaUserCog,
-  FaCog,
-  FaSignOutAlt,
-  FaStar,
-  FaSun,
-  FaMoon,
-} from 'react-icons/fa'
+  Film,
+  Search,
+  User,
+  UserCog,
+  Settings,
+  LogOut,
+  Star,
+  Sun,
+  Moon,
+} from 'lucide-react'
+
+const EASE = [0.16, 1, 0.3, 1]
 
 const Header = () => {
   const navigate = useNavigate()
@@ -33,7 +37,6 @@ const Header = () => {
   const isGptActive = showGptSearch && location.pathname === '/browse'
   const [isScrolled, setIsScrolled] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
-  const [isFlipped, setIsFlipped] = useState(false)
   const [theme, setTheme] = useState(
     () => localStorage.getItem('cinegraph-theme') || 'dark'
   )
@@ -134,11 +137,24 @@ const Header = () => {
     dispatch(changeLanguages(e.target.value))
   }
 
+  const navLinkClass = (active) =>
+    `relative py-1 transition-colors ${
+      active ? 'text-text-dark font-semibold' : 'text-text-dark-muted hover:text-text-dark'
+    }`
+
+  const NavUnderline = () => (
+    <motion.span
+      layoutId="header-nav-underline"
+      className="absolute left-0 right-0 -bottom-1 h-0.5 bg-accent2 rounded-full"
+      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+    />
+  )
+
   return (
     <header
       className={`fixed top-0 left-0 w-full z-30 flex items-center justify-between px-4 md:px-8 transition-all duration-500 ${
         isScrolled
-          ? 'backdrop-blur-md bg-ink/60 py-1 md:py-1'
+          ? 'backdrop-blur-[--blur-cg-glass] bg-surface-glass border-b border-border-hairline py-1 md:py-1'
           : isGptActive
           ? 'bg-linear-to-b from-ink to-transparent py-3 md:py-4'
           : 'bg-ink py-3 md:py-4'
@@ -156,79 +172,53 @@ const Header = () => {
             <Link
               to="/browse"
               onClick={() => dispatch(setShowGptSearch(true))}
-              className={`transition-colors ${
-                location.pathname === '/browse' && showGptSearch
-                  ? 'text-text-dark font-semibold'
-                  : 'text-text-dark-muted hover:text-text-dark'
-              }`}
+              className={navLinkClass(location.pathname === '/browse' && showGptSearch)}
             >
               Home
+              {location.pathname === '/browse' && showGptSearch && <NavUnderline />}
             </Link>
             <Link
               to="/browse"
               onClick={() => dispatch(setShowGptSearch(false))}
-              className={`transition-colors ${
-                location.pathname === '/browse' && !showGptSearch
-                  ? 'text-text-dark font-semibold'
-                  : 'text-text-dark-muted hover:text-text-dark'
-              }`}
+              className={navLinkClass(location.pathname === '/browse' && !showGptSearch)}
             >
               Movies
+              {location.pathname === '/browse' && !showGptSearch && <NavUnderline />}
             </Link>
-            <Link
-              to="/shows"
-              className={`transition-colors ${
-                location.pathname === '/shows'
-                  ? 'text-text-dark font-semibold'
-                  : 'text-text-dark-muted hover:text-text-dark'
-              }`}
-            >
+            <Link to="/shows" className={navLinkClass(location.pathname === '/shows')}>
               TV Shows
+              {location.pathname === '/shows' && <NavUnderline />}
             </Link>
-            <Link
-              to="/anime"
-              className={`transition-colors ${
-                location.pathname === '/anime'
-                  ? 'text-text-dark font-semibold'
-                  : 'text-text-dark-muted hover:text-text-dark'
-              }`}
-            >
+            <Link to="/anime" className={navLinkClass(location.pathname === '/anime')}>
               Anime
+              {location.pathname === '/anime' && <NavUnderline />}
             </Link>
-            <Link
-              to="/discover"
-              className={`transition-colors ${
-                location.pathname === '/discover'
-                  ? 'text-text-dark font-semibold'
-                  : 'text-text-dark-muted hover:text-text-dark'
-              }`}
-            >
+            <Link to="/discover" className={navLinkClass(location.pathname === '/discover')}>
               Discover
+              {location.pathname === '/discover' && <NavUnderline />}
             </Link>
           </nav>
         )}
       </div>
       <div className="flex items-center gap-2 md:gap-2">
-        <button
+        <motion.button
+          whileTap={{ scale: 0.9 }}
           onClick={toggleTheme}
           aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
           className="text-text-dark-muted hover:text-text-dark p-2 md:p-3 cursor-pointer transition-colors"
         >
-          {theme === 'dark' ? <FaSun size={18} /> : <FaMoon size={18} />}
-        </button>
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+        </motion.button>
         {!user && location.pathname !== '/login' && (
-          <Link
-            to="/login"
-            className="bg-accent hover:bg-accent-strong text-on-accent text-sm font-semibold px-4 py-2 rounded-[--radius-card] transition-colors"
-          >
-            Sign In
-          </Link>
+          <Button asChild variant="default" size="default" className="px-4">
+            <Link to="/login">Sign In</Link>
+          </Button>
         )}
         {user && (
           <>
           {isGptActive && (
             <select
-              className="appearance-none backdrop-blur-md bg-white/10 text-text-dark border border-white/20 text-xs md:text-sm py-1 md:py-1.5 px-3 md:pr-2 md:pl-5 rounded-[--radius-card] cursor-pointer focus:outline-none transition-all duration-300 hover:bg-white/20 shadow-md"
+              className="appearance-none backdrop-blur-md bg-white/10 text-text-dark border border-white/20 text-xs md:text-sm py-1 md:py-1.5 px-3 md:pr-2 md:pl-5 rounded-lg cursor-pointer focus:outline-none transition-all duration-300 hover:bg-white/20 shadow-md"
               onChange={handleLanguageChange}
             >
               {SUPPORTED_LANG.map((lang) => (
@@ -248,64 +238,67 @@ const Header = () => {
             onClick={handleGptSearchClick}
             aria-label={isGptActive ? 'Browse movies' : 'Search with AI'}
           >
-            {isGptActive ? <FaFilm size={20} /> : <FaSearch size={20} />}
-            <span className="absolute left-1 right-1 bottom-0 h-1 bg-accent scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
+            {isGptActive ? <Film size={20} /> : <Search size={20} />}
+            <span className="absolute left-1 right-1 bottom-0 h-1 bg-accent2 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
           </button>
 
           <div className="relative" ref={menuRef}>
-            <div
+            <motion.div
+              whileTap={{ scale: 0.92 }}
               className="flex items-center space-x-1 md:space-x-2 cursor-pointer"
               onClick={() => setShowMenu(!showMenu)}
             >
               <img
                 src={user.photo}
                 alt="User Profile"
-                onClick={() => setIsFlipped(!isFlipped)}
-                style={{
-                  transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                  transformStyle: 'preserve-3d',
-                  transition: 'transform 0.5s ease',
-                }}
-                className="w-6.5 h-6.5 md:w-8 md:h-8 rounded-md object-cover border border-transparent cursor-pointer"
+                className="w-6.5 h-6.5 md:w-8 md:h-8 rounded-lg object-cover border border-border-hairline cursor-pointer transition-shadow hover:shadow-[0_0_0_2px_var(--color-accent2-glow)]"
               />
-            </div>
+            </motion.div>
 
             {/* Dropdown Menu */}
-            {showMenu && (
-              <div className="absolute top-full right-0 w-34 md:w-42 backdrop-blur-lg bg-ink-elevated/90 border border-white/10 rounded-xl shadow-lg py-2 z-500 mt-2">
-                <ul>
-                  <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
-                    <FaUser size={14} />
-                    <div className="border-r border-white/20 h-5"></div>
-                    Profile
-                  </li>
-                  <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
-                    <FaUserCog size={14} />
-                    <div className="border-r border-white/20 h-5"></div>
-                    Account
-                  </li>
-                  <li className="pl-5 md:pl-8 py-2 text-sm text-accent hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
-                    <FaStar size={14} />
-                    <div className="border-r border-white/20 h-5"></div>
-                    Premium
-                  </li>
-                  <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
-                    <FaCog size={14} />
-                    <div className="border-r border-white/20 h-5"></div>
-                    Settings
-                  </li>
-                  <li className="border-t border-white/10 my-2 mx-4"></li>
-                  <button
-                    className="pl-5 md:pl-8 w-full text-left py-2 text-sm text-rust hover:bg-rust hover:text-text-dark rounded-md cursor-pointer transition-colors flex items-center gap-2"
-                    onClick={handleSignOut}
-                  >
-                    <FaSignOutAlt size={14} />
-                    <div className="border-r border-white/20 h-5"></div>
-                    Sign Out
-                  </button>
-                </ul>
-              </div>
-            )}
+            <AnimatePresence>
+              {showMenu && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                  transition={{ duration: 0.15, ease: EASE }}
+                  className="absolute top-full right-0 w-34 md:w-42 backdrop-blur-[--blur-cg-glass] bg-surface-glass border border-border-hairline rounded-panel shadow-cg-elevated py-2 z-500 mt-2 origin-top-right"
+                >
+                  <ul>
+                    <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                      <User size={14} />
+                      <div className="border-r border-white/20 h-5"></div>
+                      Profile
+                    </li>
+                    <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                      <UserCog size={14} />
+                      <div className="border-r border-white/20 h-5"></div>
+                      Account
+                    </li>
+                    <li className="pl-5 md:pl-8 py-2 text-sm text-accent2 hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                      <Star size={14} />
+                      <div className="border-r border-white/20 h-5"></div>
+                      Premium
+                    </li>
+                    <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
+                      <Settings size={14} />
+                      <div className="border-r border-white/20 h-5"></div>
+                      Settings
+                    </li>
+                    <li className="border-t border-white/10 my-2 mx-4"></li>
+                    <button
+                      className="pl-5 md:pl-8 w-full text-left py-2 text-sm text-rust hover:bg-rust hover:text-text-dark rounded-md cursor-pointer transition-colors flex items-center gap-2"
+                      onClick={handleSignOut}
+                    >
+                      <LogOut size={14} />
+                      <div className="border-r border-white/20 h-5"></div>
+                      Sign Out
+                    </button>
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           </>
         )}
