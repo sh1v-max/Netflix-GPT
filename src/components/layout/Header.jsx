@@ -8,6 +8,7 @@ import Logo from './Logo'
 import { addUser, removeUser } from '../../store/userSlice'
 import { toggleGptSearchView, setShowGptSearch } from '../../store/gptSlice'
 import { changeLanguages } from '../../store/configSlice'
+import usePreferencesSync from '../../hooks/usePreferencesSync'
 import {
   FaFilm,
   FaSearch,
@@ -37,6 +38,7 @@ const Header = () => {
     () => localStorage.getItem('cinegraph-theme') || 'dark'
   )
   const menuRef = useRef(null)
+  usePreferencesSync()
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)

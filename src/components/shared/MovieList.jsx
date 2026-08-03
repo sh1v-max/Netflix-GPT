@@ -47,6 +47,7 @@ const MovieList = ({ title, movies, mediaType = 'movie' }) => {
               posterPath={movie.poster_path}
               title={movie.title || movie.name}
               mediaType={movie.media_type || mediaType}
+              genreIds={movie.genre_ids}
             />
           ))}
         </div>

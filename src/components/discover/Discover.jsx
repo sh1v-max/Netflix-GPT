@@ -173,6 +173,7 @@ const Discover = ({
                 posterPath={item.poster_path}
                 title={item.title || item.name}
                 mediaType={item.media_type}
+                genreIds={item.genre_ids}
                 fill
               />
             ))}
@@ -267,6 +268,7 @@ const Discover = ({
                     posterPath={item.poster_path}
                     title={item.title || item.name}
                     mediaType={mediaType}
+                    genreIds={item.genre_ids}
                     fill
                   />
                 ))}

@@ -9,6 +9,7 @@ import useMediaDetails from '../../hooks/useMediaDetails'
 import useCredits from '../../hooks/useCredits'
 import useSimilarTitles from '../../hooks/useSimilarTitles'
 import useWatchProviders from '../../hooks/useWatchProviders'
+import RatingControl from '../shared/RatingControl'
 import { BACKDROP_CDN_URL, IMG_CDN_URL } from '../../utils/constant'
 
 const DetailPage = () => {
@@ -87,7 +88,7 @@ const DetailPage = () => {
             )}
           </div>
           {details.genres?.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-4">
               {details.genres.map((genre) => (
                 <span
                   key={genre.id}
@@ -98,6 +99,12 @@ const DetailPage = () => {
               ))}
             </div>
           )}
+          <RatingControl
+            mediaType={mediaType}
+            id={id}
+            genreIds={details.genres?.map((genre) => genre.id) || []}
+            size={16}
+          />
         </div>
       </div>
 

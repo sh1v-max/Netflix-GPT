@@ -380,13 +380,53 @@ build succeeds, and — critically — a runtime check (not just a
 build/lint check) confirmed `getFirestore(app)` actually works.
 
 ### 2.3 — Ratings
-- [ ] `addRating(mediaType, id, rating, genreIds)` utility function
-      (writes to Firestore, triggers profile recompute)
-- [ ] Like/dislike control on `MovieCard`'s hover overlay (next to the
-      existing play button) and on the detail page
-- [ ] `preferencesSlice.jsx` (new Redux slice) synced via Firestore
-      `onSnapshot` listeners, so ratings/watchlist reflect instantly
-      across the UI without manual refetching
+- [x] `addRating`/`removeRating` (`src/utils/ratings.jsx`) — both
+      unconditional (`addRating` always sets, `removeRating` always
+      deletes); the *decision* of which to call lives in the UI
+      component, not the utility, since the component already has the
+      current rating live via Redux — no extra Firestore read needed to
+      decide. Profile recompute (the "triggers profile recompute" part
+      of the original plan) is deferred to 2.5, not wired in yet
+- [x] `RatingControl.jsx` (`components/shared/`) — like/dislike buttons,
+      reused on `MovieCard`'s hover overlay (top-left, mirroring the
+      existing top-right "more options" button) and on the detail
+      page's hero, under the genre chips. Reads the current rating live
+      from `preferencesSlice`, renders nothing if logged out. Clicking
+      the currently-active state un-rates (toggle off) instead of
+      just switching
+- [x] `preferencesSlice.jsx` + `usePreferencesSync.jsx` — the hook opens
+      an `onSnapshot` listener on `ratings` the moment `store.user.uid`
+      exists (called once, from `Header.jsx`, which mounts on every
+      page), tears it down on logout via `clearPreferences`. Every
+      `RatingControl` instance anywhere in the app reflects a change
+      instantly, with no manual refetching
+
+**Follow-on changes this required**: `MovieCard` gained a `genreIds`
+prop (needed so a rating can be tagged with the genres it belongs to,
+for Phase 2.5's profile computation) — threaded through from
+`MovieList` (`movie.genre_ids`) and both of `Discover.jsx`'s direct
+`MovieCard` usages (search results and the filtered grid, `item.genre_ids`).
+`DetailPage` maps its own `details.genres` (`[{id, name}]` objects, not
+raw ids) to a plain id array when passing to `RatingControl`.
+
+**Verified**: lint clean (16 warnings, 0 errors), production build
+succeeds — bundle size jumped from 660KB to 1.17MB, confirming
+`firebase/firestore` is now genuinely wired into the live app (via
+`usePreferencesSync` in `Header.jsx`) rather than sitting unused like
+in 2.2. Runtime-checked with the `browser-automation` skill across
+Home, Discover, and a detail page (Inception) — zero console errors,
+real content loads correctly, and `RatingControl` correctly renders
+nothing (not a crash) for a logged-out session.
+
+**Known gap, can't close it myself**: the actual *write* path (clicking
+like/dislike) is untested end-to-end. Doing that requires a real
+authenticated Firebase session — Firestore's security rules would
+reject an unauthenticated write attempt regardless, so there's no way
+to exercise this from a headless browser. **Needs a manual check**: log
+in, click like/dislike on a poster and on a detail page, confirm the
+button's active state updates, then check the
+[Firestore console](https://console.firebase.google.com/project/netflixgpt-e671d/firestore/data)
+to confirm a document actually landed under `users/{your-uid}/ratings/`.
 
 ### 2.4 — Watchlist
 - [ ] `toggleWatchlist(mediaType, id)` utility

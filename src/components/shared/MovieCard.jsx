@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { FaPlay } from 'react-icons/fa'
 import { BsThreeDots } from 'react-icons/bs'
 import { IMG_CDN_URL } from '../../utils/constant'
+import RatingControl from './RatingControl'
 
-const MovieCard = ({ id, posterPath, title, mediaType = 'movie', fill = false }) => {
+const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], fill = false }) => {
   const [imgError, setImgError] = useState(false)
 
   if (!posterPath || imgError) return null
@@ -43,6 +44,10 @@ const MovieCard = ({ id, posterPath, title, mediaType = 'movie', fill = false })
             >
               <BsThreeDots size={18} />
             </button>
+          </div>
+
+          <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <RatingControl mediaType={mediaType} id={id} genreIds={genreIds} size={12} />
           </div>
         </div>
 
