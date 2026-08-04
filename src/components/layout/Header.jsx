@@ -15,7 +15,6 @@ import {
 import { SUPPORTED_LANG } from '../../utils/constant'
 import Logo from './Logo'
 import { addUser, removeUser } from '../../store/userSlice'
-import { toggleGptSearchView, setShowGptSearch } from '../../store/gptSlice'
 import { changeLanguages } from '../../store/configSlice'
 import usePreferencesSync from '../../hooks/usePreferencesSync'
 import {
@@ -35,11 +34,9 @@ const Header = () => {
   const location = useLocation()
   const dispatch = useDispatch()
   const user = useSelector((store) => store.user)
-  const showGptSearch = useSelector((store) => store.gpt.showGptSearch)
-  // The GPT search toggle only has meaning on /browse — on /shows there's
-  // nothing listening to this flag yet, so don't show the app as "in search
-  // mode" there.
-  const isGptActive = showGptSearch && location.pathname === '/browse'
+  // /home (AI search) and /browse (movie grid) are real, distinct routes —
+  // no Redux view-state flag needed, the URL itself is the source of truth.
+  const isGptActive = location.pathname === '/home'
   const [isScrolled, setIsScrolled] = useState(false)
   const [theme, setTheme] = useState(
     () => localStorage.getItem('cinegraph-theme') || 'dark'
@@ -78,9 +75,9 @@ const Header = () => {
           })
         )
         // Only redirect away from the landing/login pages — don't yank the
-        // user back to /browse when this listener re-fires on /shows, etc.
+        // user back to /home when this listener re-fires on /shows, etc.
         if (location.pathname === '/' || location.pathname === '/login') {
-          navigate('/browse')
+          navigate('/home')
         }
       } else {
         dispatch(removeUser())
@@ -88,6 +85,7 @@ const Header = () => {
         // away from '/' or '/login' themselves, or landing there while
         // logged out (the normal case) bounces straight back to '/'.
         if (
+          location.pathname === '/home' ||
           location.pathname === '/browse' ||
           location.pathname === '/shows' ||
           location.pathname === '/discover' ||
@@ -118,11 +116,7 @@ const Header = () => {
   }, [])
 
   const handleGptSearchClick = () => {
-    if (location.pathname !== '/browse') {
-      navigate('/browse')
-      return
-    }
-    dispatch(toggleGptSearchView())
+    navigate(isGptActive ? '/browse' : '/home')
   }
 
   const handleLanguageChange = (e) => {
@@ -133,6 +127,12 @@ const Header = () => {
     `relative py-1 transition-colors ${
       active ? 'text-text-dark font-semibold' : 'text-text-dark-muted hover:text-text-dark'
     }`
+
+  // "Home" is two different things depending on auth: for a logged-in
+  // user it's /home (AI search) — there's no other "home", they're
+  // redirected away from '/' entirely; for a logged-out visitor it's the
+  // actual landing page at '/'. Match the Logo link's own behavior.
+  const isHomeActive = user ? location.pathname === '/home' : location.pathname === '/'
 
   const NavUnderline = () => (
     <motion.span
@@ -153,44 +153,31 @@ const Header = () => {
       }`}
     >
       <div className="flex items-center gap-4 md:gap-8">
-        <Link
-          to={user ? '/browse' : '/'}
-          onClick={() => user && dispatch(setShowGptSearch(true))}
-        >
+        <Link to={user ? '/home' : '/'}>
           <Logo className="text-text-dark" />
         </Link>
-        {user && !isGptActive && (
-          <nav className="hidden sm:flex items-center gap-4 text-sm">
-            <Link
-              to="/browse"
-              onClick={() => dispatch(setShowGptSearch(true))}
-              className={navLinkClass(location.pathname === '/browse' && showGptSearch)}
-            >
-              Home
-              {location.pathname === '/browse' && showGptSearch && <NavUnderline />}
-            </Link>
-            <Link
-              to="/browse"
-              onClick={() => dispatch(setShowGptSearch(false))}
-              className={navLinkClass(location.pathname === '/browse' && !showGptSearch)}
-            >
-              Movies
-              {location.pathname === '/browse' && !showGptSearch && <NavUnderline />}
-            </Link>
-            <Link to="/shows" className={navLinkClass(location.pathname === '/shows')}>
-              TV Shows
-              {location.pathname === '/shows' && <NavUnderline />}
-            </Link>
-            <Link to="/anime" className={navLinkClass(location.pathname === '/anime')}>
-              Anime
-              {location.pathname === '/anime' && <NavUnderline />}
-            </Link>
-            <Link to="/discover" className={navLinkClass(location.pathname === '/discover')}>
-              Discover
-              {location.pathname === '/discover' && <NavUnderline />}
-            </Link>
-          </nav>
-        )}
+        <nav className="hidden sm:flex items-center gap-4 text-sm">
+          <Link to={user ? '/home' : '/'} className={navLinkClass(isHomeActive)}>
+            Home
+            {isHomeActive && <NavUnderline />}
+          </Link>
+          <Link to="/browse" className={navLinkClass(location.pathname === '/browse')}>
+            Movies
+            {location.pathname === '/browse' && <NavUnderline />}
+          </Link>
+          <Link to="/shows" className={navLinkClass(location.pathname === '/shows')}>
+            TV Shows
+            {location.pathname === '/shows' && <NavUnderline />}
+          </Link>
+          <Link to="/anime" className={navLinkClass(location.pathname === '/anime')}>
+            Anime
+            {location.pathname === '/anime' && <NavUnderline />}
+          </Link>
+          <Link to="/discover" className={navLinkClass(location.pathname === '/discover')}>
+            Discover
+            {location.pathname === '/discover' && <NavUnderline />}
+          </Link>
+        </nav>
       </div>
       <div className="flex items-center gap-2 md:gap-2">
         <motion.button

@@ -60,8 +60,9 @@ netflixgpt/
 │   │   ├── home/              Home.jsx — marketing landing page (logged-out)
 │   │   ├── auth/               Login.jsx — sign in / sign up, split-screen layout
 │   │   ├── layout/             Header.jsx, Footer.jsx, Logo.jsx — shared chrome
-│   │   ├── browse/             Browse.jsx (movies homepage) + MainContainer,
-│   │   │                       SecondaryContainer, VideoBackground, VideoTitle
+│   │   ├── browse/             Browse.jsx (movie grid) + AiSearchHome.jsx
+│   │   │                       (/home) + MainContainer, SecondaryContainer,
+│   │   │                       VideoBackground, VideoTitle
 │   │   ├── shows/               Shows.jsx (TV homepage) + ShowsSecondaryContainer
 │   │   ├── discover/           Discover.jsx (filterable catalog + search) + FilterPanel
 │   │   ├── anime/               Anime.jsx — thin wrapper around Discover with
@@ -98,11 +99,21 @@ Defined in `src/components/Body.jsx` via `createBrowserRouter`:
 | --- | --- | --- |
 | `/` | `Home` | No — marketing landing page |
 | `/login` | `Login` | No |
-| `/browse` | `Browse` | Yes |
+| `/home` | `AiSearchHome` | Yes — the logged-in "home base," AI search first |
+| `/browse` | `Browse` | Yes — movie grid (Now Playing/Popular/Top Rated/Upcoming) |
 | `/shows` | `Shows` | Yes |
 | `/discover` | `Discover` | Yes |
 | `/anime` | `Anime` | Yes |
 | `/title/:mediaType/:id` | `DetailPage` | Yes |
+
+**`/home` vs `/browse`**: these were originally one route (`/browse`)
+toggled between an AI-search view and the movie grid via a Redux flag
+(`gpt.showGptSearch`). Split into two real routes — the shared URL was
+confusing (nav's "Home" and "Movies" pointed at the identical address)
+and meant the header's search/grid toggle button had to reach into
+Redux instead of just navigating. `Header.jsx`'s `handleGptSearchClick`
+now does exactly that: `navigate(isGptActive ? '/browse' : '/home')`,
+where `isGptActive = location.pathname === '/home'`.
 
 Auth enforcement lives in `Header.jsx`'s `onAuthStateChanged` listener —
 logged-out visitors hitting a protected path get redirected to `/`.
@@ -122,7 +133,7 @@ Seven slices, registered in `src/store/appStore.jsx`:
 | `tv` | `onTheAirShows`, `popularShows`, `topRatedShows`, `airingTodayShows`, `trailerVideo` | matching TV hooks |
 | `details` | `mediaDetails`, `credits`, `similar`, `watchProviders`, `genres` — all keyed by `${mediaType}_${id}` (genres keyed by mediaType alone) | `useMediaDetails`, `useCredits`, `useSimilarTitles`, `useWatchProviders`, `useGenres` |
 | `preferences` | `ratings` (`{ [docId]: 'like' \| 'dislike' }`), `ratedGenres` (`{ [docId]: genreIds[] }` — mirrors `ratings`, powers the Detail page's taste-compatibility read), `isLoaded` | `usePreferencesSync` (live Firestore `onSnapshot`) |
-| `gpt` | `showGptSearch` (defaults `true` — search-first landing), `movieNames`, `movieResults` | `GptSearchBar`, `Header`'s Home/Movies nav |
+| `gpt` | `movieNames`, `movieResults` | `GptSearchBar` / `GptSearch.jsx`'s `runSearch` |
 | `config` | `lang` (defaults `'en'`) | `Header`'s language selector (only shown in AI-search mode) |
 
 **Caching pattern**: every TMDB-backed hook checks the store before
@@ -234,7 +245,7 @@ both themes with zero per-component changes.
 
 **`.aurora-gradient` / `.theme-dark-scope`**: a small number of
 "hero moment" surfaces (Home's hero + CTA banner, Login's branding
-panel, the AI-search view on `/browse`) are deliberately cinematic-dark
+panel, `/home`'s AI search) are deliberately cinematic-dark
 *regardless* of site theme — a common pattern for branded hero
 sections. These two CSS classes re-pin every v1/v2 token their content
 might read, plus `color` itself (which is inherited *by computed

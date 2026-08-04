@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 // Discover's filter logic or the Detail page's cast carousel.
 const Home = lazy(() => import('./home/Home'))
 const Login = lazy(() => import('./auth/Login'))
+const AiSearchHome = lazy(() => import('./browse/AiSearchHome'))
 const Browse = lazy(() => import('./browse/Browse'))
 const Shows = lazy(() => import('./shows/Shows'))
 const DetailPage = lazy(() => import('./detail/DetailPage'))
@@ -30,6 +31,10 @@ const Body = () => {
     {
       path: '/login',
       element: withSuspense(<Login />),
+    },
+    {
+      path: '/home',
+      element: withSuspense(<AiSearchHome />),
     },
     {
       path: '/browse',
