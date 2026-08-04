@@ -5,8 +5,8 @@ import GptSearch from '../gpt/GptSearch'
 
 // The logged-in "home base" — AI search first, per the original
 // search-first-landing design decision. Lives at its own /home route
-// (previously a Redux view-state toggle sharing /browse with the movie
-// grid, which meant "Home" and "Movies" pointed at the same URL).
+// (previously a Redux view-state toggle sharing one URL with the movie
+// grid, which meant "Home" and "Movies" pointed at the same address).
 const AiSearchHome = () => (
   <div className="relative w-screen min-h-screen flex flex-col">
     <Header />

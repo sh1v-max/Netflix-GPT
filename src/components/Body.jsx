@@ -37,7 +37,7 @@ const Body = () => {
       element: withSuspense(<AiSearchHome />),
     },
     {
-      path: '/browse',
+      path: '/movies',
       element: withSuspense(<Browse />),
     },
     {

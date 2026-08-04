@@ -100,20 +100,22 @@ Defined in `src/components/Body.jsx` via `createBrowserRouter`:
 | `/` | `Home` | No — marketing landing page |
 | `/login` | `Login` | No |
 | `/home` | `AiSearchHome` | Yes — the logged-in "home base," AI search first |
-| `/browse` | `Browse` | Yes — movie grid (Now Playing/Popular/Top Rated/Upcoming) |
+| `/movies` | `Browse` | Yes — movie grid (Now Playing/Popular/Top Rated/Upcoming) |
 | `/shows` | `Shows` | Yes |
 | `/discover` | `Discover` | Yes |
 | `/anime` | `Anime` | Yes |
 | `/title/:mediaType/:id` | `DetailPage` | Yes |
 
-**`/home` vs `/browse`**: these were originally one route (`/browse`)
+**`/home` vs `/movies`**: these were originally one route (`/browse`)
 toggled between an AI-search view and the movie grid via a Redux flag
 (`gpt.showGptSearch`). Split into two real routes — the shared URL was
 confusing (nav's "Home" and "Movies" pointed at the identical address)
 and meant the header's search/grid toggle button had to reach into
 Redux instead of just navigating. `Header.jsx`'s `handleGptSearchClick`
-now does exactly that: `navigate(isGptActive ? '/browse' : '/home')`,
-where `isGptActive = location.pathname === '/home'`.
+now does exactly that: `navigate(isGptActive ? '/movies' : '/home')`,
+where `isGptActive = location.pathname === '/home'`. (The component
+directory is still named `src/components/browse/` — that's a file-path
+detail, not the URL.)
 
 Auth enforcement lives in `Header.jsx`'s `onAuthStateChanged` listener —
 logged-out visitors hitting a protected path get redirected to `/`.

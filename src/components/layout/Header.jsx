@@ -34,7 +34,7 @@ const Header = () => {
   const location = useLocation()
   const dispatch = useDispatch()
   const user = useSelector((store) => store.user)
-  // /home (AI search) and /browse (movie grid) are real, distinct routes —
+  // /home (AI search) and /movies (movie grid) are real, distinct routes —
   // no Redux view-state flag needed, the URL itself is the source of truth.
   const isGptActive = location.pathname === '/home'
   const [isScrolled, setIsScrolled] = useState(false)
@@ -86,7 +86,7 @@ const Header = () => {
         // logged out (the normal case) bounces straight back to '/'.
         if (
           location.pathname === '/home' ||
-          location.pathname === '/browse' ||
+          location.pathname === '/movies' ||
           location.pathname === '/shows' ||
           location.pathname === '/discover' ||
           location.pathname === '/anime' ||
@@ -116,7 +116,7 @@ const Header = () => {
   }, [])
 
   const handleGptSearchClick = () => {
-    navigate(isGptActive ? '/browse' : '/home')
+    navigate(isGptActive ? '/movies' : '/home')
   }
 
   const handleLanguageChange = (e) => {
@@ -161,9 +161,9 @@ const Header = () => {
             Home
             {isHomeActive && <NavUnderline />}
           </Link>
-          <Link to="/browse" className={navLinkClass(location.pathname === '/browse')}>
+          <Link to="/movies" className={navLinkClass(location.pathname === '/movies')}>
             Movies
-            {location.pathname === '/browse' && <NavUnderline />}
+            {location.pathname === '/movies' && <NavUnderline />}
           </Link>
           <Link to="/shows" className={navLinkClass(location.pathname === '/shows')}>
             TV Shows
