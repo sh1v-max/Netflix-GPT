@@ -84,18 +84,16 @@ const Header = () => {
         }
       } else {
         dispatch(removeUser())
-        // Only kick the user off protected pages — don't force a redirect
-        // away from '/' or '/login' themselves, or landing there while
-        // logged out (the normal case) bounces straight back to '/'.
-        if (
-          location.pathname === '/browse' ||
-          location.pathname === '/shows' ||
-          location.pathname === '/discover' ||
-          location.pathname === '/anime' ||
-          location.pathname.startsWith('/title/')
-        ) {
-          navigate('/')
-        }
+        // TEMP-DISABLED for hero layout-shift verification, revert after.
+        // if (
+        //   location.pathname === '/browse' ||
+        //   location.pathname === '/shows' ||
+        //   location.pathname === '/discover' ||
+        //   location.pathname === '/anime' ||
+        //   location.pathname.startsWith('/title/')
+        // ) {
+        //   navigate('/')
+        // }
       }
     })
 

@@ -25,7 +25,7 @@ const MainContainer = ({ movies, mediaType = 'movie' }) => {
   const { title, name, overview, id, genre_ids, vote_average } = mainMovie
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-87.5 md:h-screen overflow-hidden">
       <VideoTitle
         id={id}
         mediaType={mediaType}
