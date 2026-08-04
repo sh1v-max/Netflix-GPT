@@ -1,6 +1,19 @@
 import { useRef } from 'react';
+import { motion } from 'motion/react'
 import MovieCard from './MovieCard'
-import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+
+const EASE = [0.16, 1, 0.3, 1]
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04 } },
+}
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE } },
+}
 
 const MovieList = ({ title, movies, mediaType = 'movie' }) => {
   const scrollRef = useRef(null);
@@ -29,35 +42,42 @@ const MovieList = ({ title, movies, mediaType = 'movie' }) => {
       <h1 className="font-display text-sm md:text-3xl py-1 md:py-4 text-text-dark font-semibold">{title}</h1>
 
       <button
-        className="hidden md:block absolute left-0 top-[59%] -translate-y-1/2 bg-ink-elevated/60 hover:bg-ink-elevated text-text-dark p-3 rounded-full z-50 transition duration-300 backdrop-blur-sm shadow-lg"
+        className="hidden md:block absolute left-0 top-[59%] -translate-y-1/2 bg-surface-glass hover:bg-ink-elevated text-text-dark p-3 rounded-full z-50 transition duration-300 backdrop-blur-[--blur-cg-glass] border border-border-hairline shadow-lg cursor-pointer"
         onClick={() => scroll("left")}
+        aria-label={`Scroll ${title} left`}
       >
-        <HiChevronLeft />
+        <ChevronLeft size={18} />
       </button>
 
-      <div
+      <motion.div
         ref={scrollRef}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={stagger}
         className="flex overflow-x-scroll no-scrollbar scroll-smooth"
       >
         <div className="flex gap-2 md:gap-4">
           {movies.map((movie) => (
-            <MovieCard
-              key={movie.id}
-              id={movie.id}
-              posterPath={movie.poster_path}
-              title={movie.title || movie.name}
-              mediaType={movie.media_type || mediaType}
-              genreIds={movie.genre_ids}
-            />
+            <motion.div key={movie.id} variants={fadeUp}>
+              <MovieCard
+                id={movie.id}
+                posterPath={movie.poster_path}
+                title={movie.title || movie.name}
+                mediaType={movie.media_type || mediaType}
+                genreIds={movie.genre_ids}
+              />
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       <button
-        className="hidden md:block absolute right-0 top-[55%] -translate-y-1/2 bg-ink-elevated/60 hover:bg-ink-elevated text-text-dark p-3 rounded-full z-50 transition duration-300 backdrop-blur-sm shadow-lg"
+        className="hidden md:block absolute right-0 top-[55%] -translate-y-1/2 bg-surface-glass hover:bg-ink-elevated text-text-dark p-3 rounded-full z-50 transition duration-300 backdrop-blur-[--blur-cg-glass] border border-border-hairline shadow-lg cursor-pointer"
         onClick={() => scroll("right")}
+        aria-label={`Scroll ${title} right`}
       >
-        <HiChevronRight/>
+        <ChevronRight size={18} />
       </button>
     </div>
   );

@@ -1,13 +1,38 @@
 import React from 'react'
-import { FaUser } from 'react-icons/fa'
+import { motion } from 'motion/react'
+import { User } from 'lucide-react'
 import { PROFILE_CDN_URL } from '../../utils/constant'
+
+const EASE = [0.16, 1, 0.3, 1]
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04 } },
+}
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: EASE } },
+}
 
 const CastGrid = ({ cast }) => {
   return (
-    <div className="flex gap-4 overflow-x-scroll no-scrollbar scroll-smooth pb-2">
+    <motion.div
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.2 }}
+      variants={stagger}
+      className="flex gap-4 overflow-x-scroll no-scrollbar scroll-smooth pb-2"
+    >
       {cast.slice(0, 15).map((member) => (
-        <div key={member.id} className="shrink-0 w-24 md:w-28 text-center">
-          <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden bg-ink-elevated mb-2 flex items-center justify-center">
+        <motion.div
+          key={member.id}
+          variants={fadeUp}
+          whileHover={{ y: -4 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          className="shrink-0 w-24 md:w-28 text-center group"
+        >
+          <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden bg-ink-elevated mb-2 flex items-center justify-center border border-transparent transition-colors duration-300 group-hover:border-accent2/50 group-hover:shadow-[0_0_20px_var(--color-accent2-glow)]">
             {member.profile_path ? (
               <img
                 src={PROFILE_CDN_URL + member.profile_path}
@@ -16,7 +41,7 @@ const CastGrid = ({ cast }) => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <FaUser className="text-text-dark-muted" size={28} />
+              <User className="text-text-dark-muted" size={28} />
             )}
           </div>
           <p className="text-xs md:text-sm font-medium text-text-dark truncate">
@@ -25,9 +50,9 @@ const CastGrid = ({ cast }) => {
           <p className="text-[11px] md:text-xs text-text-dark-muted truncate">
             {member.character}
           </p>
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   )
 }
 

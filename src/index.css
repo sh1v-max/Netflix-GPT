@@ -38,6 +38,10 @@
   --color-bg-elevated: #0a0a0c;
   --color-surface-glass: rgba(255, 255, 255, 0.05);
   --color-border-hairline: rgba(255, 255, 255, 0.08);
+  /* One step lighter than bg-elevated — for subtle/disabled surfaces
+     (skeletons, secondary buttons) that need to read as visible against
+     bg-elevated, not blend into it. */
+  --color-bg-muted: #141417;
 
   /* Foreground */
   --color-fg: #ededef;
@@ -91,11 +95,11 @@
   --popover-foreground: var(--color-fg);
   --primary: var(--color-accent2);
   --primary-foreground: #ffffff;
-  --secondary: var(--color-bg-elevated);
+  --secondary: var(--color-bg-muted);
   --secondary-foreground: var(--color-fg);
-  --muted: var(--color-bg-elevated);
+  --muted: var(--color-bg-muted);
   --muted-foreground: var(--color-fg-muted);
-  --accent: var(--color-bg-elevated);
+  --accent: var(--color-bg-muted);
   --accent-foreground: var(--color-fg);
   --destructive: var(--color-signal-dislike);
   --destructive-foreground: #ffffff;
@@ -158,7 +162,7 @@ body {
 
 .hero-gradient {
   background:
-    radial-gradient(ellipse 80% 60% at 80% -10%, color-mix(in srgb, var(--color-accent) 20%, transparent), transparent 70%),
+    radial-gradient(ellipse 80% 60% at 80% -10%, color-mix(in srgb, var(--color-accent2) 20%, transparent), transparent 70%),
     var(--color-ink);
 }
 
@@ -211,18 +215,18 @@ body {
   height: 14px;
   margin-top: -5px;
   border-radius: 9999px;
-  background: var(--color-accent);
+  background: var(--color-accent2);
   cursor: pointer;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 25%, transparent);
+  box-shadow: 0 0 0 4px var(--color-accent2-glow);
 }
 .styled-range::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border: none;
   border-radius: 9999px;
-  background: var(--color-accent);
+  background: var(--color-accent2);
   cursor: pointer;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 25%, transparent);
+  box-shadow: 0 0 0 4px var(--color-accent2-glow);
 }
 
 @theme inline {

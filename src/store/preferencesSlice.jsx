@@ -7,15 +7,22 @@ const preferencesSlice = createSlice({
     // live via onSnapshot in usePreferencesSync, never written to directly
     // from a component.
     ratings: {},
+    // { [`${mediaType}_${mediaId}`]: genreIds[] } — mirrors `ratings`,
+    // synced from the same snapshot. Lets the detail page compute a taste
+    // compatibility read without a separate query.
+    ratedGenres: {},
     isLoaded: false,
   },
   reducers: {
     setRatings: (state, action) => {
-      state.ratings = action.payload
+      const { ratings, ratedGenres } = action.payload
+      state.ratings = ratings
+      state.ratedGenres = ratedGenres
       state.isLoaded = true
     },
     clearPreferences: (state) => {
       state.ratings = {}
+      state.ratedGenres = {}
       state.isLoaded = false
     },
   },

@@ -1,24 +1,28 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FaPlay } from 'react-icons/fa'
-import { BsThreeDots } from 'react-icons/bs'
+import { motion } from 'motion/react'
+import { Play, MoreHorizontal } from 'lucide-react'
 import { IMG_CDN_URL } from '../../utils/constant'
 import RatingControl from './RatingControl'
 
-const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], fill = false }) => {
+const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], fill = false, layoutId }) => {
   const [imgError, setImgError] = useState(false)
 
   if (!posterPath || imgError) return null
 
   return (
-    <div
+    <motion.div
       className={`${fill ? 'w-full' : 'w-24 md:w-48'} relative py-2 group`}
       title={title}
+      whileHover={{ y: -6 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
     >
       <Link
         to={`/title/${mediaType}/${id}`}
-        className="block rounded-sm md:rounded-lg overflow-hidden shadow-md transform transition duration-300 group-hover:scale-102 group-hover:shadow-xl group-hover:z-20 relative">
-        <img
+        className="block rounded-md md:rounded-lg overflow-hidden border border-transparent shadow-cg-card transition-[box-shadow,border-color] duration-300 ease-cg-standard group-hover:border-border-hairline group-hover:shadow-cg-elevated group-hover:z-20 relative"
+      >
+        <motion.img
+          layoutId={layoutId}
           src={IMG_CDN_URL + posterPath}
           alt={title ? `${title} poster` : 'Movie poster'}
           loading="lazy"
@@ -30,10 +34,10 @@ const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], 
         <div>
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-ink/40 transition-opacity duration-300">
             <button
-              className="bg-accent text-on-accent rounded-full p-4 shadow-lg hover:scale-110 hover:bg-accent-strong cursor-pointer transition-transform duration-300"
+              className="bg-accent2 text-white rounded-full p-4 shadow-cg-glow hover:scale-110 hover:bg-accent2-strong cursor-pointer transition-transform duration-300"
               aria-label={title ? `Play ${title}` : 'Play'}
             >
-              <FaPlay size={20} />
+              <Play size={20} fill="currentColor" />
             </button>
           </div>
 
@@ -42,7 +46,7 @@ const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], 
               className="bg-ink-elevated/70 text-text-dark rounded-full p-1 px-2 shadow-md hover:bg-ink-elevated cursor-pointer"
               aria-label="More options"
             >
-              <BsThreeDots size={18} />
+              <MoreHorizontal size={18} />
             </button>
           </div>
 
@@ -57,7 +61,7 @@ const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], 
           </div>
         )}
       </Link>
-    </div>
+    </motion.div>
   )
 }
 

@@ -1,6 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa'
+import { motion } from 'motion/react'
+import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import { addRating, removeRating } from '../../utils/ratings'
 import { mediaDocId } from '../../utils/firestorePaths'
 
@@ -28,8 +29,10 @@ const RatingControl = ({ mediaType, id, genreIds = [], size = 14 }) => {
 
   return (
     <div className="flex items-center gap-1.5">
-      <button
+      <motion.button
         onClick={(e) => handleClick(e, 'like')}
+        whileTap={{ scale: 0.85 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         aria-label={currentRating === 'like' ? 'Remove like' : 'Like'}
         className={`rounded-full p-1.5 shadow-md cursor-pointer transition-colors ${
           currentRating === 'like'
@@ -37,10 +40,12 @@ const RatingControl = ({ mediaType, id, genreIds = [], size = 14 }) => {
             : 'bg-ink-elevated/70 text-text-dark hover:bg-ink-elevated'
         }`}
       >
-        <FaThumbsUp size={size} />
-      </button>
-      <button
+        <ThumbsUp size={size} />
+      </motion.button>
+      <motion.button
         onClick={(e) => handleClick(e, 'dislike')}
+        whileTap={{ scale: 0.85 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         aria-label={currentRating === 'dislike' ? 'Remove dislike' : 'Dislike'}
         className={`rounded-full p-1.5 shadow-md cursor-pointer transition-colors ${
           currentRating === 'dislike'
@@ -48,8 +53,8 @@ const RatingControl = ({ mediaType, id, genreIds = [], size = 14 }) => {
             : 'bg-ink-elevated/70 text-text-dark hover:bg-ink-elevated'
         }`}
       >
-        <FaThumbsDown size={size} />
-      </button>
+        <ThumbsDown size={size} />
+      </motion.button>
     </div>
   )
 }

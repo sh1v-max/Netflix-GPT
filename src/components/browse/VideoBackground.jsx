@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
+import { motion } from 'motion/react'
 import useTrailer from '../../hooks/useTrailer'
-import { BsFillVolumeUpFill, BsFillVolumeMuteFill } from 'react-icons/bs'
+import { Volume2, VolumeX } from 'lucide-react'
 
 export const VideoBackground = ({ movieId, mediaType = 'movie' }) => {
   const trailerVideo = useSelector((store) =>
@@ -34,16 +35,18 @@ export const VideoBackground = ({ movieId, mediaType = 'movie' }) => {
       ></iframe>
       {/* Volume Button */}
       <div>
-        <button
+        <motion.button
+          whileTap={{ scale: 0.9 }}
           onClick={toggleMute}
-          className="absolute right-3 bottom-20 md:right-10 md:bottom-37 bg-ink-elevated/40 backdrop-blur-lg text-text-dark py-2 px-2 md:px-3 md:py-3 rounded-full shadow-lg cursor-pointer focus:outline-none hover:bg-ink-elevated/70 z-20"
+          aria-label={isMuted ? 'Unmute trailer' : 'Mute trailer'}
+          className="absolute right-3 bottom-20 md:right-10 md:bottom-37 bg-surface-glass backdrop-blur-[--blur-cg-glass] border border-border-hairline text-text-dark p-2 md:p-3 rounded-full shadow-lg cursor-pointer focus:outline-none hover:bg-ink-elevated/70 z-20"
         >
           {isMuted ? (
-            <BsFillVolumeMuteFill className="h-3 w-3 md:h-8 md:w-8" />
+            <VolumeX className="h-4 w-4 md:h-6 md:w-6" />
           ) : (
-            <BsFillVolumeUpFill className="h-3 w-3 md:h-8 md:w-8" />
+            <Volume2 className="h-4 w-4 md:h-6 md:w-6" />
           )}
-        </button>
+        </motion.button>
       </div>
     </div>
   )

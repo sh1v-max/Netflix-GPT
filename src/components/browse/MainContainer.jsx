@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import VideoTitle from './VideoTitle'
 import VideoBackground from './VideoBackground'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const MainContainer = ({ movies, mediaType = 'movie' }) => {
   // Pick a random hero once, the moment the list first arrives — not on
@@ -16,9 +17,7 @@ const MainContainer = ({ movies, mediaType = 'movie' }) => {
   }, [movies, heroIndex])
 
   if (!movies || heroIndex === null) {
-    return (
-      <div className="relative w-full h-87.5 md:h-screen bg-ink-elevated animate-pulse" />
-    )
+    return <Skeleton className="relative w-full h-87.5 md:h-screen rounded-none" />
   }
 
   const mainMovie = movies[heroIndex]

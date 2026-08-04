@@ -20,10 +20,13 @@ const usePreferencesSync = () => {
 
     const unsubscribe = onSnapshot(ratingsCollection(uid), (snapshot) => {
       const ratings = {}
+      const ratedGenres = {}
       snapshot.forEach((docSnap) => {
-        ratings[docSnap.id] = docSnap.data().rating
+        const data = docSnap.data()
+        ratings[docSnap.id] = data.rating
+        ratedGenres[docSnap.id] = data.genreIds || []
       })
-      dispatch(setRatings(ratings))
+      dispatch(setRatings({ ratings, ratedGenres }))
     })
 
     return () => unsubscribe()
