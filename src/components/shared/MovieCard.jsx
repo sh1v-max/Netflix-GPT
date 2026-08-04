@@ -27,7 +27,7 @@ const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], 
           alt={title ? `${title} poster` : 'Movie poster'}
           loading="lazy"
           onError={() => setImgError(true)}
-          className="w-full h-auto object-cover"
+          className="w-full aspect-2/3 object-cover"
         />
 
         {/* Hover Icons Container */}
@@ -43,7 +43,7 @@ const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], 
 
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-70 transition-opacity duration-300">
             <button
-              className="bg-ink-elevated/70 text-text-dark rounded-full p-1 px-2 shadow-md hover:bg-ink-elevated cursor-pointer"
+              className="bg-ink-elevated/70 text-text-dark rounded-full p-1 px-2 shadow-cg-elevated hover:bg-ink-elevated cursor-pointer"
               aria-label="More options"
             >
               <MoreHorizontal size={18} />

@@ -26,15 +26,24 @@ Netflix-clone tutorial project — no borrowed logo, palette, or layout.
 | UI library | React | 19 |
 | Build tool | Vite | 6 |
 | Styling | Tailwind CSS | 4 (token-based `@theme`, no `tailwind.config.js`) |
+| Component primitives | shadcn/ui | Radix-based (button, card, dialog, sheet, tabs, dropdown-menu, tooltip, skeleton, input) — every primitive customized to Cinegraph's tokens, none left at shadcn defaults |
+| Motion | Motion (`motion/react`) | `MotionConfig reducedMotion="user"` at the app root — every `motion.*` component auto-respects `prefers-reduced-motion`, no per-component checks needed |
 | State | Redux Toolkit | 2 |
-| Routing | React Router | 7 |
+| Routing | React Router | 7 — route-level code splitting via `React.lazy`/`Suspense` in `Body.jsx` |
 | Backend | Firebase | 12 — Authentication, Firestore, Hosting, Analytics |
 | Movie/TV data | TMDB API | v3 (read access token) |
 | AI search | GPT via OpenRouter | model: `stepfun/step-3.5-flash:free` |
-| Icons | react-icons | 5 (`fa`, `bs`, `ai`, `hi2`, `im` sets used) |
-| Linting | ESLint 9 | flat config, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` |
+| Icons | Lucide (`lucide-react`) | primary icon set app-wide. `react-icons` kept for exactly one case — `FaGithub` in `Footer.jsx` — since this Lucide version ships UI icons only, no brand/logo marks |
+| Linting | ESLint 9 | flat config, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `eslint-plugin-react` (added for JSX-aware `no-unused-vars`, needed once `<motion.div>`-style namespaced JSX components entered the codebase) |
 | Dev/verification | Playwright | 1 (devDependency — used for visual/runtime verification during development, not an automated test suite) |
 | Deploy tooling | firebase-tools | 15 (devDependency) |
+
+**Visual redesign**: the entire UI was rebuilt on a new "Cinegraph v2"
+design system — see [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) (tokens,
+philosophy) and [`better-ui-ux.md`](better-ui-ux.md) (the phase-by-phase
+execution log, all 10 phases complete). Architecture, routing, Redux,
+and Firebase/TMDB integration were explicitly out of scope for that
+redesign — visual/interaction layer only.
 
 All dependencies are declared in `package.json`; nothing here is a
 global-only install except your own Firebase CLI login.
@@ -72,8 +81,9 @@ netflixgpt/
 ├── firestore.rules              security rules (deployed)
 ├── firestore.indexes.json       currently empty
 ├── .firebaserc                  points at project `netflixgpt-e671d`
-├── re-do.md                     phase-by-phase build log (the actual source of truth
-│                                for "what's done")
+├── re-do.md                     phase-by-phase build log (features/architecture)
+├── DESIGN-SYSTEM.md             Cinegraph v2 visual design system (tokens, philosophy)
+├── better-ui-ux.md               phase-by-phase redesign execution log (all 10 phases done)
 ├── IDEAS.md                     original rebrand brainstorm
 └── README.md                    public-facing project readme
 ```
@@ -111,7 +121,7 @@ Seven slices, registered in `src/store/appStore.jsx`:
 | `movies` | `nowPlayingMovies`, `popularMovies`, `topRatedMovies`, `upcomingMovies`, `trailerVideo` | `useNowPlayingMovies`, `usePopularMovies`, etc. |
 | `tv` | `onTheAirShows`, `popularShows`, `topRatedShows`, `airingTodayShows`, `trailerVideo` | matching TV hooks |
 | `details` | `mediaDetails`, `credits`, `similar`, `watchProviders`, `genres` — all keyed by `${mediaType}_${id}` (genres keyed by mediaType alone) | `useMediaDetails`, `useCredits`, `useSimilarTitles`, `useWatchProviders`, `useGenres` |
-| `preferences` | `ratings` (`{ [docId]: 'like' \| 'dislike' }`), `isLoaded` | `usePreferencesSync` (live Firestore `onSnapshot`) |
+| `preferences` | `ratings` (`{ [docId]: 'like' \| 'dislike' }`), `ratedGenres` (`{ [docId]: genreIds[] }` — mirrors `ratings`, powers the Detail page's taste-compatibility read), `isLoaded` | `usePreferencesSync` (live Firestore `onSnapshot`) |
 | `gpt` | `showGptSearch` (defaults `true` — search-first landing), `movieNames`, `movieResults` | `GptSearchBar`, `Header`'s Home/Movies nav |
 | `config` | `lang` (defaults `'en'`) | `Header`'s language selector (only shown in AI-search mode) |
 
@@ -195,23 +205,46 @@ Live at `https://netflixgpt-e671d.web.app`.
 
 ## 8. Design system
 
-Entirely in `src/index.css` as a Tailwind v4 `@theme` block — no
-`tailwind.config.js`. Key tokens:
+Entirely in `src/index.css` as Tailwind v4 `@theme` blocks — no
+`tailwind.config.js`. Full rationale in `DESIGN-SYSTEM.md`; this is the
+token inventory as it exists in code.
 
-- **Surfaces**: `--color-ink` / `--color-ink-elevated` (dark), `--color-paper` / `--color-paper-elevated` (light)
-- **Accent**: `--color-accent` (amber/gold) — the *only* color allowed on interactive elements
-- **Signal**: `--color-rust` — reserved exclusively for dislike/negative actions
-- **Fixed**: `--color-on-accent` — does NOT swap with theme; for text sitting on the accent color itself (buttons), which stays the same gold regardless of light/dark mode
-- **Type**: `--font-display` (Space Grotesk), `--font-body` (Inter)
-- **Shape/motion**: one radius scale (`--radius-card`), one easing curve
+**Two token generations coexist on purpose.** The v1 tokens
+(`--color-ink`, `--color-accent` gold, `--color-text-dark`, etc.) were
+never removed — some components still use them, and removing them
+before every last usage is migrated would regress those screens. The
+v2 tokens (`--color-bg-*`, `--color-fg*`, `--color-accent2` indigo,
+`--color-border-hairline`, `--color-surface-glass`, `--color-signal-*`)
+are what every screen built from Phase 2 onward actually uses.
+
+- **v1 surfaces**: `--color-ink`/`--color-ink-elevated` (dark), `--color-paper`/`--color-paper-elevated` (light) — still referenced by a handful of unmigrated spots
+- **v2 surfaces**: `--color-bg-deep`/`--color-bg-base`/`--color-bg-elevated`/`--color-bg-muted` (a deliberately distinct step lighter than `bg-elevated`, so shadcn's `Skeleton`/`Secondary` don't blend into cards), `--color-surface-glass`, `--color-border-hairline`
+- **v2 foreground**: `--color-fg`/`--color-fg-muted`
+- **v2 brand accent**: `--color-accent2` (indigo `#5e6ad2`) — the one interactive color across every v2 screen. `--color-accent` (gold) is *not* deprecated — it's the reserved signal color for "like"/star-rating, alongside `--color-rust`/`--color-signal-dislike` for "dislike." Brand accent and signal color are deliberately different colors that never mean the same thing.
+- **Type**: `--font-display` (Space Grotesk), `--font-body` (Inter), a defined `--text-cg-*` scale
+- **Motion**: one easing curve, `--ease-cg-standard` (`cubic-bezier(0.16, 1, 0.3, 1)`), exported as a JS constant from `src/lib/motion.js` (`EASE`) so every component imports the same value instead of redeclaring it
+- **Radius**: shadcn's own derived scale (`--radius: 1rem` base) for primitives, plus `--radius-chip`/`--radius-panel` for hand-built surfaces
+- **Elevation**: `--shadow-cg-card`/`--shadow-cg-elevated`/`--shadow-cg-glow` — the only shadow values used anywhere in app code; no component reaches for Tailwind's default `shadow-md`/`shadow-lg` scale
 
 **Light/dark theme**: toggled in `Header.jsx`, persisted to
-`localStorage`, applied via `data-theme` on `<html>`. Implemented by
-*redefining what the same token names point to* under
-`[data-theme='light']` (e.g. `--color-ink` becomes the paper color),
-rather than maintaining a parallel set of light-mode classes — every
-component already using `bg-ink`/`text-text-dark` works correctly in
-both themes with zero changes.
+`localStorage`, applied via `data-theme` on `<html>`. Both token
+generations redefine what the same token names point to under
+`[data-theme='light']` — v1 and v2 alike — so every component works in
+both themes with zero per-component changes.
+
+**`.aurora-gradient` / `.theme-dark-scope`**: a small number of
+"hero moment" surfaces (Home's hero + CTA banner, Login's branding
+panel, the AI-search view on `/browse`) are deliberately cinematic-dark
+*regardless* of site theme — a common pattern for branded hero
+sections. These two CSS classes re-pin every v1/v2 token their content
+might read, plus `color` itself (which is inherited *by computed
+value*, not live — a `text-text-dark` class living on a distant
+ancestor outside the scope would otherwise freeze its color before
+reaching in). `.aurora-gradient` is used where the gradient div and the
+content are the same element or direct parent/child (Home, Login);
+`.theme-dark-scope` is the token-only version for cases where the
+gradient div and the content are siblings (`Browse.jsx`'s fixed
+background layer vs. its content wrapper).
 
 **Custom range slider** (`.styled-range` in `index.css`): the browser's
 default `<input type="range">` doesn't respect the design tokens, so
@@ -219,9 +252,10 @@ track/thumb are custom-styled via `::-webkit-slider-thumb`/`::-moz-range-thumb`,
 with the filled portion driven by an inline `linear-gradient` computed
 from the current value (used on Discover's min-rating filter).
 
-**`.hero-gradient`**: a radial gradient (ink + accent) used as the
-background treatment on Login, Browse, and Shows — replaces what used
-to be Netflix's actual marketing photo.
+**`.hero-gradient`**: a subtle radial (ink + `--color-accent2`) used as
+the ambient background on the regular (non-AI-search) Browse and Shows
+views — unlike `.aurora-gradient`, this one *does* theme-swap normally,
+since its base color is the v1 `--color-ink` token.
 
 ---
 

@@ -1,15 +1,14 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
 import Header from '../layout/Header'
 import Footer from '../layout/Footer'
 import usePopularMovies from '../../hooks/usePopularMovies'
 import { IMG_CDN_URL } from '../../utils/constant'
 import { Button } from '@/components/ui/button'
 import { Sparkles, Film, BarChart3, ArrowRight } from 'lucide-react'
-
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '@/lib/motion'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -22,12 +21,10 @@ const stagger = {
 }
 
 const FeatureSection = ({ icon, badge, title, description, visual, reverse }) => {
-  const reduceMotion = useReducedMotion()
   return (
     <motion.section
-      initial={reduceMotion ? undefined : 'hidden'}
-      whileInView={reduceMotion ? undefined : 'show'}
-      viewport={{ once: true, amount: 0.35 }}
+      initial="hidden"
+      animate="show"
       variants={stagger}
       className={`flex flex-col ${
         reverse ? 'md:flex-row-reverse' : 'md:flex-row'
@@ -59,14 +56,14 @@ const FeatureSection = ({ icon, badge, title, description, visual, reverse }) =>
 const Home = () => {
   const popularMovies = useSelector((store) => store.movies?.popularMovies)
   usePopularMovies()
-  const reduceMotion = useReducedMotion()
 
   const posters = (popularMovies || []).filter((m) => m.poster_path).slice(0, 18)
 
   return (
-    <div className="min-h-screen bg-ink text-text-dark">
+    <div className="min-h-screen bg-ink text-text-dark flex flex-col">
       <Header />
 
+      <main className="flex-1">
       {/* Hero */}
       <section className="relative min-h-120 md:min-h-150 flex items-center pt-20 pb-16 overflow-hidden aurora-gradient">
         {posters.length > 0 && (
@@ -77,7 +74,7 @@ const Home = () => {
                 src={IMG_CDN_URL + movie.poster_path}
                 alt=""
                 aria-hidden="true"
-                className="rounded-lg w-full h-auto object-cover"
+                className="rounded-lg w-full aspect-2/3 object-cover"
                 style={{ marginTop: `${(i % 3) * 24}px` }}
               />
             ))}
@@ -86,8 +83,8 @@ const Home = () => {
         <div className="absolute inset-0 bg-linear-to-b from-bg-deep/30 via-bg-deep/70 to-ink" />
 
         <motion.div
-          initial={reduceMotion ? undefined : 'hidden'}
-          animate={reduceMotion ? undefined : 'show'}
+          initial="hidden"
+          animate="show"
           variants={stagger}
           className="relative text-center px-6 max-w-2xl mx-auto w-full"
         >
@@ -135,6 +132,7 @@ const Home = () => {
                   key={movie.id}
                   src={IMG_CDN_URL + movie.poster_path}
                   alt=""
+                  loading="lazy"
                   className="flex-1 min-w-0 aspect-2/3 object-cover rounded-lg border border-border-hairline"
                 />
               ))}
@@ -155,7 +153,8 @@ const Home = () => {
                 key={movie.id}
                 src={IMG_CDN_URL + movie.poster_path}
                 alt=""
-                className="rounded-lg w-full h-auto object-cover"
+                loading="lazy"
+                className="rounded-lg w-full aspect-2/3 object-cover"
               />
             ))}
           </div>
@@ -187,9 +186,8 @@ const Home = () => {
       <section className="relative aurora-gradient text-center py-16 md:py-24 px-6 overflow-hidden">
         <div className="absolute inset-0 bg-bg-deep/40" />
         <motion.div
-          initial={reduceMotion ? undefined : { opacity: 0, y: 16 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: EASE }}
           className="relative"
         >
@@ -204,6 +202,7 @@ const Home = () => {
           </Button>
         </motion.div>
       </section>
+      </main>
 
       <Footer />
     </div>

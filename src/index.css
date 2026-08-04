@@ -123,6 +123,20 @@
   --color-text-dark: var(--color-text-light);
   --color-text-dark-muted: var(--color-text-light-muted);
 
+  /* v2 surface tokens — light. These are used directly (bg-surface-glass,
+     border-border-hairline, etc.) across every screen built in Phases
+     2-9; without this block glass panels and hairline borders — both
+     white-tinted for the dark theme — go nearly invisible on a light
+     background. */
+  --color-bg-deep: #faf9f6;
+  --color-bg-base: var(--color-paper);
+  --color-bg-elevated: var(--color-paper-elevated);
+  --color-bg-muted: #e5e0d4;
+  --color-surface-glass: rgba(23, 22, 26, 0.04);
+  --color-border-hairline: rgba(23, 22, 26, 0.1);
+  --color-fg: var(--color-text-light);
+  --color-fg-muted: var(--color-text-light-muted);
+
   /* shadcn slots — light (secondary priority, finalized in Polish phase) */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -164,6 +178,33 @@ body {
   background:
     radial-gradient(ellipse 80% 60% at 80% -10%, color-mix(in srgb, var(--color-accent2) 20%, transparent), transparent 70%),
     var(--color-ink);
+}
+
+/* Deliberately cinematic-dark regardless of site theme (a common pattern
+   for hero moments) — re-pins every token nested content might read back
+   to dark-mode values, AND sets `color` directly (not just the custom
+   property) since `color` is inherited *by computed value* — a
+   `text-text-dark` class living on a distant ancestor (outside this
+   scope) would otherwise freeze its color before it ever reaches this
+   subtree. `.theme-dark-scope` is the same treatment without the
+   background, for spots where the gradient div and the actual content
+   are siblings rather than parent/child (e.g. Browse.jsx). */
+.aurora-gradient,
+.theme-dark-scope {
+  --color-ink: #0b0b0f;
+  --color-ink-elevated: #16161c;
+  --color-text-dark: #f5f1ea;
+  --color-text-dark-muted: #9a9691;
+  --color-bg-deep: #020203;
+  --color-bg-base: #050506;
+  --color-bg-elevated: #0a0a0c;
+  --color-bg-muted: #141417;
+  --color-surface-glass: rgba(255, 255, 255, 0.05);
+  --color-border-hairline: rgba(255, 255, 255, 0.08);
+  --color-fg: #ededef;
+  --color-fg-muted: #8a8f98;
+  color: var(--color-text-dark);
+  color-scheme: dark;
 }
 
 /* v2 aurora background — accent-family radial mesh, animated position.

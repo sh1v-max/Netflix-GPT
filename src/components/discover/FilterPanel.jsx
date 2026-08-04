@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { ChevronDown } from 'lucide-react'
+import { EASE } from '@/lib/motion'
 import useGenres from '../../hooks/useGenres'
 
 const RATING_MAX = 9
-const EASE = [0.16, 1, 0.3, 1]
 
 // Pure filter controls — no positioning/chrome of its own, so it can be
 // dropped into a permanent sidebar (desktop) or a dropdown (mobile)

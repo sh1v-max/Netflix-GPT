@@ -3,9 +3,8 @@ import { useSelector } from 'react-redux'
 import { motion } from 'motion/react'
 import { Sparkles, ArrowUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { EASE } from '@/lib/motion'
 import ThinkingDots from './ThinkingDots'
-
-const EASE = [0.16, 1, 0.3, 1]
 
 const EXAMPLE_PROMPTS = [
   'Something like Inception, but shorter',
@@ -30,7 +29,7 @@ const GptSearchBar = ({
   }
 
   return (
-    <div className="flex flex-col items-center px-4 md:px-6 pt-16 md:pt-24">
+    <div className="flex flex-col items-center px-4 md:px-6 w-full">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}

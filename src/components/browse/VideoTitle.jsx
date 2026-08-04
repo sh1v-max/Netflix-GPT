@@ -2,9 +2,8 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { ArrowRight, Star } from 'lucide-react'
+import { EASE } from '@/lib/motion'
 import useGenres from '../../hooks/useGenres'
-
-const EASE = [0.16, 1, 0.3, 1]
 
 const VideoTitle = ({ id, mediaType = 'movie', title, overview, genreIds, voteAverage }) => {
   const genres = useGenres(mediaType)

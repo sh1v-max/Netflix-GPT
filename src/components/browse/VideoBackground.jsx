@@ -39,7 +39,7 @@ export const VideoBackground = ({ movieId, mediaType = 'movie' }) => {
           whileTap={{ scale: 0.9 }}
           onClick={toggleMute}
           aria-label={isMuted ? 'Unmute trailer' : 'Mute trailer'}
-          className="absolute right-3 bottom-20 md:right-10 md:bottom-37 bg-surface-glass backdrop-blur-[--blur-cg-glass] border border-border-hairline text-text-dark p-2 md:p-3 rounded-full shadow-lg cursor-pointer focus:outline-none hover:bg-ink-elevated/70 z-20"
+          className="absolute right-3 bottom-20 md:right-10 md:bottom-37 bg-surface-glass backdrop-blur-[--blur-cg-glass] border border-border-hairline text-text-dark p-2 md:p-3 rounded-full shadow-cg-elevated cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent2 hover:bg-ink-elevated/70 z-20"
         >
           {isMuted ? (
             <VolumeX className="h-4 w-4 md:h-6 md:w-6" />

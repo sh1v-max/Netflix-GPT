@@ -14,8 +14,8 @@ import { addUser } from '../../store/userSlice'
 import { USER_AVATAR, IMG_CDN_URL } from '../../utils/constant'
 import usePopularMovies from '../../hooks/usePopularMovies'
 import { Button } from '@/components/ui/button'
+import { EASE } from '@/lib/motion'
 
-const EASE = [0.16, 1, 0.3, 1]
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
@@ -124,7 +124,7 @@ const Login = () => {
                 src={IMG_CDN_URL + movie.poster_path}
                 alt=""
                 aria-hidden="true"
-                className="rounded-lg w-full h-auto object-cover"
+                className="rounded-lg w-full aspect-2/3 object-cover"
                 style={{ marginTop: `${(i % 3) * 28}px` }}
               />
             ))}

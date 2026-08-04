@@ -1,10 +1,17 @@
 import { onAuthStateChanged, signOut } from 'firebase/auth'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { auth } from '../../utils/firebaseConfig'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { SUPPORTED_LANG } from '../../utils/constant'
 import Logo from './Logo'
 import { addUser, removeUser } from '../../store/userSlice'
@@ -23,8 +30,6 @@ import {
   Moon,
 } from 'lucide-react'
 
-const EASE = [0.16, 1, 0.3, 1]
-
 const Header = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -36,11 +41,9 @@ const Header = () => {
   // mode" there.
   const isGptActive = showGptSearch && location.pathname === '/browse'
   const [isScrolled, setIsScrolled] = useState(false)
-  const [showMenu, setShowMenu] = useState(false)
   const [theme, setTheme] = useState(
     () => localStorage.getItem('cinegraph-theme') || 'dark'
   )
-  const menuRef = useRef(null)
   usePreferencesSync()
 
   useEffect(() => {
@@ -112,17 +115,6 @@ const Header = () => {
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setShowMenu(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const handleGptSearchClick = () => {
@@ -218,7 +210,7 @@ const Header = () => {
           <>
           {isGptActive && (
             <select
-              className="appearance-none backdrop-blur-md bg-white/10 text-text-dark border border-white/20 text-xs md:text-sm py-1 md:py-1.5 px-3 md:pr-2 md:pl-5 rounded-lg cursor-pointer focus:outline-none transition-all duration-300 hover:bg-white/20 shadow-md"
+              className="appearance-none backdrop-blur-md bg-white/10 text-text-dark border border-white/20 text-xs md:text-sm py-1 md:py-1.5 px-3 md:pr-2 md:pl-5 rounded-lg cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent2 transition-all duration-300 hover:bg-white/20 shadow-cg-elevated"
               onChange={handleLanguageChange}
             >
               {SUPPORTED_LANG.map((lang) => (
@@ -242,64 +234,50 @@ const Header = () => {
             <span className="absolute left-1 right-1 bottom-0 h-1 bg-accent2 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
           </button>
 
-          <div className="relative" ref={menuRef}>
-            <motion.div
-              whileTap={{ scale: 0.92 }}
-              className="flex items-center space-x-1 md:space-x-2 cursor-pointer"
-              onClick={() => setShowMenu(!showMenu)}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <motion.button
+                whileTap={{ scale: 0.92 }}
+                className="flex items-center space-x-1 md:space-x-2 cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2"
+                aria-label="Open profile menu"
+              >
+                <img
+                  src={user.photo}
+                  alt=""
+                  className="w-6.5 h-6.5 md:w-8 md:h-8 rounded-lg object-cover border border-border-hairline transition-shadow hover:shadow-[0_0_0_2px_var(--color-accent2-glow)]"
+                />
+              </motion.button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-34 md:w-42 backdrop-blur-[--blur-cg-glass] bg-surface-glass border-border-hairline rounded-panel shadow-cg-elevated p-1.5"
             >
-              <img
-                src={user.photo}
-                alt="User Profile"
-                className="w-6.5 h-6.5 md:w-8 md:h-8 rounded-lg object-cover border border-border-hairline cursor-pointer transition-shadow hover:shadow-[0_0_0_2px_var(--color-accent2-glow)]"
-              />
-            </motion.div>
-
-            {/* Dropdown Menu */}
-            <AnimatePresence>
-              {showMenu && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                  transition={{ duration: 0.15, ease: EASE }}
-                  className="absolute top-full right-0 w-34 md:w-42 backdrop-blur-[--blur-cg-glass] bg-surface-glass border border-border-hairline rounded-panel shadow-cg-elevated py-2 z-500 mt-2 origin-top-right"
-                >
-                  <ul>
-                    <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
-                      <User size={14} />
-                      <div className="border-r border-white/20 h-5"></div>
-                      Profile
-                    </li>
-                    <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
-                      <UserCog size={14} />
-                      <div className="border-r border-white/20 h-5"></div>
-                      Account
-                    </li>
-                    <li className="pl-5 md:pl-8 py-2 text-sm text-accent2 hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
-                      <Star size={14} />
-                      <div className="border-r border-white/20 h-5"></div>
-                      Premium
-                    </li>
-                    <li className="pl-5 md:pl-8 py-2 text-sm text-text-dark hover:bg-white/10 rounded-md cursor-pointer transition-colors flex items-center gap-2">
-                      <Settings size={14} />
-                      <div className="border-r border-white/20 h-5"></div>
-                      Settings
-                    </li>
-                    <li className="border-t border-white/10 my-2 mx-4"></li>
-                    <button
-                      className="pl-5 md:pl-8 w-full text-left py-2 text-sm text-rust hover:bg-rust hover:text-text-dark rounded-md cursor-pointer transition-colors flex items-center gap-2"
-                      onClick={handleSignOut}
-                    >
-                      <LogOut size={14} />
-                      <div className="border-r border-white/20 h-5"></div>
-                      Sign Out
-                    </button>
-                  </ul>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+              <DropdownMenuItem className="gap-2 py-2 pl-3 text-text-dark focus:bg-white/10 focus:text-text-dark">
+                <User size={14} />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 py-2 pl-3 text-text-dark focus:bg-white/10 focus:text-text-dark">
+                <UserCog size={14} />
+                Account
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 py-2 pl-3 text-accent2 focus:bg-white/10 focus:text-accent2">
+                <Star size={14} />
+                Premium
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 py-2 pl-3 text-text-dark focus:bg-white/10 focus:text-text-dark">
+                <Settings size={14} />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleSignOut}
+                className="gap-2 py-2 pl-3 text-rust focus:bg-rust focus:text-text-dark"
+              >
+                <LogOut size={14} />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           </>
         )}
       </div>

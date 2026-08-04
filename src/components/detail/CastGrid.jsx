@@ -2,8 +2,7 @@ import React from 'react'
 import { motion } from 'motion/react'
 import { User } from 'lucide-react'
 import { PROFILE_CDN_URL } from '../../utils/constant'
-
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '@/lib/motion'
 
 const stagger = {
   hidden: {},
@@ -19,8 +18,7 @@ const CastGrid = ({ cast }) => {
   return (
     <motion.div
       initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, amount: 0.2 }}
+      animate="show"
       variants={stagger}
       className="flex gap-4 overflow-x-scroll no-scrollbar scroll-smooth pb-2"
     >

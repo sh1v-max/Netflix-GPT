@@ -16,6 +16,13 @@ Not a streaming platform. Not a Netflix clone. Three pillars, working together:
 Everything below is the plan to get there, broken into concrete,
 buildable steps, in the order we'll build it.
 
+**Note**: the visual/interaction redesign (shadcn/ui + Motion + Lucide,
+"Cinegraph v2" design system) is tracked separately in
+[`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) and
+[`better-ui-ux.md`](better-ui-ux.md) — all 10 phases there are complete.
+This file remains the source of truth for architecture/features
+(routing, state, data model, AI layer).
+
 ---
 
 ## Phase 0 — Identity & Rebrand
@@ -515,12 +522,25 @@ Do this once the three pillars work end-to-end, before calling it done.
       `DetailPage`)
 - [ ] Error boundary around the router — one thrown error shouldn't blank
       the whole app
-- [ ] Accessibility pass — icon-only buttons need `aria-label`s (partially
-      done already), visible focus states using `--color-accent`, contrast
-      check on the new palette (paper/ink pairing against text tokens)
-- [ ] Code-split routes with `React.lazy` — production build is already
-      flagged at 628kB in a single chunk, and Phase 1-3 add several new
-      routes that don't all need to load on first paint
+- [x] Accessibility pass — done in the visual redesign's Phase 10
+      (`better-ui-ux.md`): every icon-only button has an `aria-label`,
+      the profile menu was migrated from a hand-rolled div/li dropdown to
+      shadcn's Radix-based `DropdownMenu` (real keyboard nav, focus trap,
+      Escape-to-close — the old version had none of that), two
+      `focus:outline-none` instances with no replacement ring were fixed,
+      `prefers-reduced-motion` wired globally via `MotionConfig`. Not
+      independently re-verified against a Lighthouse/axe run — see that
+      phase's notes for what was and wasn't checked
+- [x] Code-split routes with `React.lazy` — done in the visual redesign's
+      Phase 10 (`better-ui-ux.md`). `Body.jsx` wraps every route in
+      `lazy()`/`Suspense`; the single-bundle main chunk went from ~1.35MB
+      to 358KB, with each page shipping its own small chunk. Motion
+      itself is now the largest single chunk (~906KB/238KB gzip, shared
+      across all routes) — an accepted tradeoff for the `layoutId`
+      shared-element transitions and `AnimatePresence` usage; a
+      `LazyMotion` refactor would touch ~14 files and likely lose the
+      layout-animation support currently in use, so it wasn't done
+      unilaterally
 - [ ] CI — GitHub Actions running lint/build/tests on PRs (there's a
       `.github` folder already; check what's wired up before adding a
       new workflow)

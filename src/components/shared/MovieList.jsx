@@ -2,8 +2,7 @@ import { useRef } from 'react';
 import { motion } from 'motion/react'
 import MovieCard from './MovieCard'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '@/lib/motion'
 
 const stagger = {
   hidden: {},
@@ -42,7 +41,7 @@ const MovieList = ({ title, movies, mediaType = 'movie' }) => {
       <h1 className="font-display text-sm md:text-3xl py-1 md:py-4 text-text-dark font-semibold">{title}</h1>
 
       <button
-        className="hidden md:block absolute left-0 top-[59%] -translate-y-1/2 bg-surface-glass hover:bg-ink-elevated text-text-dark p-3 rounded-full z-50 transition duration-300 backdrop-blur-[--blur-cg-glass] border border-border-hairline shadow-lg cursor-pointer"
+        className="hidden md:block absolute left-0 top-[59%] -translate-y-1/2 bg-surface-glass hover:bg-ink-elevated text-text-dark p-3 rounded-full z-50 transition duration-300 backdrop-blur-[--blur-cg-glass] border border-border-hairline shadow-cg-elevated cursor-pointer"
         onClick={() => scroll("left")}
         aria-label={`Scroll ${title} left`}
       >
@@ -52,8 +51,7 @@ const MovieList = ({ title, movies, mediaType = 'movie' }) => {
       <motion.div
         ref={scrollRef}
         initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.2 }}
+        animate="show"
         variants={stagger}
         className="flex overflow-x-scroll no-scrollbar scroll-smooth"
       >
@@ -73,7 +71,7 @@ const MovieList = ({ title, movies, mediaType = 'movie' }) => {
       </motion.div>
 
       <button
-        className="hidden md:block absolute right-0 top-[55%] -translate-y-1/2 bg-surface-glass hover:bg-ink-elevated text-text-dark p-3 rounded-full z-50 transition duration-300 backdrop-blur-[--blur-cg-glass] border border-border-hairline shadow-lg cursor-pointer"
+        className="hidden md:block absolute right-0 top-[55%] -translate-y-1/2 bg-surface-glass hover:bg-ink-elevated text-text-dark p-3 rounded-full z-50 transition duration-300 backdrop-blur-[--blur-cg-glass] border border-border-hairline shadow-cg-elevated cursor-pointer"
         onClick={() => scroll("right")}
         aria-label={`Scroll ${title} right`}
       >

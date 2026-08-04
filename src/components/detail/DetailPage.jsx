@@ -16,8 +16,8 @@ import useWatchProviders from '../../hooks/useWatchProviders'
 import RatingControl from '../shared/RatingControl'
 import { mediaDocId } from '../../utils/firestorePaths'
 import { BACKDROP_CDN_URL, IMG_CDN_URL } from '../../utils/constant'
+import { EASE } from '@/lib/motion'
 
-const EASE = [0.16, 1, 0.3, 1]
 const OVERVIEW_TRUNCATE_LENGTH = 260
 
 const DetailPage = () => {
@@ -100,9 +100,10 @@ const DetailPage = () => {
   const overviewIsLong = overview.length > OVERVIEW_TRUNCATE_LENGTH
 
   return (
-    <div className="min-h-screen bg-ink text-text-dark">
+    <div className="min-h-screen bg-ink text-text-dark flex flex-col">
       <Header />
 
+      <main className="flex-1">
       {/* Hero */}
       <div className="relative w-full h-[55vh] md:h-[70vh] bg-ink overflow-hidden">
         {details.backdrop_path && (
@@ -244,6 +245,7 @@ const DetailPage = () => {
                   src={IMG_CDN_URL + provider.logo_path}
                   alt={provider.provider_name}
                   title={provider.provider_name}
+                  loading="lazy"
                   className="w-10 h-10 rounded-lg border border-border-hairline"
                 />
               ))}
@@ -270,6 +272,7 @@ const DetailPage = () => {
           <MovieList title="More Like This" movies={similar} mediaType={mediaType} />
         </div>
       )}
+      </main>
 
       <Footer />
     </div>

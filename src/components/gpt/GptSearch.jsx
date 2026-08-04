@@ -56,9 +56,19 @@ const GptSearch = () => {
     }
   }
 
+  const movieNames = useSelector((store) => store.gpt.movieNames)
+  // Idle = nothing to show yet, nothing in flight. Center the whole search
+  // block (bar + chips + prompt) as one hero instead of pinning the bar to
+  // the top and leaving an oversized, disconnected empty-state box below it.
+  const isIdle = !isSearching && !error && !movieNames
+
   return (
-    <div className="relative h-full w-full">
-      <div>
+    <div className="relative w-full pt-20 md:pt-24 pb-12 px-2">
+      <div
+        className={
+          isIdle ? 'flex flex-col items-center justify-center min-h-[42vh]' : ''
+        }
+      >
         <GptSearchBar
           query={query}
           onQueryChange={setQuery}

@@ -34,7 +34,7 @@ const RatingControl = ({ mediaType, id, genreIds = [], size = 14 }) => {
         whileTap={{ scale: 0.85 }}
         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         aria-label={currentRating === 'like' ? 'Remove like' : 'Like'}
-        className={`rounded-full p-1.5 shadow-md cursor-pointer transition-colors ${
+        className={`rounded-full p-1.5 shadow-cg-elevated cursor-pointer transition-colors ${
           currentRating === 'like'
             ? 'bg-accent text-on-accent'
             : 'bg-ink-elevated/70 text-text-dark hover:bg-ink-elevated'
@@ -47,7 +47,7 @@ const RatingControl = ({ mediaType, id, genreIds = [], size = 14 }) => {
         whileTap={{ scale: 0.85 }}
         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         aria-label={currentRating === 'dislike' ? 'Remove dislike' : 'Dislike'}
-        className={`rounded-full p-1.5 shadow-md cursor-pointer transition-colors ${
+        className={`rounded-full p-1.5 shadow-cg-elevated cursor-pointer transition-colors ${
           currentRating === 'dislike'
             ? 'bg-rust text-text-dark'
             : 'bg-ink-elevated/70 text-text-dark hover:bg-ink-elevated'

@@ -17,9 +17,9 @@ const Shows = () => {
   useAiringTodayShows()
 
   return (
-    <div className='relative w-screen min-h-screen'>
+    <div className='relative w-screen min-h-screen flex flex-col'>
       <Header />
-      <div>
+      <div className="flex-1">
         <div className="relative w-full h-full">
           <div className="hero-gradient fixed inset-0 -z-40" />
           <div className="relative h-full">

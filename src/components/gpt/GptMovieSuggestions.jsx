@@ -5,8 +5,7 @@ import { Compass, AlertCircle } from 'lucide-react'
 import MovieList from '../shared/MovieList'
 import { Skeleton } from '@/components/ui/skeleton'
 import ThinkingDots from './ThinkingDots'
-
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '@/lib/motion'
 
 const ThinkingRow = () => (
   <div className="px-4 md:px-[10%] pt-4">
@@ -33,7 +32,7 @@ const GptMovieSuggestions = ({ isSearching, error }) => {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: EASE }}
-        className="flex flex-col items-center text-center h-[40vh] justify-center px-4"
+        className="flex flex-col items-center text-center px-4 pt-6"
       >
         <div className="mb-4 rounded-full bg-ink-elevated border border-border-hairline p-4 text-rust">
           <AlertCircle size={28} />
@@ -44,12 +43,14 @@ const GptMovieSuggestions = ({ isSearching, error }) => {
   }
 
   if (!movieNames) {
+    // isIdle is handled by the parent's centered layout — this just needs
+    // to be its natural, un-stretched size within that centered block.
     return (
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: EASE }}
-        className="h-[45vh] flex flex-col items-center justify-center px-4 text-center"
+        className="flex flex-col items-center px-4 pt-6 text-center"
       >
         <div className="mb-4 rounded-full bg-ink-elevated border border-border-hairline p-4 text-accent2">
           <Compass size={28} />

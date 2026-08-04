@@ -9,8 +9,7 @@ import useDiscover from '../../hooks/useDiscover'
 import useMultiSearch from '../../hooks/useMultiSearch'
 import { IMG_CDN_URL } from '../../utils/constant'
 import { Search, X, SlidersHorizontal, Loader2, Compass, SearchX } from 'lucide-react'
-
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '@/lib/motion'
 
 const MEDIA_TYPES = [
   { value: 'movie', label: 'Movies' },
@@ -126,9 +125,10 @@ const Discover = ({
   const backdropPosters = results.filter((item) => item.poster_path).slice(0, 20)
 
   return (
-    <div className="min-h-screen bg-ink text-text-dark">
+    <div className="min-h-screen bg-ink text-text-dark flex flex-col">
       <Header />
 
+      <main className="flex-1">
       {/* Header band */}
       <div className="relative pt-20 md:pt-28 pb-8 overflow-hidden">
         {backdropPosters.length > 0 && (
@@ -139,7 +139,7 @@ const Discover = ({
                 src={IMG_CDN_URL + movie.poster_path}
                 alt=""
                 aria-hidden="true"
-                className="rounded-md w-full h-auto object-cover"
+                className="rounded-md w-full aspect-2/3 object-cover"
                 style={{ marginTop: `${(i % 3) * 20}px` }}
               />
             ))}
@@ -400,6 +400,7 @@ const Discover = ({
           </div>
         </div>
       )}
+      </main>
 
       <Footer />
     </div>
