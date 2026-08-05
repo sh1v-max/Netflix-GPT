@@ -433,31 +433,103 @@ console under `users/{uid}/ratings/`, correctly keyed as
 convention exactly. The write path works.
 
 ### 2.4 — Watchlist
-- [ ] `toggleWatchlist(mediaType, id)` utility
-- [ ] Bookmark icon button on `MovieCard` and detail page
-- [ ] Route `/watchlist` — fetches full details for each saved id and
-      renders as a grid (reuse `Discover.jsx`'s grid layout)
+- [x] `addToWatchlist`/`removeFromWatchlist` (`src/utils/watchlist.jsx`) —
+      unconditional add/remove, mirrors `ratings.jsx` exactly (the write
+      path already had `watchlistCollection`/`watchlistDoc` helpers from
+      2.2, unused until now)
+- [x] `WatchlistButton.jsx` (`components/shared/`) — mirrors
+      `RatingControl`'s live-read/direct-write pattern. Uses the brand
+      accent (indigo) rather than a signal color, since "saved for later"
+      isn't a taste signal the way like/dislike are
+- [x] `preferencesSlice`/`usePreferencesSync` extended with a second
+      `onSnapshot` listener on the watchlist collection (same lifecycle
+      as ratings — synced on login, cleared on logout)
+- [x] Bookmark button on `MovieCard` — replaced the top-right "more
+      options" button, which had no `onClick` at all and never did
+      anything, with a real, functional action
+- [x] Bookmark button on `DetailPage`, next to `RatingControl`
+- [x] `useWatchlistDetails.jsx` — fetches full TMDB details for each
+      saved `{mediaType, mediaId}` pair in parallel (watchlist docs only
+      store the pair, same minimal-write pattern as ratings), normalizes
+      to the `genre_ids` shape `MovieCard`/`MovieList` already expect
+- [x] Route `/watchlist` (`components/watchlist/Watchlist.jsx`) — grid +
+      skeleton loading + illustrated empty state, reusing patterns from
+      `Discover.jsx`. Linked from the profile dropdown menu (not the main
+      nav, to avoid overcrowding it)
+- [x] `firestore.rules` already covered this via the existing recursive
+      wildcard (`users/{uid}/{document=**}`) — no rules change needed
+
+**Verified**: build/lint clean. Runtime-checked via the
+`browser-automation` skill (auth-guard temporarily disabled, then
+reverted and confirmed clean via `git diff`) — `/watchlist`'s empty
+state and `/movies`' grid (with the new bookmark button) both render
+with 0 console errors. The actual save/remove write path needs a real
+authenticated session to verify end-to-end (same limitation as 2.3's
+ratings feature).
 
 ### 2.5 — Profile computation
-- [ ] `computeTasteProfile(ratings)` utility: tallies genre frequency
-      weighted by like/dislike, buckets release years into decades,
-      derives a simple `topGenres` / `avoidGenres` list
-- [ ] Recompute and write to `users/{uid}/profile` after every rating
-      write (client-side trigger is fine for v1; a Cloud Function
-      trigger on document write is a later optimization, not a blocker)
+- [x] `computeTasteProfile(ratings, ratedGenres, ratedYears)`
+      (`src/utils/computeTasteProfile.jsx`) — pure function: tallies
+      genre frequency weighted by like (+1)/dislike (−1), buckets liked
+      titles' release years into decades, derives `topGenres`/`avoidGenres`
+      (score > 0 / < 0, sorted) and `favoriteDecade`
+- [x] **Scope change from the original plan**: computed client-side on
+      read (`useTasteProfile` hook, memoized off Redux state already live
+      via `usePreferencesSync`) instead of recomputed-and-written to
+      `users/{uid}/profile` on every rating. Nothing reads a persisted
+      copy yet — that Firestore write was premature until Phase 3's
+      server-side Cloud Function actually needs to read a profile without
+      the client re-deriving it. Revisit then; trivial to add, the pure
+      function doesn't change
+- [x] Required extending the rating write path (same precedent as 2.3
+      adding `genreIds`): `addRating`/`RatingControl`/`MovieCard` gained a
+      `releaseYear` param, threaded through from `MovieList`,
+      `Discover.jsx`'s two grids, and `DetailPage` (which already computed
+      `year`). New `getReleaseYear()` helper in `constant.jsx` reads
+      whichever of `release_date`/`first_air_date` TMDB returns.
+      `preferencesSlice`/`usePreferencesSync` gained a matching `ratedYears`
+      map, mirroring `ratedGenres`
 - [ ] (Stretch, v2) fold in recurring liked actors/directors from
       `/credits` on liked titles — skip for v1, it's an extra API call
       per liked title and genre+decade alone is enough to make Phase 3
       feel personalized
 
 ### 2.6 — Taste Profile page
-- [ ] Route `/profile` (or `/taste`)
-- [ ] Genre bar chart + decade distribution chart (this is a real data
-      visualization — load the `dataviz` skill when building this, don't
-      freehand chart colors/layout)
-- [ ] A plain-language summary line: "You tend to like — [genres]. You
-      tend to avoid — [genres]." This sentence is what makes the graph
-      feel like a feature, not a settings page
+- [x] Route `/profile` (`src/components/profile/Profile.jsx`) — linked
+      from the profile dropdown (relabeled "Profile", was a dead
+      "Profile" placeholder that did nothing)
+- [x] Genre bar chart + decade distribution chart
+      (`SequentialBarChart.jsx`) — used the `dataviz` skill as instructed:
+      both are a magnitude/"compare counts" job, so per the skill's own
+      form-selection rule that's **one sequential hue** (the brand
+      indigo), not a categorical rainbow — bar length *and* intensity
+      both encode the value, no legend needed for a single series, value
+      direct-labeled at each bar's end rather than gated behind hover
+- [x] A plain-language summary line: "You tend to like — [genres]. You
+      tend to avoid — [genres]. Your favorite era so far is the [decade]s."
+- [x] Illustrated empty state when `totalRated === 0` (same pattern as
+      Watchlist/Discover's empty states)
+- [x] **Expanded beyond the original spec** once it became clear a page
+      titled "Profile" needs actual identity/account content, not just
+      analytics: identity header (avatar, inline-editable display name
+      via Firebase `updateProfile`, email, "member since" from
+      `user.metadata.creationTime` — a small addition to what
+      `Header.jsx` captures on auth state change), a stat-tile row
+      (titles rated / liked / disliked / watchlist count), a watchlist
+      preview row (reuses `useWatchlistDetails`) with a link to the full
+      `/watchlist` page, and a Sign Out action. File renamed
+      `TasteProfile.jsx` → `Profile.jsx` to match — the taste graph is
+      now one section of the page, not the whole page
+
+**Verified**: build/lint clean. Sanity-tested `computeTasteProfile`'s
+logic directly (genre scoring, decade bucketing restricted to likes only,
+favorite-decade selection) against hand-checked sample data before
+trusting it in the UI. Runtime-checked via `browser-automation` — the
+empty state renders correctly with 0 ratings; the charts themselves were
+verified by temporarily hardcoding sample profile data into the page
+(reverted after, confirmed via `git diff`-equivalent grep for the debug
+marker) since this sandbox has no real authenticated ratings to render
+against.
 
 ---
 

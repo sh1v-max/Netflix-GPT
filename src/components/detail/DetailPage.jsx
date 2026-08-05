@@ -14,6 +14,7 @@ import useCredits from '../../hooks/useCredits'
 import useSimilarTitles from '../../hooks/useSimilarTitles'
 import useWatchProviders from '../../hooks/useWatchProviders'
 import RatingControl from '../shared/RatingControl'
+import WatchlistButton from '../shared/WatchlistButton'
 import { mediaDocId } from '../../utils/firestorePaths'
 import { BACKDROP_CDN_URL, IMG_CDN_URL } from '../../utils/constant'
 import { EASE } from '@/lib/motion'
@@ -188,12 +189,16 @@ const DetailPage = () => {
                 </div>
               )}
 
-              <RatingControl
-                mediaType={mediaType}
-                id={id}
-                genreIds={details.genres?.map((genre) => genre.id) || []}
-                size={16}
-              />
+              <div className="flex items-center gap-2">
+                <RatingControl
+                  mediaType={mediaType}
+                  id={id}
+                  genreIds={details.genres?.map((genre) => genre.id) || []}
+                  releaseYear={year ? Number(year) : null}
+                  size={16}
+                />
+                <WatchlistButton mediaType={mediaType} id={id} size={16} />
+              </div>
             </div>
           </div>
         </motion.div>

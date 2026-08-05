@@ -10,7 +10,7 @@ import { mediaDocId } from '../../utils/firestorePaths'
 // and writes straight to Firestore on click. No Redux dispatch here: the
 // onSnapshot listener is what updates the store, so every instance of this
 // control anywhere in the app reflects a change instantly.
-const RatingControl = ({ mediaType, id, genreIds = [], size = 14 }) => {
+const RatingControl = ({ mediaType, id, genreIds = [], releaseYear = null, size = 14 }) => {
   const user = useSelector((store) => store.user)
   const docId = mediaDocId(mediaType, id)
   const currentRating = useSelector((store) => store.preferences.ratings[docId])
@@ -23,7 +23,7 @@ const RatingControl = ({ mediaType, id, genreIds = [], size = 14 }) => {
     if (currentRating === rating) {
       removeRating(user.uid, mediaType, id)
     } else {
-      addRating(user.uid, mediaType, id, rating, genreIds)
+      addRating(user.uid, mediaType, id, rating, genreIds, releaseYear)
     }
   }
 

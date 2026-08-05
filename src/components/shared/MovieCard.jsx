@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { Play, MoreHorizontal } from 'lucide-react'
+import { Play } from 'lucide-react'
 import { IMG_CDN_URL } from '../../utils/constant'
 import RatingControl from './RatingControl'
+import WatchlistButton from './WatchlistButton'
 
-const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], fill = false, layoutId }) => {
+const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], releaseYear = null, fill = false, layoutId }) => {
   const [imgError, setImgError] = useState(false)
 
   if (!posterPath || imgError) return null
@@ -42,16 +43,11 @@ const MovieCard = ({ id, posterPath, title, mediaType = 'movie', genreIds = [], 
           </div>
 
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-70 transition-opacity duration-300">
-            <button
-              className="bg-ink-elevated/70 text-text-dark rounded-full p-1 px-2 shadow-cg-elevated hover:bg-ink-elevated cursor-pointer"
-              aria-label="More options"
-            >
-              <MoreHorizontal size={18} />
-            </button>
+            <WatchlistButton mediaType={mediaType} id={id} size={14} />
           </div>
 
           <div className="absolute top-2 left-2">
-            <RatingControl mediaType={mediaType} id={id} genreIds={genreIds} size={12} />
+            <RatingControl mediaType={mediaType} id={id} genreIds={genreIds} releaseYear={releaseYear} size={12} />
           </div>
         </div>
 

@@ -7,7 +7,7 @@ import MovieCard from '../shared/MovieCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import useDiscover from '../../hooks/useDiscover'
 import useMultiSearch from '../../hooks/useMultiSearch'
-import { IMG_CDN_URL } from '../../utils/constant'
+import { IMG_CDN_URL, getReleaseYear } from '../../utils/constant'
 import { Search, X, SlidersHorizontal, Loader2, Compass, SearchX } from 'lucide-react'
 import { EASE } from '@/lib/motion'
 
@@ -239,6 +239,7 @@ const Discover = ({
                     title={item.title || item.name}
                     mediaType={item.media_type}
                     genreIds={item.genre_ids}
+                    releaseYear={getReleaseYear(item)}
                     fill
                     layoutId={`poster-${item.media_type}-${item.id}`}
                   />
@@ -369,6 +370,7 @@ const Discover = ({
                         title={item.title || item.name}
                         mediaType={mediaType}
                         genreIds={item.genre_ids}
+                        releaseYear={getReleaseYear(item)}
                         fill
                         layoutId={`poster-${mediaType}-${item.id}`}
                       />

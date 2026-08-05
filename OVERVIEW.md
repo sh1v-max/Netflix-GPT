@@ -105,6 +105,8 @@ Defined in `src/components/Body.jsx` via `createBrowserRouter`:
 | `/discover` | `Discover` | Yes |
 | `/anime` | `Anime` | Yes |
 | `/title/:mediaType/:id` | `DetailPage` | Yes |
+| `/watchlist` | `Watchlist` | Yes |
+| `/profile` | `Profile` | Yes — identity, stats, taste graph, watchlist preview, sign out |
 
 **`/home` vs `/movies`**: these were originally one route (`/browse`)
 toggled between an AI-search view and the movie grid via a Redux flag
@@ -134,7 +136,7 @@ Seven slices, registered in `src/store/appStore.jsx`:
 | `movies` | `nowPlayingMovies`, `popularMovies`, `topRatedMovies`, `upcomingMovies`, `trailerVideo` | `useNowPlayingMovies`, `usePopularMovies`, etc. |
 | `tv` | `onTheAirShows`, `popularShows`, `topRatedShows`, `airingTodayShows`, `trailerVideo` | matching TV hooks |
 | `details` | `mediaDetails`, `credits`, `similar`, `watchProviders`, `genres` — all keyed by `${mediaType}_${id}` (genres keyed by mediaType alone) | `useMediaDetails`, `useCredits`, `useSimilarTitles`, `useWatchProviders`, `useGenres` |
-| `preferences` | `ratings` (`{ [docId]: 'like' \| 'dislike' }`), `ratedGenres` (`{ [docId]: genreIds[] }` — mirrors `ratings`, powers the Detail page's taste-compatibility read), `isLoaded` | `usePreferencesSync` (live Firestore `onSnapshot`) |
+| `preferences` | `ratings` (`{ [docId]: 'like' \| 'dislike' }`), `ratedGenres`/`ratedYears` (`{ [docId]: ... }` — mirror `ratings`, power the Detail page's taste-compatibility read and the Taste Profile page), `watchlist` (`{ [docId]: true }`), `isLoaded` | `usePreferencesSync` (two live Firestore `onSnapshot` listeners — ratings, watchlist) |
 | `gpt` | `movieNames`, `movieResults` | `GptSearchBar` / `GptSearch.jsx`'s `runSearch` |
 | `config` | `lang` (defaults `'en'`) | `Header`'s language selector (only shown in AI-search mode) |
 
@@ -173,14 +175,16 @@ same `app` instance). Path/reference helpers centralized in
 `src/utils/firestorePaths.jsx` — nothing else in the codebase builds a
 Firestore path by hand.
 
-**Data model** (currently, ratings only — watchlist and profile are
-planned, see `re-do.md` Phase 2.4/2.5):
+**Data model**:
 
 ```
-users/{uid}                          — profile fields will live here directly
-                                        (not yet written — Phase 2.5)
-users/{uid}/ratings/{mediaType_id}   — { mediaType, mediaId, rating: 'like' | 'dislike',
-                                        genreIds: [...], addedAt }
+users/{uid}                            — no fields written here yet. The taste
+                                          profile is computed client-side on
+                                          read (useTasteProfile) rather than
+                                          persisted — see re-do.md Phase 2.5
+users/{uid}/ratings/{mediaType_id}     — { mediaType, mediaId, rating: 'like' | 'dislike',
+                                          genreIds: [...], releaseYear, addedAt }
+users/{uid}/watchlist/{mediaType_id}   — { mediaType, mediaId, addedAt }
 ```
 
 Doc IDs use the convention `${mediaType}_${mediaId}` (e.g. `movie_27205`),
@@ -325,7 +329,8 @@ npx firebase deploy --only hosting,firestore:rules   # deploy
 
 ## 12. What's not built yet
 
-Watchlist, computed taste profile, the `/profile` page, personalized
-AI recommendations, and the server-side move of the GPT call are all
-planned but not implemented — see `re-do.md` Phase 2.4 onward for the
+Watchlist (2.4), profile computation (2.5), and the Taste Profile page
+(2.6) are done. What's left: personalized AI recommendations (prompt
+injection, "why this was picked" captions, "For You" rows) and the
+server-side move of the GPT call — see `re-do.md` Phase 3 for the
 concrete, in-order plan.

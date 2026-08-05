@@ -27,6 +27,7 @@ import {
   Star,
   Sun,
   Moon,
+  Bookmark,
 } from 'lucide-react'
 
 const Header = () => {
@@ -65,13 +66,14 @@ const Header = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        const { uid, email, displayName, photoURL } = user
+        const { uid, email, displayName, photoURL, metadata } = user
         dispatch(
           addUser({
             uid: uid,
             email: email,
             name: displayName,
             photo: photoURL,
+            createdAt: metadata?.creationTime || null,
           })
         )
         // Only redirect away from the landing/login pages — don't yank the
@@ -90,6 +92,8 @@ const Header = () => {
           location.pathname === '/shows' ||
           location.pathname === '/discover' ||
           location.pathname === '/anime' ||
+          location.pathname === '/watchlist' ||
+          location.pathname === '/profile' ||
           location.pathname.startsWith('/title/')
         ) {
           navigate('/')
@@ -239,9 +243,17 @@ const Header = () => {
               align="end"
               className="w-34 md:w-42 backdrop-blur-[--blur-cg-glass] bg-surface-glass border-border-hairline rounded-panel shadow-cg-elevated p-1.5"
             >
-              <DropdownMenuItem className="gap-2 py-2 pl-3 text-text-dark focus:bg-white/10 focus:text-text-dark">
-                <User size={14} />
-                Profile
+              <DropdownMenuItem asChild className="gap-2 py-2 pl-3 text-text-dark focus:bg-white/10 focus:text-text-dark">
+                <Link to="/profile">
+                  <User size={14} />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="gap-2 py-2 pl-3 text-text-dark focus:bg-white/10 focus:text-text-dark">
+                <Link to="/watchlist">
+                  <Bookmark size={14} />
+                  Watchlist
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem className="gap-2 py-2 pl-3 text-text-dark focus:bg-white/10 focus:text-text-dark">
                 <UserCog size={14} />

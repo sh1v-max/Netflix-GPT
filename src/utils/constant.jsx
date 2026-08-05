@@ -22,5 +22,12 @@ export const API_OPTIONS = {
 };
 export const OPENROUTER_KEY = import.meta.env.VITE_OPENROUTER_KEY
 
+// TMDB list items use `release_date` (movies) or `first_air_date` (tv) —
+// this reads whichever is present and returns just the year, or null.
+export const getReleaseYear = (item) => {
+  const date = item?.release_date || item?.first_air_date
+  return date ? Number(date.slice(0, 4)) : null
+}
+
 export const GPT_MODEL = 'stepfun/step-3.5-flash:free'
 export const GPT_QUERY = 'Act as a Movie Recommendation system and suggest some movies for the query, only give me names of 10 movies, the first one should be the one same as the query, comma separated like the example result give ahead. For example: Result1,Result2,Result3,Result4,Result5. Notice there is no space between Result1 and Result2, etc. They are only comma separated. You need to give result in same format'

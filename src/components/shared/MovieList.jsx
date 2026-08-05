@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import MovieCard from './MovieCard'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { EASE } from '@/lib/motion'
+import { getReleaseYear } from '../../utils/constant'
 
 const stagger = {
   hidden: {},
@@ -64,6 +65,7 @@ const MovieList = ({ title, movies, mediaType = 'movie' }) => {
                 title={movie.title || movie.name}
                 mediaType={movie.media_type || mediaType}
                 genreIds={movie.genre_ids}
+                releaseYear={getReleaseYear(movie)}
               />
             </motion.div>
           ))}

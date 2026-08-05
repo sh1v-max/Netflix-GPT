@@ -13,6 +13,8 @@ const Shows = lazy(() => import('./shows/Shows'))
 const DetailPage = lazy(() => import('./detail/DetailPage'))
 const Discover = lazy(() => import('./discover/Discover'))
 const Anime = lazy(() => import('./anime/Anime'))
+const Watchlist = lazy(() => import('./watchlist/Watchlist'))
+const Profile = lazy(() => import('./profile/Profile'))
 
 const RouteFallback = () => (
   <div className="min-h-screen bg-ink flex items-center justify-center">
@@ -55,6 +57,14 @@ const Body = () => {
     {
       path: '/anime',
       element: withSuspense(<Anime />),
+    },
+    {
+      path: '/watchlist',
+      element: withSuspense(<Watchlist />),
+    },
+    {
+      path: '/profile',
+      element: withSuspense(<Profile />),
     },
   ])
 
