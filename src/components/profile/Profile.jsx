@@ -13,6 +13,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   Bookmark,
+  Camera,
 } from 'lucide-react'
 import Header from '../layout/Header'
 import Footer from '../layout/Footer'
@@ -24,6 +25,7 @@ import { addUser } from '../../store/userSlice'
 import useTasteProfile from '../../hooks/useTasteProfile'
 import useWatchlistDetails from '../../hooks/useWatchlistDetails'
 import SequentialBarChart from './SequentialBarChart'
+import AvatarPicker from './AvatarPicker'
 import { EASE } from '@/lib/motion'
 
 const buildSummary = (profile, genreNameById) => {
@@ -65,6 +67,7 @@ const Profile = () => {
 
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(user?.name || '')
+  const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false)
 
   if (!user) {
     return (
@@ -91,6 +94,11 @@ const Profile = () => {
   const handleCancelEdit = () => {
     setNameInput(user.name || '')
     setIsEditingName(false)
+  }
+
+  const handleAvatarSelect = async (photoURL) => {
+    await updateProfile(auth.currentUser, { photoURL })
+    dispatch(addUser({ ...user, photo: photoURL }))
   }
 
   const handleSignOut = () => {
@@ -121,11 +129,21 @@ const Profile = () => {
             transition={{ duration: 0.4, ease: EASE }}
             className="flex items-center gap-4 md:gap-5 mb-8"
           >
-            <img
-              src={user.photo}
-              alt=""
-              className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border border-border-hairline shadow-cg-elevated shrink-0"
-            />
+            <button
+              type="button"
+              onClick={() => setIsAvatarPickerOpen(true)}
+              aria-label="Change avatar"
+              className="group relative w-16 h-16 md:w-20 md:h-20 rounded-full shrink-0 cursor-pointer"
+            >
+              <img
+                src={user.photo}
+                alt=""
+                className="w-full h-full rounded-full object-cover border border-border-hairline shadow-cg-elevated"
+              />
+              <span className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/50 flex items-center justify-center transition-colors">
+                <Camera size={18} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </span>
+            </button>
             <div className="min-w-0">
               {isEditingName ? (
                 <div className="flex items-center gap-2 mb-1">
@@ -310,6 +328,13 @@ const Profile = () => {
         </div>
       </main>
       <Footer />
+      <AvatarPicker
+        open={isAvatarPickerOpen}
+        onOpenChange={setIsAvatarPickerOpen}
+        uid={user.uid}
+        currentPhoto={user.photo}
+        onSelect={handleAvatarSelect}
+      />
     </div>
   )
 }

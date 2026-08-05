@@ -14,8 +14,9 @@ This file is the "what exists right now," not the roadmap.
 Cinegraph is an AI movie/show recommendation app built on three
 pillars: a real movie/TV database (TMDB-backed), a preference graph
 (Firestore-backed ratings, in progress), and an AI recommendation layer
-(GPT via OpenRouter). It's a from-scratch rebrand of what started as a
-Netflix-clone tutorial project — no borrowed logo, palette, or layout.
+(Gemini, called through a Cloudflare Worker proxy). It's a from-scratch
+rebrand of what started as a Netflix-clone tutorial project — no
+borrowed logo, palette, or layout.
 
 ---
 
@@ -32,7 +33,7 @@ Netflix-clone tutorial project — no borrowed logo, palette, or layout.
 | Routing | React Router | 7 — route-level code splitting via `React.lazy`/`Suspense` in `Body.jsx` |
 | Backend | Firebase | 12 — Authentication, Firestore, Hosting, Analytics |
 | Movie/TV data | TMDB API | v3 (read access token) |
-| AI search | GPT via OpenRouter | model: `stepfun/step-3.5-flash:free` |
+| AI search | Google Gemini, via a Cloudflare Worker proxy | model: `gemini-3.5-flash` — see `gpt-proxy-worker/` |
 | Icons | Lucide (`lucide-react`) | primary icon set app-wide. `react-icons` kept for exactly one case — `FaGithub` in `Footer.jsx` — since this Lucide version ships UI icons only, no brand/logo marks |
 | Linting | ESLint 9 | flat config, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `eslint-plugin-react` (added for JSX-aware `no-unused-vars`, needed once `<motion.div>`-style namespaced JSX components entered the codebase) |
 | Dev/verification | Playwright | 1 (devDependency — used for visual/runtime verification during development, not an automated test suite) |
@@ -86,6 +87,10 @@ netflixgpt/
 ├── DESIGN-SYSTEM.md             Cinegraph v2 visual design system (tokens, philosophy)
 ├── better-ui-ux.md               phase-by-phase redesign execution log (all 10 phases done)
 ├── IDEAS.md                     original rebrand brainstorm
+├── gpt-proxy-worker/            standalone Cloudflare Worker — Gemini proxy
+│   ├── src/index.js             the actual Gemini call + prompt + CORS allowlist
+│   ├── wrangler.toml             Worker name/entry/compat date
+│   └── package.json              own deps (wrangler); not part of the Vite build
 └── README.md                    public-facing project readme
 ```
 
@@ -106,7 +111,7 @@ Defined in `src/components/Body.jsx` via `createBrowserRouter`:
 | `/anime` | `Anime` | Yes |
 | `/title/:mediaType/:id` | `DetailPage` | Yes |
 | `/watchlist` | `Watchlist` | Yes |
-| `/profile` | `Profile` | Yes — identity, stats, taste graph, watchlist preview, sign out |
+| `/profile` | `Profile` | Yes — identity (editable name + avatar picker), stats, taste graph, watchlist preview, sign out |
 
 **`/home` vs `/movies`**: these were originally one route (`/browse`)
 toggled between an AI-search view and the movie grid via a Redux flag
@@ -168,6 +173,16 @@ Email/password via `firebase/auth`. Config in `src/utils/firebaseConfig.jsx`
 — the Firebase web config values are hardcoded there (not env-driven,
 since they aren't secret). Exports `app` (the Firebase App instance,
 shared by both Auth and Firestore) and `auth`.
+
+### Storage
+Config also exports `storage` (`getStorage(app)`) from the same file.
+Used solely for custom avatar uploads — `src/utils/avatar.jsx`'s
+`uploadCustomAvatar(uid, file)` writes to a fixed path `avatars/{uid}/photo`
+(overwrites on re-upload, no per-upload file accumulation) and returns the
+download URL. Rules in `storage.rules`: public read (avatar URLs are
+embedded in plain `<img>` tags app-wide without auth headers), write
+restricted to the owning uid with a 5MB size cap and image-content-type
+check.
 
 ### Firestore
 Config in `src/utils/firestoreConfig.jsx` (exports `db`, built on the
@@ -293,25 +308,50 @@ Image CDN constants: `IMG_CDN_URL` (posters, w500), `BACKDROP_CDN_URL`
 (Animation) AND'd with `with_original_language=ja`, via `Discover.jsx`'s
 `baseGenres`/`originLanguage` props.
 
-### OpenRouter (GPT search)
-`src/utils/openaiConfig.jsx` — the `openai` npm SDK pointed at
-`openrouter.ai` instead of OpenAI directly, using `VITE_OPENROUTER_KEY`.
-**Known issue, not yet fixed** (tracked in `re-do.md` Phase 3.4): this
-call happens client-side with `dangerouslyAllowBrowser: true`, meaning
-the API key ships to every client. Planned fix is a Firebase Cloud
-Function.
+### Gemini via `gpt-proxy-worker` (GPT search)
+GPT search calls Gemini's OpenAI-compatible endpoint
+(`generativelanguage.googleapis.com/v1beta/openai/`), but **not
+directly from the browser** — Gemini doesn't send CORS headers for
+browser-origin requests, and even if it did, shipping the API key to
+every client is a real security risk. Instead:
+
+- `gpt-proxy-worker/` is a standalone Cloudflare Worker (separate
+  `package.json`/`wrangler.toml`, not part of the Vite build). It holds
+  the actual Gemini call, the `GPT_QUERY` system prompt, and the model
+  name (`gemini-3.5-flash`) — see `gpt-proxy-worker/src/index.js`. The
+  Gemini key lives only as a Worker secret (`GEMINI_KEY`, set via
+  `npx wrangler secret put GEMINI_KEY`), never in frontend code or `.env`.
+- `src/components/gpt/GptSearch.jsx`'s `runSearch` does a plain
+  `fetch(GPT_PROXY_URL, { method: 'POST', body: { query } })` — no
+  `openai` SDK on the frontend anymore (removed from `package.json`).
+- The Worker's CORS allowlist (`ALLOWED_ORIGINS` in `index.js`) covers
+  `localhost:5173`/`5174` and the two Firebase Hosting domains; add any
+  new origin there before it'll work from a new host.
+- Deployed manually via `npx wrangler deploy` from `gpt-proxy-worker/`
+  — not wired into `firebase deploy` or CI, since it only needs
+  redeploying when `index.js` changes.
+
+Previously used OpenRouter (`openrouter.ai`, explicitly supports
+browser calls via `dangerouslyAllowBrowser`) — moved off it because its
+free-model lineup rotates without notice and the previously-configured
+model (`stepfun/step-3.5-flash:free`) got pulled, breaking search with
+no code change on our end.
 
 ---
 
 ## 10. Environment variables
 
 ```
-VITE_TMDB_KEY="..."         # TMDB read access token
-VITE_OPENROUTER_KEY="..."   # OpenRouter API key, for GPT search
+VITE_TMDB_KEY="..."       # TMDB read access token
+VITE_GPT_PROXY_URL="..."  # deployed gpt-proxy-worker URL, e.g.
+                           # https://cinegraph-gpt-proxy.<subdomain>.workers.dev
 ```
 
 Firebase config is not env-driven (see §7). Both required variables
-are read via `import.meta.env.*` in `constant.jsx`.
+are read via `import.meta.env.*` in `constant.jsx`. The Gemini API key
+is **not** a frontend env var — it's a Cloudflare Worker secret, set
+separately via `npx wrangler secret put GEMINI_KEY` from
+`gpt-proxy-worker/` (see §9's Gemini section).
 
 ---
 
@@ -329,8 +369,9 @@ npx firebase deploy --only hosting,firestore:rules   # deploy
 
 ## 12. What's not built yet
 
-Watchlist (2.4), profile computation (2.5), and the Taste Profile page
-(2.6) are done. What's left: personalized AI recommendations (prompt
-injection, "why this was picked" captions, "For You" rows) and the
-server-side move of the GPT call — see `re-do.md` Phase 3 for the
-concrete, in-order plan.
+Watchlist (2.4), profile computation (2.5), the Taste Profile page
+(2.6), and the server-side move of the GPT call (2.7, ad hoc — see
+§9) are done. What's left: personalized AI recommendations (prompt
+injection using the taste profile, "why this was picked" captions,
+"For You" rows) — see `re-do.md` Phase 3 for the concrete, in-order
+plan.

@@ -505,8 +505,12 @@ ratings feature).
       indigo), not a categorical rainbow — bar length *and* intensity
       both encode the value, no legend needed for a single series, value
       direct-labeled at each bar's end rather than gated behind hover
-- [x] A plain-language summary line: "You tend to like — [genres]. You
-      tend to avoid — [genres]. Your favorite era so far is the [decade]s."
+- [x] A plain-language summary line: "You tend to like — [genres]. Your
+      favorite era so far is the [decade]s." (originally also included a
+      "You tend to avoid — [genres]" clause; dropped per user request —
+      `avoidGenres` is still computed by `computeTasteProfile` and available
+      for Phase 3's prompt personalization, just no longer surfaced in the
+      UI copy)
 - [x] Illustrated empty state when `totalRated === 0` (same pattern as
       Watchlist/Discover's empty states)
 - [x] **Expanded beyond the original spec** once it became clear a page
@@ -520,6 +524,20 @@ ratings feature).
       `/watchlist` page, and a Sign Out action. File renamed
       `TasteProfile.jsx` → `Profile.jsx` to match — the taste graph is
       now one section of the page, not the whole page
+- [x] **Custom avatar picker** (`src/components/profile/AvatarPicker.jsx`),
+      also ad hoc: clicking the identity-header avatar opens a shadcn
+      `Dialog` with 18 preset avatars (DiceBear `avataaars` API, fixed
+      seeds — no image assets hosted in-repo, same external-CDN pattern
+      already used for TMDB posters) plus an "Add your own" file upload.
+      Custom uploads go through Firebase Storage (`src/utils/avatar.jsx`'s
+      `uploadCustomAvatar`, one fixed path `avatars/{uid}/photo` per user
+      so re-uploading overwrites rather than accumulating files) — required
+      newly adding `storage.rules` (owner-only write, 5MB cap, image
+      content-type check, public read since avatar URLs sit in plain
+      `<img>` tags everywhere), wiring `storage` into `firebase.json` and
+      `firebaseConfig.jsx`. Both selection paths (preset click, successful
+      upload) call `updateProfile` + `dispatch(addUser(...))`, mirroring
+      the existing inline display-name-edit pattern in the same file
 
 **Verified**: build/lint clean. Sanity-tested `computeTasteProfile`'s
 logic directly (genre scoring, decade bucketing restricted to likes only,
@@ -530,6 +548,57 @@ verified by temporarily hardcoding sample profile data into the page
 (reverted after, confirmed via `git diff`-equivalent grep for the debug
 marker) since this sandbox has no real authenticated ratings to render
 against.
+
+---
+
+### 2.7 — GPT search: OpenRouter → Gemini via Cloudflare Worker proxy
+
+Ad hoc, triggered by OpenRouter's free-tier model
+(`stepfun/step-3.5-flash:free`) getting pulled from their lineup
+without notice, silently breaking search. Ended up doing 3.4's
+security fix at the same time since a proper fix required it anyway.
+
+- [x] Diagnosed: OpenRouter's `:free` model roster rotates; the
+      previously-hardcoded model no longer existed. Confirmed via
+      `openrouter.ai/api/v1/models`.
+- [x] Evaluated alternatives (Gemini, Groq, Cerebras, Mistral, HF
+      Inference) — picked **Google Gemini** for its stable, documented
+      free tier (vs. OpenRouter's rotating lineup)
+- [x] Discovered Gemini's OpenAI-compatible endpoint doesn't send CORS
+      headers for browser origins — direct browser calls are blocked,
+      unlike OpenRouter which explicitly supports
+      `dangerouslyAllowBrowser`. This forced the server-side move that
+      3.4 had already flagged as needed, just earlier than planned.
+- [x] Firebase Cloud Functions ruled out: deploying *any* function —
+      even one only calling Google's own Gemini API — requires the
+      Blaze (billing) plan just to deploy, regardless of whether usage
+      stays inside the free quota
+- [x] Built `gpt-proxy-worker/` — a standalone Cloudflare Worker
+      (own `package.json`/`wrangler.toml`, not part of the Vite
+      build/deploy). `src/index.js` holds the Gemini call, the
+      `GPT_QUERY` system prompt (moved server-side from
+      `constant.jsx`), model name (`gemini-3.5-flash`), and a CORS
+      allowlist (`localhost:5173`/`5174` + both Firebase Hosting
+      domains)
+- [x] Deployed via `npx wrangler login` + `npx wrangler secret put
+      GEMINI_KEY` + `npx wrangler deploy` — free, no card required.
+      Live at `https://cinegraph-gpt-proxy.singhshiv0427.workers.dev`
+- [x] Frontend: `GptSearch.jsx`'s `runSearch` now does a plain
+      `fetch(GPT_PROXY_URL, ...)` instead of importing the `openai`
+      SDK. Deleted `src/utils/openaiConfig.jsx` and the `openai` npm
+      dependency entirely — the frontend bundle no longer contains any
+      LLM API key
+- [x] `.env`: `VITE_OPENROUTER_KEY` → `VITE_GPT_PROXY_URL` (just a
+      URL, not a secret). The Gemini key lives only as the Worker's
+      `GEMINI_KEY` secret, set via `wrangler secret put` — never
+      committed, never shipped to a client
+
+**Verified**: direct `curl` to the deployed Worker, a CORS preflight
+check (`OPTIONS` request confirms `Access-Control-Allow-Origin` for
+`localhost:5173`), and a `fetch()` run from inside the actual page's
+JS context via `browser-automation` — all returned a correct
+comma-separated movie list end-to-end (browser → Worker → Gemini →
+TMDB lookups). Build/lint clean (0 errors).
 
 ---
 
@@ -563,16 +632,13 @@ Depends on Phase 2 existing (needs a profile to personalize against).
       section (Phase 0 already demoted the full carousel wall off the
       homepage — this is what fills that space instead)
 
-### 3.4 — Security fix (do this as part of this phase, not after)
-- [ ] `GptSearchBar.jsx` currently calls `openai.chat.completions.create`
-      directly from the browser with `dangerouslyAllowBrowser: true` —
-      the API key ships to every client as-is
-- [ ] Set up a Firebase Cloud Function (`functions/` directory), an
-      `onCall` function (e.g. `getRecommendations`) that holds the
-      OpenRouter key server-side via Firebase Functions config/secrets
-- [ ] Client calls `httpsCallable(functions, 'getRecommendations')`
-      instead of importing the OpenAI SDK directly; delete
-      `dangerouslyAllowBrowser` and the client-side key exposure entirely
+### 3.4 — Security fix
+- [x] **Done early, ad hoc, ahead of the rest of Phase 3** — see 2.7
+      below. Landed as a Cloudflare Worker rather than a Firebase Cloud
+      Function (avoids requiring the Blaze/billing plan just to deploy).
+      `buildPersonalizedPrompt` (3.1) will inject into
+      `gpt-proxy-worker/src/index.js`'s system prompt, not a
+      client-side one, once 3.1 lands.
 
 ### 3.5 — Stretch: multi-turn refinement
 - [ ] Conversation state (array of prior turns) instead of a single

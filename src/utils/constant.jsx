@@ -20,7 +20,10 @@ export const API_OPTIONS = {
     Authorization: `Bearer ${import.meta.env.VITE_TMDB_KEY}`,
   },
 };
-export const OPENROUTER_KEY = import.meta.env.VITE_OPENROUTER_KEY
+// Gemini calls go through gpt-proxy-worker (Cloudflare Worker) — the key
+// lives server-side as a Worker secret, never in frontend code. See
+// gpt-proxy-worker/src/index.js for the prompt + model.
+export const GPT_PROXY_URL = import.meta.env.VITE_GPT_PROXY_URL
 
 // TMDB list items use `release_date` (movies) or `first_air_date` (tv) —
 // this reads whichever is present and returns just the year, or null.
@@ -28,6 +31,3 @@ export const getReleaseYear = (item) => {
   const date = item?.release_date || item?.first_air_date
   return date ? Number(date.slice(0, 4)) : null
 }
-
-export const GPT_MODEL = 'stepfun/step-3.5-flash:free'
-export const GPT_QUERY = 'Act as a Movie Recommendation system and suggest some movies for the query, only give me names of 10 movies, the first one should be the one same as the query, comma separated like the example result give ahead. For example: Result1,Result2,Result3,Result4,Result5. Notice there is no space between Result1 and Result2, etc. They are only comma separated. You need to give result in same format'

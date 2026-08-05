@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import lang from '../../utils/languageConstant'
-import openai from '../../utils/openaiConfig'
-import { API_OPTIONS, GPT_QUERY, GPT_MODEL } from '../../utils/constant'
+import { API_OPTIONS, GPT_PROXY_URL } from '../../utils/constant'
 import { addGptMovieResult } from '../../store/gptSlice'
 import GptMovieSuggestions from './GptMovieSuggestions'
 import GptSearchBar from './GptSearchBar'
@@ -35,16 +34,15 @@ const GptSearch = () => {
     setError('')
     setIsSearching(true)
     try {
-      const gptResults = await openai.chat.completions.create({
-        model: GPT_MODEL,
-        messages: [
-          { role: 'system', content: GPT_QUERY },
-          { role: 'user', content: trimmed },
-        ],
+      const proxyResponse = await fetch(GPT_PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: trimmed }),
       })
 
-      if (!gptResults.choices) throw new Error('No response from GPT')
-      const gptMovies = gptResults.choices?.[0].message?.content.split(',')
+      if (!proxyResponse.ok) throw new Error('No response from GPT')
+      const { content } = await proxyResponse.json()
+      const gptMovies = content.split(',')
       const promiseArray = gptMovies.map((movie) => searchMovieTMDB(movie))
       const tmdbResults = await Promise.all(promiseArray)
       dispatch(addGptMovieResult({ movieNames: gptMovies, movieResults: tmdbResults }))
