@@ -28,15 +28,12 @@ import { EASE } from '@/lib/motion'
 
 const buildSummary = (profile, genreNameById) => {
   const topNames = profile.topGenres.map((g) => genreNameById[g.genreId]).filter(Boolean)
-  const avoidNames = profile.avoidGenres.map((g) => genreNameById[g.genreId]).filter(Boolean)
 
-  if (topNames.length === 0 && avoidNames.length === 0) {
+  if (topNames.length === 0) {
     return "Rate a few more titles and Cinegraph will start mapping your taste."
   }
 
-  const parts = []
-  if (topNames.length > 0) parts.push(`You tend to like — ${topNames.join(', ')}.`)
-  if (avoidNames.length > 0) parts.push(`You tend to avoid — ${avoidNames.join(', ')}.`)
+  const parts = [`You tend to like — ${topNames.join(', ')}.`]
   if (profile.favoriteDecade) parts.push(`Your favorite era so far is the ${profile.favoriteDecade}s.`)
   return parts.join(' ')
 }
