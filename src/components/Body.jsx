@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 const Home = lazy(() => import('./home/Home'))
 const Login = lazy(() => import('./auth/Login'))
 const AiSearchHome = lazy(() => import('./browse/AiSearchHome'))
-const Browse = lazy(() => import('./browse/Browse'))
+const Movies = lazy(() => import('./movies/Movies'))
 const Shows = lazy(() => import('./shows/Shows'))
 const DetailPage = lazy(() => import('./detail/DetailPage'))
 const Discover = lazy(() => import('./discover/Discover'))
@@ -40,7 +40,7 @@ const Body = () => {
     },
     {
       path: '/movies',
-      element: withSuspense(<Browse />),
+      element: withSuspense(<Movies />),
     },
     {
       path: '/shows',

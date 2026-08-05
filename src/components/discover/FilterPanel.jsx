@@ -9,7 +9,10 @@ const RATING_MAX = 9
 // Pure filter controls — no positioning/chrome of its own, so it can be
 // dropped into a permanent sidebar (desktop) or a dropdown (mobile)
 // without duplicating the genre/year/rating/sort logic in two places.
-const FilterPanel = ({ mediaType, filters, onFiltersChange, excludeGenreIds = [] }) => {
+// `variant="hud"` swaps the accent2 (indigo) classes for hud-cyan ones, for
+// the Movies HUD page — default variant is pixel-identical to before.
+const FilterPanel = ({ mediaType, filters, onFiltersChange, excludeGenreIds = [], variant = 'default' }) => {
+  const isHud = variant === 'hud'
   const allGenres = useGenres(mediaType)
   const genres = allGenres?.filter((genre) => !excludeGenreIds.includes(genre.id))
   const dateField = mediaType === 'tv' ? 'first_air_date' : 'primary_release_date'
@@ -47,6 +50,10 @@ const FilterPanel = ({ mediaType, filters, onFiltersChange, excludeGenreIds = []
   const ratingValue = filters.minRating || 0
   const ratingPercent = (ratingValue / RATING_MAX) * 100
 
+  const accentText = isHud ? 'text-hud-cyan' : 'text-accent2'
+  const accentRing = isHud ? 'focus:ring-hud-cyan' : 'focus:ring-accent2'
+  const rangeFillVar = isHud ? '--color-hud-cyan' : '--color-accent2'
+
   return (
     <div className="flex flex-col gap-5">
       <div>
@@ -56,7 +63,7 @@ const FilterPanel = ({ mediaType, filters, onFiltersChange, excludeGenreIds = []
         <select
           value={filters.sortBy}
           onChange={(e) => onFiltersChange({ sortBy: e.target.value })}
-          className="w-full p-2.5 bg-ink border border-border-hairline text-text-dark text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-accent2 cursor-pointer"
+          className={`w-full p-2.5 bg-ink border border-border-hairline text-text-dark text-sm rounded-lg focus:outline-none focus:ring-2 ${accentRing} cursor-pointer`}
         >
           {sortOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -84,7 +91,9 @@ const FilterPanel = ({ mediaType, filters, onFiltersChange, excludeGenreIds = []
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   className={`text-xs px-3 py-1.5 rounded-full border cursor-pointer transition-colors duration-200 ${
                     isSelected
-                      ? 'bg-accent2 text-white border-accent2 shadow-[0_0_16px_var(--color-accent2-glow)]'
+                      ? isHud
+                        ? 'bg-hud-cyan text-black border-hud-cyan shadow-[0_0_16px_var(--color-hud-cyan-glow)]'
+                        : 'bg-accent2 text-white border-accent2 shadow-[0_0_16px_var(--color-accent2-glow)]'
                       : 'bg-transparent text-text-dark-muted border-border-hairline hover:border-white/30 hover:text-text-dark'
                   }`}
                 >
@@ -134,7 +143,7 @@ const FilterPanel = ({ mediaType, filters, onFiltersChange, excludeGenreIds = []
                     onChange={(e) =>
                       onFiltersChange({ minYear: e.target.value ? Number(e.target.value) : null })
                     }
-                    className="w-full p-2 bg-ink border border-border-hairline text-text-dark text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-accent2"
+                    className={`w-full p-2 bg-ink border border-border-hairline text-text-dark text-sm rounded-lg focus:outline-none focus:ring-2 ${accentRing}`}
                   />
                 </div>
                 <div>
@@ -148,7 +157,7 @@ const FilterPanel = ({ mediaType, filters, onFiltersChange, excludeGenreIds = []
                     onChange={(e) =>
                       onFiltersChange({ maxYear: e.target.value ? Number(e.target.value) : null })
                     }
-                    className="w-full p-2 bg-ink border border-border-hairline text-text-dark text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-accent2"
+                    className={`w-full p-2 bg-ink border border-border-hairline text-text-dark text-sm rounded-lg focus:outline-none focus:ring-2 ${accentRing}`}
                   />
                 </div>
               </div>
@@ -166,7 +175,7 @@ const FilterPanel = ({ mediaType, filters, onFiltersChange, excludeGenreIds = []
                   onChange={(e) => onFiltersChange({ minRating: Number(e.target.value) || null })}
                   className="styled-range w-full cursor-pointer"
                   style={{
-                    background: `linear-gradient(to right, var(--color-accent2) ${ratingPercent}%, var(--color-ink) ${ratingPercent}%)`,
+                    background: `linear-gradient(to right, var(${rangeFillVar}) ${ratingPercent}%, var(--color-ink) ${ratingPercent}%)`,
                   }}
                 />
               </div>
@@ -178,7 +187,7 @@ const FilterPanel = ({ mediaType, filters, onFiltersChange, excludeGenreIds = []
       {activeCount > 0 && (
         <button
           onClick={clearFilters}
-          className="self-start text-xs text-accent2 hover:underline cursor-pointer"
+          className={`self-start text-xs ${accentText} hover:underline cursor-pointer`}
         >
           Clear all filters
         </button>

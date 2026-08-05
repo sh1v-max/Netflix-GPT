@@ -10,7 +10,7 @@ import { API_OPTIONS, TMDB_BASE_URL } from '../utils/constant'
 // satisfy the mandatory genre *and* any further picks. Without `baseGenres`,
 // `withGenres` alone stays pipe-joined (OR — match any), which is what plain
 // Discover wants ("show me Action or Comedy").
-const buildDiscoverParams = (filters = {}, page = 1) => {
+export const buildDiscoverParams = (filters = {}, page = 1) => {
   const params = new URLSearchParams({
     language: 'en-US',
     page,

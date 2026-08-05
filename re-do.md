@@ -602,6 +602,108 @@ TMDB lookups). Build/lint clean (0 errors).
 
 ---
 
+### 2.8 — `/movies` rebuild: "Sci-Fi HUD / Data Console"
+
+Ad hoc, user-driven: the existing `/movies` page (`Browse.jsx`) still
+looked like a Netflix-style streaming homepage — full-bleed
+autoplay-trailer hero + four fixed horizontal shelves (Now Playing/
+Popular/Top Rated/Upcoming) — for an app that's meant to be a movie
+*database*, not a streaming clone. User asked for a from-scratch
+redesign, "futuristic, advanced, award-winning." Movies-only this
+round — `/shows` keeps its original page untouched; if this direction
+is approved, it rolls out there and elsewhere next.
+
+- [x] Style direction narrowed via the `ui-ux-pro-max` skill (design-system
+      search + a style-domain search for futuristic options) and user
+      confirmation: **Sci-Fi HUD / Data Console** — dark void, thin
+      cyan hairlines, bracket-corner card framing, monospace numerals
+      for data. Explicitly *not* full neon-glitch cyberpunk (rejected —
+      lower readability, reads as a gaming launcher rather than a
+      reference tool) and not retro-synthwave (nostalgia works against
+      "advanced").
+- [x] Typography: kept `Space Grotesk` for headings (site-wide
+      consistency with nav/chrome) — added `Roboto Mono` (`--font-mono`)
+      scoped to data figures only (rating/year/vote counts), not a
+      full-app font swap.
+- [x] New v3 token block in `index.css` (additive, coexists with v1/v2 —
+      doesn't touch `--color-accent2`, the brand accent used everywhere
+      else): `--color-hud-cyan(-strong/-glow)`, `--color-hud-line`,
+      `--font-mono`, tighter `--spacing-hud-*` scale for dense grids.
+      New utility classes `.hud-panel`, `.hud-corner--{tl,tr,bl,br}`
+      (bracket marks — 4 real `<span>`s via `HudFrame.jsx`, since one
+      element only has 2 pseudo-elements), `.hud-grid-texture`.
+- [x] Data source: new `src/hooks/useMovieConsole.jsx`, sibling to
+      `useDiscover.jsx` (which only gained one `export` keyword on its
+      already-existing `buildDiscoverParams` helper — zero behavior
+      change, `Discover.jsx`/`Anime.jsx` unaffected). Adds a `preset`
+      filter field — set, hits a fixed TMDB list endpoint
+      (`now_playing`/`popular`/`top_rated`/`upcoming`/`trending`);
+      `null`, falls through to `/discover/movie` exactly like
+      `useDiscover`. Same `{results, isLoading, error, hasMore,
+      loadMore, retry, totalResults}` shape either way, so one grid
+      doesn't care which is active.
+- [x] Preset ↔ filter interaction: unified, not mutually exclusive —
+      touching any `FilterPanel` control while a preset is active
+      silently clears it and converts to the equivalent `/discover`
+      query (a fixed list endpoint can't be filtered further). Verified
+      live: selecting "Top Rated" then clicking the "Action" genre chip
+      correctly dropped the preset back to "All Titles" and switched to
+      a discover query with the genre filter applied.
+- [x] New `src/components/movies/` directory (kept separate from
+      `browse/`, which still holds Shows-shared infrastructure):
+      `Movies.jsx` (page), `ConsoleHeader.jsx` (static backdrop + stat
+      readout, replaces the autoplay-trailer hero entirely — no video
+      on this page anymore), `PresetChips.jsx`, `HudFrame.jsx` (shared
+      bracket wrapper), `MovieCardHud.jsx` (sibling to
+      `shared/MovieCard.jsx`, not a variant prop — persistent
+      rating/year/genre readout instead of hover-gated, since a
+      database shouldn't hide its data behind a hover; adds a
+      text-only fallback card for missing posters instead of
+      `MovieCard`'s `return null`), `MovieGridHud.jsx` (infinite
+      scroll via the same `IntersectionObserver` sentinel pattern
+      `Discover.jsx` uses), `FilterPanelHud.jsx` (wraps `FilterPanel`
+      unmodified, passing its new `variant="hud"` prop).
+- [x] `FilterPanel.jsx` gained a `variant="hud"` prop (default
+      `"default"`, current look/behavior unchanged) that swaps
+      `accent2` Tailwind classes for `hud-cyan` ones — small, additive,
+      `Discover.jsx`/`Anime.jsx` pass no `variant` and are unaffected.
+- [x] Cleanup: `Browse.jsx`, `browse/SecondaryContainer.jsx`, and the
+      three now-fully-dead hooks (`useNowPlayingMovies`,
+      `useTopRatedMovies`, `useUpcomingMovies`) deleted, along with
+      their `moviesSlice` reducers — grep-verified zero remaining
+      references first. `usePopularMovies`/`popularMovies` kept —
+      `Home.jsx`'s marketing landing page depends on them independently.
+      `Body.jsx`'s `/movies` route now points at `movies/Movies.jsx`.
+- [x] **Follow-up, same round** — user feedback that the console header
+      looked too empty: `ConsoleHeader.jsx` gained a poster-collage
+      background (same technique as `Discover.jsx`'s header band —
+      low-opacity grid of current results' posters, not a single
+      backdrop), a movie-scoped search box (reuses `useMultiSearch`
+      as-is, filtered to `media_type === 'movie'` in `Movies.jsx` since
+      the index is movie-only and that hook returns movie+tv), and a
+      richer stat row (results, mode, genres tracked, average rating of
+      the loaded set). Searching switches the whole page into a
+      search-results branch (mirrors `Discover.jsx`'s
+      `isSearching` pattern) — preset chips and the filter sidebar hide
+      while a query is active, same as Discover hides its own filters.
+
+**Deliberately out of scope**: `/shows` and its shared hero components
+(`MainContainer`/`VideoBackground`/`VideoTitle` in `browse/`) — untouched,
+re-screenshotted to confirm no regression. DetailPage enrichment
+(keywords, collections, full crew, certifications, budget/revenue) —
+flagged as a natural fast-follow, not built this round.
+
+**Verified**: build/lint clean (0 errors — one new
+`react-hooks/exhaustive-deps` warning on `useMovieConsole.jsx` matches
+`useDiscover.jsx`'s existing, expected pattern exactly). Runtime-checked
+via `browser-automation` with the established temp-debug-user pattern
+(reverted cleanly, confirmed via grep): `/movies` renders the full HUD
+console with live TMDB data, preset chips switch datasets and update
+the result count, the preset↔filter interaction works as designed, and
+`/shows` still renders its original hero+rows page unregressed.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).
