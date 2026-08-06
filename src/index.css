@@ -305,19 +305,17 @@ body {
   opacity: 0.4;
 }
 
-/* Continuous right-to-left poster marquee (Movies console header) — the
-   track holds the poster list duplicated once; translating it by exactly
-   -50% loops seamlessly since the second half is identical to the first.
-   Static (no scroll) under prefers-reduced-motion, same guard pattern as
-   .shimmer/.aurora-gradient. */
+/* Continuous right-to-left backdrop carousel (Movies console header).
+   Deliberately NOT gated behind `prefers-reduced-motion` like every other
+   animation in this file — two prior attempts (a gated CSS version, and a
+   Framer Motion `animate()` version subject to this app's root
+   `MotionConfig reducedMotion="user"`) both silently never moved for the
+   same user, strongly indicating their OS has that preference set. This
+   is a slow, single-direction linear pan — a deliberately gentler
+   exception, not a precedent for the rest of the app's motion. */
 .marquee-track {
   display: flex;
-  width: max-content;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .marquee-track {
-    animation: marquee-scroll 50s linear infinite;
-  }
+  animation: marquee-scroll 120s linear infinite;
 }
 @keyframes marquee-scroll {
   from { transform: translateX(0); }

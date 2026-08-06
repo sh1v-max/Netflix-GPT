@@ -792,6 +792,122 @@ is approved, it rolls out there and elsewhere next.
       helper) so the playback order isn't identical on every visit.
       `ConsoleHeader`'s prop renamed `posterPaths` → `marqueeBackdrops`
       to match; `PosterMarquee` renamed `BackdropMarquee`.
+- [x] **Eighth follow-up, same round** — user reported the marquee
+      looked static. The CSS animation was confirmed working (verified
+      earlier), so the likely cause was the 50s-per-loop duration being
+      too slow to notice at a glance — sped up to 22s in
+      `.marquee-track` (`index.css`). Re-verified: sampling
+      `translateX` 1s apart showed a large, obviously-visible shift, and
+      two screenshots 3s apart showed clearly different scenes. Noted
+      for the user: if it's still static on their end, the other likely
+      cause is their OS/browser having "reduce motion" enabled, which
+      this marquee intentionally respects (same
+      `prefers-reduced-motion` guard as `.shimmer`/`.aurora-gradient`)
+      — that's a system setting, not a bug, but worth ruling out.
+- [x] **Ninth follow-up, same round** — the speed-up didn't fix it for
+      the user; still completely static, same two images always. Root
+      cause was almost certainly the `prefers-reduced-motion` guard
+      flagged in the previous bullet — but rather than debug the user's
+      OS setting, replaced the whole approach per their explicit ask
+      for "carousel" behavior instead of a continuous scroll. New
+      `BackdropCarousel` in `ConsoleHeader.jsx`: chunks the shuffled
+      backdrops into batches of 6, shows one batch across the full
+      header width, and crossfades to the next batch every 4s
+      (`AnimatePresence` + `motion.div` keyed by batch index). Critical
+      difference from the marquee: **the batch always advances**, because
+      it's driven by a plain `setInterval`/React state, not a CSS
+      `@keyframes` animation — nothing about `prefers-reduced-motion`
+      can freeze the rotation itself anymore. Only the crossfade's
+      smoothness is optional, and that's handled automatically by the
+      app-root `MotionConfig reducedMotion="user"` (`App.jsx`) rather
+      than a hand-rolled media query — under reduced motion the batch
+      still swaps, just via an instant cut instead of a fade. Removed
+      the now-dead `.marquee-track`/`@keyframes marquee-scroll` CSS
+      entirely. Verified live: two screenshots 6s apart (past the 4s
+      interval) showed completely different backdrop sets.
+- [x] **Tenth follow-up, same round** — batch-crossfade approach worked
+      but the user said it read as a "refresh," not a carousel — they
+      wanted individual tiles continuously gliding right-to-left, plus
+      two other fixes: always exactly 6 tiles visible (batches sometimes
+      showed fewer, e.g. a short trailing chunk when the pool size
+      wasn't a multiple of 6), and a much bigger backdrop pool (the
+      single-page `usePopularMovies` source, ~20 titles, looped too
+      tightly for "a lot"). Replaced `BackdropCarousel` with a new
+      continuous-glide version — but this time driven by Framer Motion's
+      `animate` (`x: ['0%', '-50%']`, `repeat: Infinity`, `ease:
+      'linear'`) instead of a CSS `@keyframes` animation, since a CSS
+      keyframe animation is exactly what silently never moved earlier
+      (gated behind `prefers-reduced-motion`), while the batch
+      crossfade — also Framer Motion, just animating `opacity` instead
+      of `x` — demonstrably did work in the same browser. Sizing: each
+      tile is set to `100 / doubled.length`% of the *track's* width, and
+      the track itself to `(doubled.length / 6) * 100`% of the
+      *container's* width — those percentages cancel out to exactly
+      `container-width / 6` per tile regardless of viewport size or
+      pool size, so it's always exactly 6 tiles wide, and translating
+      the track by `-50%` moves exactly one full backdrop-list-width for
+      a seamless loop. Pool: new `src/hooks/useMarqueeBackdrops.jsx`
+      fetches 5 pages of `/movie/popular` in parallel (up to ~100
+      titles) once on mount, replacing the single-page
+      `usePopularMovies` source — `Home.jsx`'s own `usePopularMovies`
+      call is untouched. Verified live: sampled the track's
+      `transform` 3s apart and confirmed a large continuous shift
+      (`-870px` → `-3383px`), and a screenshot showed exactly 6 tiles
+      filling the header width with visibly more pool variety.
+- [x] **Eleventh follow-up, same round** — the Framer Motion version
+      still never moved for the user either, while the batch crossfade
+      (also Framer Motion) did. That pattern — content-driven changes
+      work, actual sliding motion never does, across three completely
+      different implementations — points at one specific mechanism:
+      this app's root `MotionConfig reducedMotion="user"` (`App.jsx`)
+      makes every Framer Motion animation respect the OS-level
+      `prefers-reduced-motion` setting automatically. The crossfade's
+      *content* change is driven by a `setInterval`/React state update
+      (unaffected by that config); only the *fade transition itself* is
+      Framer-animated, and reduced motion likely made that fade instant
+      rather than skipping the content change — which is why it read as
+      working. The glide's *entire* effect is the Framer-animated `x`
+      transform, so under the same setting it just never started.
+      Fix: went back to a plain CSS `@keyframes` animation (same
+      `.marquee-track` technique as the very first marquee attempt) —
+      but this time deliberately left it OUT of the
+      `prefers-reduced-motion: no-preference` media-query guard used
+      everywhere else in `index.css`. A raw CSS animation isn't touched
+      by Framer's `MotionConfig` at all, and with no manual media-query
+      gate of its own either, nothing in this app can suppress it
+      anymore. This is a deliberate, documented, one-off accessibility
+      tradeoff (noted in both the CSS comment and the component comment)
+      — justified because it's the gentlest possible motion (a slow,
+      constant-speed, single-direction pan, not flashing/zooming/parallax)
+      and the user has now asked for this exact behavior across five
+      consecutive iterations. Verified live: sampled `.marquee-track`'s
+      computed `transform` 3s apart and confirmed continuous movement
+      (`-1132px` → `-3607px`), and a screenshot matches — 6 tiles,
+      visibly different backdrops, filling the header width.
+- [x] **Twelfth follow-up, same round** — user asked for the "MOVIES"
+      headline to be the "anti" color of whatever's behind it, i.e.
+      `mix-blend-mode: difference`, so it stays legible and striking
+      regardless of what the carousel is currently showing underneath.
+      Replaced the image-filled-letters technique (`background-clip:
+      text` + a single static `backdropPath`, the `-webkit-text-stroke`
+      cyan outline) with a solid white fill and `mixBlendMode:
+      'difference'` — the text now inverts the colors of the carousel
+      and grid texture beneath it in real time as the carousel slides,
+      rather than showing its own separate fixed image. Since the
+      headline's `.isolate` ancestor (added earlier for the stacking-
+      context fix) already contains the carousel, grid texture, and
+      gradient in one local stacking context, the blend mode composites
+      against all of them correctly with no extra wiring. Removed the
+      now-unused `backdropPath` prop/plumbing from both
+      `ConsoleHeader.jsx` and `Movies.jsx` (it was only ever used for
+      the old letter-fill image). Verified visually — the text visibly
+      shows inverted teal/cyan tones over the carousel's red/orange
+      frames, updating as the carousel moves.
+- [x] **Thirteenth follow-up, same round** — carousel speed felt too
+      fast; slowed `.marquee-track`'s CSS animation from `26s` to `120s`
+      per loop. Verified via computed-`transform` sampling that the
+      movement rate dropped proportionally (~825px/s → ~178px/s, a
+      ~4.6x slowdown matching the 120/26 duration ratio).
 
 **Deliberately out of scope**: `/shows` and its shared hero components
 (`MainContainer`/`VideoBackground`/`VideoTitle` in `browse/`) — untouched,

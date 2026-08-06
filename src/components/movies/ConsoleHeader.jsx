@@ -7,29 +7,58 @@ import { EASE } from '@/lib/motion'
 
 const formatCount = (n) => (typeof n === 'number' ? n.toLocaleString('en-US') : '—')
 
-// Continuous right-to-left backdrop ticker, behind the grid texture and
-// everything else — the list is rendered twice back-to-back in one flex
-// row (`.marquee-track`, index.css), and CSS animates the whole row by
-// exactly -50%, which loops seamlessly since the second half mirrors the
-// first. No React state/interval needed — it's a pure CSS loop, and
-// `.marquee-track`'s own reduced-motion guard makes it static otherwise.
-// Uses backdrops (widescreen scene stills), not posters — posters are
-// designed as title cards and almost always have the movie's name baked
-// into the artwork, which reads as clutter/duplication behind "MOVIES".
-const BackdropMarquee = ({ backdropPaths }) => {
+const VISIBLE_COUNT = 6
+
+// Continuous right-to-left backdrop carousel — always exactly VISIBLE_COUNT
+// tiles fill the header width (each sized to 1/VISIBLE_COUNT of the
+// container via percentage, not a fixed px value, so it stays exactly 6
+// wide at any viewport size), and the whole strip glides left forever.
+//
+// Driven by a plain CSS `@keyframes` animation (`.marquee-track` in
+// index.css) — deliberately, on purpose, NOT wrapped in this app's usual
+// `prefers-reduced-motion` guard. Two earlier attempts both silently never
+// moved for the same user: a CSS version gated behind that exact media
+// query, and a Framer Motion `animate()` version (Framer's app-root
+// `MotionConfig reducedMotion="user"` disables its transform animations
+// under the same OS setting). Both point to the same cause — this one
+// bypasses it entirely by not touching either mechanism. It's a slow,
+// linear, single-direction pan (not flashing/zooming/parallax), a
+// deliberately gentler tradeoff than this app's other motion.
+//
+// Math: the track holds the backdrop list twice back-to-back (`doubled`).
+// Each tile is sized to `100 / doubled.length`% of the TRACK's own width,
+// and the track itself is sized to `(doubled.length / VISIBLE_COUNT) * 100`%
+// of the container — those percentages cancel out to exactly
+// `container-width / VISIBLE_COUNT` per tile, regardless of container size.
+// The CSS animation moves the track from 0% to -50%, i.e. exactly one full
+// backdrop list's width, so the loop point is seamless (the second half is
+// identical to the first).
+const BackdropCarousel = ({ backdropPaths }) => {
   if (!backdropPaths.length) return null
-  const doubled = [...backdropPaths, ...backdropPaths]
+
+  // Pad up to VISIBLE_COUNT by repeating if there aren't enough backdrops
+  // yet (e.g. still loading), so there's always a full width of content —
+  // never fewer than 6 tiles on screen.
+  const base =
+    backdropPaths.length >= VISIBLE_COUNT
+      ? backdropPaths
+      : Array.from({ length: VISIBLE_COUNT }, (_, i) => backdropPaths[i % backdropPaths.length])
+  const doubled = [...base, ...base]
 
   return (
     <div className="absolute inset-0 overflow-hidden">
-      <div className="marquee-track h-full">
+      <div
+        className="marquee-track flex h-full"
+        style={{ width: `${(doubled.length / VISIBLE_COUNT) * 100}%` }}
+      >
         {doubled.map((path, i) => (
           <img
             key={`${path}-${i}`}
             src={BACKDROP_CDN_URL + path}
             alt=""
             aria-hidden="true"
-            className="h-full aspect-video object-cover shrink-0 mr-2"
+            style={{ width: `${100 / doubled.length}%` }}
+            className="h-full object-cover shrink-0"
           />
         ))}
       </div>
@@ -45,7 +74,6 @@ const BackdropMarquee = ({ backdropPaths }) => {
 // tried first and looked broken/glitchy — one coherent photo reads far
 // cleaner through bold letterforms than a jigsaw of mismatched posters).
 const ConsoleHeader = ({
-  backdropPath,
   marqueeBackdrops = [],
   totalResults,
   activePresetLabel,
@@ -55,7 +83,7 @@ const ConsoleHeader = ({
   onSearchChange,
 }) => (
   <div className="isolate relative w-full pt-16 md:pt-24 pb-8 px-4 md:px-8 overflow-hidden">
-    <BackdropMarquee backdropPaths={marqueeBackdrops} />
+    <BackdropCarousel backdropPaths={marqueeBackdrops} />
     <div className="hud-grid-texture absolute inset-0 -z-20" />
     <div className="absolute inset-0 -z-20 bg-linear-to-b from-ink/55 via-ink/70 to-ink" />
 
@@ -73,17 +101,11 @@ const ConsoleHeader = ({
       </div>
 
       <h1
-        className="font-display font-bold uppercase leading-[0.8] -ml-1 bg-clip-text bg-cover bg-center select-none"
+        className="font-display font-bold uppercase leading-[0.8] -ml-1 select-none text-white"
         style={{
           fontSize: 'clamp(5rem, 22vw, 15rem)',
           letterSpacing: '-0.02em',
-          color: 'transparent',
-          WebkitTextFillColor: 'transparent',
-          WebkitTextStroke: '2px var(--color-hud-cyan)',
-          backgroundColor: 'var(--color-hud-cyan)',
-          backgroundImage: backdropPath
-            ? `linear-gradient(160deg, rgba(0,0,0,0.1), rgba(0,0,0,0.65)), url(${BACKDROP_CDN_URL + backdropPath})`
-            : undefined,
+          mixBlendMode: 'difference',
         }}
       >
         Movies

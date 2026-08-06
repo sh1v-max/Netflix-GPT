@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
+import React, { useMemo, useEffect, useRef, useState } from 'react'
 import { SlidersHorizontal } from 'lucide-react'
 import Header from '../layout/Header'
 import Footer from '../layout/Footer'
@@ -10,7 +9,7 @@ import MovieGridHud from './MovieGridHud'
 import useMovieConsole from '../../hooks/useMovieConsole'
 import useMultiSearch from '../../hooks/useMultiSearch'
 import useGenres from '../../hooks/useGenres'
-import usePopularMovies from '../../hooks/usePopularMovies'
+import useMarqueeBackdrops from '../../hooks/useMarqueeBackdrops'
 
 // Fisher-Yates — used once (useMemo) to randomize the marquee's order so
 // it doesn't always play back in the same sequence on every visit.
@@ -68,20 +67,11 @@ const Movies = () => {
   const allGenres = useGenres('movie')
   const genreMap = Object.fromEntries((allGenres || []).map((g) => [g.id, g.name]))
 
-  const backdropPath = results.find((item) => item.backdrop_path)?.backdrop_path
-
-  // Marquee is deliberately a separate data source from `results` — using
-  // the same list the grid renders would just replay the first row as
-  // ambient background, which read as a bug, not a design choice.
-  usePopularMovies()
-  const popularMovies = useSelector((store) => store.movies.popularMovies)
-  const marqueeBackdrops = useMemo(
-    () =>
-      shuffle(
-        (popularMovies || []).filter((item) => item.backdrop_path).map((item) => item.backdrop_path)
-      ),
-    [popularMovies]
-  )
+  // Marquee is deliberately a separate, larger data source from `results`
+  // — using the same list the grid renders would just replay the first
+  // row as ambient background, which read as a bug, not a design choice.
+  const rawMarqueeBackdrops = useMarqueeBackdrops()
+  const marqueeBackdrops = useMemo(() => shuffle(rawMarqueeBackdrops), [rawMarqueeBackdrops])
 
   const avgRating = results.length
     ? (results.reduce((sum, item) => sum + (item.vote_average || 0), 0) / results.length).toFixed(1)
@@ -126,7 +116,6 @@ const Movies = () => {
       <Header />
       <main className="flex-1">
         <ConsoleHeader
-          backdropPath={backdropPath}
           marqueeBackdrops={marqueeBackdrops}
           totalResults={isSearching ? searchResults.length : totalResults}
           activePresetLabel={isSearching ? 'Search' : PRESET_LABELS[filters.preset]}
