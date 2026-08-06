@@ -750,6 +750,48 @@ is approved, it rolls out there and elsewhere next.
       Re-verified visually: the backdrop now fills the whole header
       (not just behind the letters) and the crossfade is visibly
       apparent between screenshots taken seconds apart.
+- [x] **Sixth follow-up, same round** — user didn't like the single
+      big backdrop photo at all; wanted a continuous right-to-left
+      scrolling row of movie posters instead (same header height,
+      different content). Replaced `BackdropSlideshow` (React
+      state + `setInterval` + `AnimatePresence` crossfade) with
+      `PosterMarquee` — a pure-CSS approach: the poster list is
+      rendered twice back-to-back in one flex row (`.marquee-track` in
+      `index.css`) and a CSS `@keyframes` animation translates the
+      whole row by exactly `-50%` on an infinite loop, which is
+      seamless since the second half of the doubled list is identical
+      to the first. No React state or interval involved — the scroll
+      itself can't stutter on re-render the way a JS-driven timer
+      could, and reduced-motion is a plain `@media` guard on the class
+      (same pattern as `.shimmer`). `ConsoleHeader.jsx` now takes a
+      `posterPaths` array (20 posters from the current results,
+      `IMG_CDN_URL`) instead of `backdropPaths`; the giant headline
+      still separately uses one `backdropPath` (`BACKDROP_CDN_URL`) for
+      its own text-fill, unrelated to the marquee. Verified live: the
+      marquee's `translateX` was sampled at two points four seconds
+      apart within one session and confirmed moving (`0` →
+      `-406.573px`), i.e. genuinely animating right-to-left, not stuck.
+- [x] **Seventh follow-up, same round** — two more issues with the
+      marquee: (1) it was sourced from the same `results` array the
+      grid below renders, so it just replayed the grid's own first row
+      as "ambient" background — not actually different content; (2) it
+      used `poster_path` images, and movie posters are designed as
+      title cards — almost every one has the movie's name baked into
+      the artwork, which duplicated/cluttered against the "MOVIES"
+      wordmark. Fixed both: swapped to `backdrop_path` (widescreen
+      scene stills, essentially never carry title text) via
+      `BACKDROP_CDN_URL`, `aspect-video` instead of `aspect-2/3`; and
+      decoupled the data source entirely by pulling from
+      `usePopularMovies()`/`store.movies.popularMovies` (already an
+      existing, independently-cached hook — originally added for
+      `Home.jsx`'s marketing grid, reused here rather than adding a new
+      fetch) instead of the console's own filtered `results`, so the
+      marquee always shows different titles than whatever's in the grid
+      regardless of the active preset/filter. Also shuffles the list
+      once per mount (`useMemo` + a small Fisher-Yates `shuffle`
+      helper) so the playback order isn't identical on every visit.
+      `ConsoleHeader`'s prop renamed `posterPaths` → `marqueeBackdrops`
+      to match; `PosterMarquee` renamed `BackdropMarquee`.
 
 **Deliberately out of scope**: `/shows` and its shared hero components
 (`MainContainer`/`VideoBackground`/`VideoTitle` in `browse/`) — untouched,

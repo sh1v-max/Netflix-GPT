@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
+import React from 'react'
+import { motion } from 'motion/react'
 import { Database, Search, Activity } from 'lucide-react'
 import { BACKDROP_CDN_URL } from '../../utils/constant'
 import HudFrame from './HudFrame'
@@ -7,47 +7,32 @@ import { EASE } from '@/lib/motion'
 
 const formatCount = (n) => (typeof n === 'number' ? n.toLocaleString('en-US') : '—')
 
-const SLIDE_INTERVAL_MS = 6000
-
-// Full-bleed ambient backdrop, behind the grid texture and everything else
-// — cycles through a handful of current results' backdrops with a slow
-// crossfade + subtle zoom. Auto-rotation is skipped entirely under
-// prefers-reduced-motion (checked once on mount); a single static image
-// still renders either way, motion is what's optional here, not the image.
-const BackdropSlideshow = ({ backdropPaths }) => {
-  const [index, setIndex] = useState(0)
-
-  useEffect(() => {
-    if (backdropPaths.length < 2) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
-    const timer = setInterval(() => {
-      setIndex((i) => (i + 1) % backdropPaths.length)
-    }, SLIDE_INTERVAL_MS)
-    return () => clearInterval(timer)
-  }, [backdropPaths.length])
-
-  const current = backdropPaths[index % backdropPaths.length]
-  if (!current) return null
+// Continuous right-to-left backdrop ticker, behind the grid texture and
+// everything else — the list is rendered twice back-to-back in one flex
+// row (`.marquee-track`, index.css), and CSS animates the whole row by
+// exactly -50%, which loops seamlessly since the second half mirrors the
+// first. No React state/interval needed — it's a pure CSS loop, and
+// `.marquee-track`'s own reduced-motion guard makes it static otherwise.
+// Uses backdrops (widescreen scene stills), not posters — posters are
+// designed as title cards and almost always have the movie's name baked
+// into the artwork, which reads as clutter/duplication behind "MOVIES".
+const BackdropMarquee = ({ backdropPaths }) => {
+  if (!backdropPaths.length) return null
+  const doubled = [...backdropPaths, ...backdropPaths]
 
   return (
-    <div className="absolute inset-0 -z-30 overflow-hidden">
-      <AnimatePresence>
-        <motion.img
-          key={current}
-          src={BACKDROP_CDN_URL + current}
-          alt=""
-          aria-hidden="true"
-          initial={{ opacity: 0, scale: 1.06 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{
-            opacity: { duration: 1.6, ease: EASE },
-            scale: { duration: SLIDE_INTERVAL_MS / 1000 + 1.6, ease: 'linear' },
-          }}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      </AnimatePresence>
+    <div className="absolute inset-0 overflow-hidden">
+      <div className="marquee-track h-full">
+        {doubled.map((path, i) => (
+          <img
+            key={`${path}-${i}`}
+            src={BACKDROP_CDN_URL + path}
+            alt=""
+            aria-hidden="true"
+            className="h-full aspect-video object-cover shrink-0 mr-2"
+          />
+        ))}
+      </div>
     </div>
   )
 }
@@ -61,7 +46,7 @@ const BackdropSlideshow = ({ backdropPaths }) => {
 // cleaner through bold letterforms than a jigsaw of mismatched posters).
 const ConsoleHeader = ({
   backdropPath,
-  backdropPaths = [],
+  marqueeBackdrops = [],
   totalResults,
   activePresetLabel,
   genreCount,
@@ -70,7 +55,7 @@ const ConsoleHeader = ({
   onSearchChange,
 }) => (
   <div className="isolate relative w-full pt-16 md:pt-24 pb-8 px-4 md:px-8 overflow-hidden">
-    <BackdropSlideshow backdropPaths={backdropPaths} />
+    <BackdropMarquee backdropPaths={marqueeBackdrops} />
     <div className="hud-grid-texture absolute inset-0 -z-20" />
     <div className="absolute inset-0 -z-20 bg-linear-to-b from-ink/55 via-ink/70 to-ink" />
 

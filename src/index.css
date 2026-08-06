@@ -305,6 +305,25 @@ body {
   opacity: 0.4;
 }
 
+/* Continuous right-to-left poster marquee (Movies console header) — the
+   track holds the poster list duplicated once; translating it by exactly
+   -50% loops seamlessly since the second half is identical to the first.
+   Static (no scroll) under prefers-reduced-motion, same guard pattern as
+   .shimmer/.aurora-gradient. */
+.marquee-track {
+  display: flex;
+  width: max-content;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .marquee-track {
+    animation: marquee-scroll 50s linear infinite;
+  }
+}
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
 /* Custom range slider — the fill color is set per-instance via an inline
    background gradient (see FilterBar), this just handles track/thumb shape. */
 .styled-range {
