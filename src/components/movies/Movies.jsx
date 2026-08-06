@@ -55,10 +55,11 @@ const Movies = () => {
   const allGenres = useGenres('movie')
   const genreMap = Object.fromEntries((allGenres || []).map((g) => [g.id, g.name]))
 
-  const posterPaths = results
-    .filter((item) => item.poster_path)
-    .slice(0, 24)
-    .map((item) => item.poster_path)
+  const backdropPaths = results
+    .filter((item) => item.backdrop_path)
+    .slice(0, 8)
+    .map((item) => item.backdrop_path)
+  const backdropPath = backdropPaths[0]
   const avgRating = results.length
     ? (results.reduce((sum, item) => sum + (item.vote_average || 0), 0) / results.length).toFixed(1)
     : null
@@ -102,7 +103,8 @@ const Movies = () => {
       <Header />
       <main className="flex-1">
         <ConsoleHeader
-          posterPaths={posterPaths}
+          backdropPath={backdropPath}
+          backdropPaths={backdropPaths}
           totalResults={isSearching ? searchResults.length : totalResults}
           activePresetLabel={isSearching ? 'Search' : PRESET_LABELS[filters.preset]}
           genreCount={allGenres?.length}

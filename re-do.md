@@ -686,6 +686,70 @@ is approved, it rolls out there and elsewhere next.
       search-results branch (mirrors `Discover.jsx`'s
       `isSearching` pattern) — preset chips and the filter sidebar hide
       while a query is active, same as Discover hides its own filters.
+- [x] **Second follow-up, same round** — first pass at the poster
+      collage was nearly invisible (0.12 opacity under a heavy dark
+      gradient); bumped to 0.6 opacity with a lighter gradient and
+      dropped the grayscale filter to let real color through. Then, per
+      a design reference the user shared (a giant-wordmark hero style),
+      replaced the page-background collage entirely with a different
+      technique: the word "MOVIES" now renders at `min(30vh, 19vw)`
+      font size — deliberately huge, ~1/4 of viewport height — with the
+      poster mosaic filling the letters themselves via
+      `background-clip: text` (a stack of CSS `background-image` layers
+      positioned in a 5×3 grid, `GRID_POSITIONS` in `ConsoleHeader.jsx`,
+      not a canvas/JS composite). The smaller HUD panel (search box +
+      stat row) now sits below the giant headline instead of behind it.
+- [x] **Third follow-up, same round** — user feedback that the 5×3
+      multi-poster mosaic looked broken/glitchy through the letters (a
+      jigsaw of mismatched photos reads as a rendering bug, not a
+      design choice) and that the headline needed to fill more space
+      with better contrast. Replaced the mosaic with a single coherent
+      backdrop image (`results.find(r => r.backdrop_path)`, not a
+      poster grid — `GRID_POSITIONS`/`buildCollageStyle` removed from
+      `ConsoleHeader.jsx` entirely), added a `-webkit-text-stroke: 2px`
+      cyan outline so every letter stays legible regardless of the
+      image's local brightness, and increased the size to
+      `clamp(5rem, 22vw, 15rem)` (vw-dominant so it now spans nearly
+      the full container width, not just tall).
+- [x] **Fourth follow-up, same round** — added a full-bleed ambient
+      backdrop behind the entire header (behind `.hud-grid-texture` and
+      the giant headline, not just behind the panel), cycling through
+      up to 8 of the current results' backdrops with a slow crossfade +
+      subtle zoom (`BackdropSlideshow` in `ConsoleHeader.jsx`, new
+      `backdropPaths` array prop alongside the existing singular
+      `backdropPath` used for the headline's text-fill — two different
+      images can be showing at once, letter-fill vs. ambient backdrop,
+      which reads as intentional layering rather than a mismatch).
+      Rotates every 6s via `setInterval` + `AnimatePresence`
+      (`motion.img` keyed by the current path, so mount/unmount drives
+      the crossfade); the interval is skipped entirely under
+      `prefers-reduced-motion: reduce` (checked once via
+      `matchMedia`, since `MotionConfig reducedMotion="user"` at the
+      app root only governs Motion-driven animations, not a plain JS
+      `setInterval` loop) — a single static image still renders either
+      way. Verified the rotation actually fires by sampling the
+      rendered `<img>` `src` at t=0/7s/14s within one continuous
+      browser session (confirmed different backdrop URLs) — a first
+      attempt at verifying via separate fresh-navigation screenshots
+      looked like nothing was rotating, which turned out to be a false
+      alarm caused by each screenshot restarting the timer from zero.
+- [x] **Fifth follow-up, same round** — user reported (correctly) that
+      the ambient backdrop was invisible outside the "MOVIES" letters
+      and appeared not to rotate at all. Root cause: the slideshow/grid
+      layers used negative `z-index` (`-z-30`/`-z-20`), but the
+      `ConsoleHeader` wrapper never established its own stacking
+      context (`position: relative` alone doesn't create one), so those
+      negative-z children escaped past it and painted *behind* the
+      page root's own `bg-ink` background several levels up — a classic
+      "negative z-index leaks out of its intended container" CSS bug.
+      Rotation was actually working the whole time (per the previous
+      bullet's verification), just invisible. Fix: added `isolate`
+      (`isolation: isolate`) to the `ConsoleHeader` wrapper div, which
+      scopes all descendant z-index values — negative included — to
+      stay contained within it. One-line fix, no layout/logic changes.
+      Re-verified visually: the backdrop now fills the whole header
+      (not just behind the letters) and the crossfade is visibly
+      apparent between screenshots taken seconds apart.
 
 **Deliberately out of scope**: `/shows` and its shared hero components
 (`MainContainer`/`VideoBackground`/`VideoTitle` in `browse/`) — untouched,
