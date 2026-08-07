@@ -85,7 +85,20 @@ const ConsoleHeader = ({
   <div className="isolate relative w-full pt-16 md:pt-24 pb-8 px-4 md:px-8 overflow-hidden">
     <BackdropCarousel backdropPaths={marqueeBackdrops} />
     <div className="hud-grid-texture absolute inset-0 -z-20" />
-    <div className="absolute inset-0 -z-20 bg-linear-to-b from-ink/55 via-ink/70 to-ink" />
+    {/* Vignette — darkens all four edges, bright in the middle. Two
+        independent linear gradients (left/right, top/bottom) instead of
+        a single radial ellipse: this header is much wider than it is
+        tall, and an ellipse sized as a % of the box's own dimensions
+        barely reached the left/right edges in a box that wide — these
+        two gradients darken each pair of edges by a fixed % of their
+        own axis, so it's correct regardless of the box's aspect ratio. */}
+    <div
+      className="absolute inset-0 -z-20"
+      style={{
+        background:
+          'linear-gradient(to right, var(--color-ink) 0%, transparent 26%, transparent 74%, var(--color-ink) 100%), linear-gradient(to bottom, color-mix(in srgb, var(--color-ink) 65%, transparent) 0%, transparent 25%, transparent 50%, var(--color-ink) 100%)',
+      }}
+    />
 
     <motion.div
       initial={{ opacity: 0, y: 16 }}

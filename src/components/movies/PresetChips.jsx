@@ -12,7 +12,7 @@ const PRESETS = [
 // Bracket-corner chips — deliberately not FilterPanel's pill style, these
 // are query-mode switches, not multi-select filters.
 const PresetChips = ({ activePreset, onSelect }) => (
-  <div className="flex flex-wrap gap-2 px-4 md:px-8 pb-4">
+  <div className="flex flex-wrap gap-2 px-4 md:px-8 pt-5 pb-4">
     {PRESETS.map((preset) => {
       const isActive = activePreset === preset.value
       return (

@@ -908,6 +908,62 @@ is approved, it rolls out there and elsewhere next.
       per loop. Verified via computed-`transform` sampling that the
       movement rate dropped proportionally (~825px/s → ~178px/s, a
       ~4.6x slowdown matching the 120/26 duration ratio).
+- [x] **Fourteenth follow-up, same round** — added a vignette overlay
+      to the carousel: darker at all four edges (top/left/right/bottom),
+      bright in the center, not too dark overall. The previous overlay
+      was a single top-to-bottom linear gradient (no left/right
+      darkening at all — images ran flush to the side edges). Replaced
+      with two layered gradients on the same div: a radial ellipse
+      (`transparent` at the center 30% radius, fading to a `55%`
+      `--color-ink` mix at the edges — the actual vignette) plus a
+      gentler linear top-to-bottom fade retained underneath it (`15%`
+      mix at the top down to solid `--color-ink` at the very bottom),
+      so the search panel still blends cleanly into the page background
+      below the header. Uses `color-mix(in srgb, ...)`, the same
+      technique already used by `.hero-gradient`/`.aurora-gradient`.
+      Verified visually — all four edges read visibly darker than the
+      center without crushing the images to black.
+- [x] **Fifteenth follow-up, same round** — two small polish requests:
+      vignette pushed noticeably darker and reaching further inward
+      (radial transparent stop `12%` → `5%`, edge opacity `72%` → `85%`
+      ink mix; linear bottom fade `20%/55%` → `30%/65%`), and a `pt-5`
+      added to `PresetChips.jsx`'s row so the preset chips (All Titles/
+      Trending/Now Playing/...) get breathing room instead of sitting
+      flush against the search panel above them.
+- [x] **Sixteenth follow-up, same round** — user correctly flagged that
+      the left/right edges still weren't visibly dark. Root cause: a
+      radial-gradient's explicit ellipse size (`90% 80%`) is a
+      percentage of the gradient BOX's own width/height — and this
+      header is much wider than it is tall, so a horizontal radius of
+      "90% of a very wide box" is itself huge, meaning the color barely
+      progressed toward full darkness by the time it reached the actual
+      left/right screen edges (vertically, 80% of a much shorter height
+      had far less distance to cover, so the top/bottom darkening did
+      show). Replaced the single radial ellipse with two independent
+      `linear-gradient`s — one `to right` (dark→transparent→transparent→
+      dark, symmetric left/right) and one `to bottom` (dark→transparent→
+      transparent→solid, matching the existing bottom-fade intent) —
+      each darkens its own pair of edges by a fixed percentage of its
+      own axis, so it's correct regardless of the box's aspect ratio.
+      Verified visually — both the leftmost sliver and rightmost tile
+      now read clearly darker than the bright center tiles.
+- [x] **Seventeenth follow-up, same round** — user still saw no
+      darkening at all (screenshot showed a fully bright edge tile).
+      Re-verified against a brand-new dev server instance (not the
+      user's own, in case theirs was serving a stale bundle) and the
+      linear-gradient vignette from the previous bullet rendered
+      correctly there — dark left edge, dark silhouettes on the right
+      edge. Given that mismatch, likely cause on the user's end is a
+      stale cached bundle rather than a code bug (Vite HMR occasionally
+      doesn't pick up an inline-style-only change cleanly). Pushed the
+      edges further regardless, per the user's "make it darker either
+      way" instruction: left/right edges now go to fully solid
+      `var(--color-ink)` at the very 0%/100% stops (not a `color-mix`
+      partial-opacity blend like before), transparent stops moved
+      inward slightly (`22%/78%` → `26%/74%`); bottom fade's starting
+      opacity bumped `55%` → `65%`. If this still doesn't show, the
+      likely fix is a hard refresh / dev server restart on the user's
+      side, not another code change.
 
 **Deliberately out of scope**: `/shows` and its shared hero components
 (`MainContainer`/`VideoBackground`/`VideoTitle` in `browse/`) — untouched,
