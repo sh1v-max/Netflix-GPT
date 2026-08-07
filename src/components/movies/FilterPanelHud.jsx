@@ -4,10 +4,10 @@ import HudFrame from './HudFrame'
 
 // Thin wrapper — FilterPanel itself is untouched logic-wise, this just adds
 // HUD chrome around it and passes variant="hud" for cyan-accented controls.
-const FilterPanelHud = ({ filters, onFiltersChange }) => (
+const FilterPanelHud = ({ filters, onFiltersChange, mediaType = 'movie' }) => (
   <HudFrame className="p-5">
     <FilterPanel
-      mediaType="movie"
+      mediaType={mediaType}
       filters={filters}
       onFiltersChange={onFiltersChange}
       variant="hud"

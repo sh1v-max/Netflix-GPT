@@ -74,6 +74,8 @@ const BackdropCarousel = ({ backdropPaths }) => {
 // tried first and looked broken/glitchy — one coherent photo reads far
 // cleaner through bold letterforms than a jigsaw of mismatched posters).
 const ConsoleHeader = ({
+  title,
+  eyebrowLabel,
   marqueeBackdrops = [],
   totalResults,
   activePresetLabel,
@@ -108,7 +110,7 @@ const ConsoleHeader = ({
       <div className="flex items-center gap-2 mb-1 text-hud-cyan">
         <Database size={14} />
         <span className="font-mono text-[11px] uppercase tracking-[0.15em]">
-          Cinegraph // Movie Index
+          {eyebrowLabel}
         </span>
       </div>
 
@@ -120,7 +122,7 @@ const ConsoleHeader = ({
           mixBlendMode: 'difference',
         }}
       >
-        Movies
+        {title}
       </h1>
     </motion.div>
 

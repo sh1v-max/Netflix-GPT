@@ -4,13 +4,23 @@ import { buildDiscoverParams } from './useDiscover'
 
 // Fixed TMDB list endpoints that have no /discover equivalent (or whose
 // equivalent isn't worth reproducing exactly) — "Trending" in particular
-// has no discover param at all.
+// has no discover param at all. TV has no "upcoming" equivalent endpoint,
+// so that preset simply doesn't exist for mediaType 'tv'.
 const PRESET_ENDPOINTS = {
-  now_playing: '/movie/now_playing',
-  popular: '/movie/popular',
-  top_rated: '/movie/top_rated',
-  upcoming: '/movie/upcoming',
-  trending: '/trending/movie/day',
+  movie: {
+    now_playing: '/movie/now_playing',
+    popular: '/movie/popular',
+    top_rated: '/movie/top_rated',
+    upcoming: '/movie/upcoming',
+    trending: '/trending/movie/day',
+  },
+  tv: {
+    on_the_air: '/tv/on_the_air',
+    popular: '/tv/popular',
+    top_rated: '/tv/top_rated',
+    airing_today: '/tv/airing_today',
+    trending: '/trending/tv/day',
+  },
 }
 
 // Same shape as useDiscover, plus a `preset` field on filters and a
@@ -43,7 +53,7 @@ const useMovieConsole = (mediaType, filters) => {
       setIsLoading(true)
       setError('')
       try {
-        const presetPath = preset && PRESET_ENDPOINTS[preset]
+        const presetPath = preset && PRESET_ENDPOINTS[mediaType]?.[preset]
         const url = presetPath
           ? `${TMDB_BASE_URL}${presetPath}?language=en-US&page=${page}`
           : `${TMDB_BASE_URL}/discover/${mediaType}?${buildDiscoverParams({ ...filters, mediaType }, page)}`

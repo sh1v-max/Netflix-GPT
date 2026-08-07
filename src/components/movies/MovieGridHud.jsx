@@ -30,7 +30,16 @@ const EmptyState = ({ title, description, action }) => (
   </motion.div>
 )
 
-const MovieGridHud = ({ results, isLoading, error, hasMore, sentinelRef, genreMap, onRetry }) => {
+const MovieGridHud = ({
+  results,
+  isLoading,
+  error,
+  hasMore,
+  sentinelRef,
+  genreMap,
+  onRetry,
+  mediaType = 'movie',
+}) => {
   if (error) {
     return (
       <EmptyState
@@ -81,13 +90,13 @@ const MovieGridHud = ({ results, isLoading, error, hasMore, sentinelRef, genreMa
               id={item.id}
               posterPath={item.poster_path}
               title={item.title || item.name}
-              mediaType="movie"
+              mediaType={item.media_type || mediaType}
               genreIds={item.genre_ids}
               releaseYear={getReleaseYear(item)}
               voteAverage={item.vote_average}
               genreMap={genreMap}
               fill
-              layoutId={`hud-poster-${item.id}`}
+              layoutId={`hud-poster-${mediaType}-${item.id}`}
             />
           </motion.div>
         ))}

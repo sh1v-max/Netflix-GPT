@@ -1,6 +1,10 @@
 import React from 'react'
 
-const PRESETS = [
+// Movie and TV have different fixed TMDB list endpoints (TV has no
+// "upcoming" equivalent, movies have no "on_the_air"/"airing_today") — the
+// preset list is provided by the caller (Movies.jsx/Shows.jsx) rather than
+// hardcoded here, so this component stays media-type agnostic.
+export const MOVIE_PRESETS = [
   { value: null, label: 'All Titles' },
   { value: 'trending', label: 'Trending' },
   { value: 'now_playing', label: 'Now Playing' },
@@ -9,11 +13,20 @@ const PRESETS = [
   { value: 'upcoming', label: 'Upcoming' },
 ]
 
+export const TV_PRESETS = [
+  { value: null, label: 'All Titles' },
+  { value: 'trending', label: 'Trending' },
+  { value: 'on_the_air', label: 'On The Air' },
+  { value: 'popular', label: 'Popular' },
+  { value: 'top_rated', label: 'Top Rated' },
+  { value: 'airing_today', label: 'Airing Today' },
+]
+
 // Bracket-corner chips — deliberately not FilterPanel's pill style, these
 // are query-mode switches, not multi-select filters.
-const PresetChips = ({ activePreset, onSelect }) => (
+const PresetChips = ({ presets, activePreset, onSelect }) => (
   <div className="flex flex-wrap gap-2 px-4 md:px-8 pt-5 pb-4">
-    {PRESETS.map((preset) => {
+    {presets.map((preset) => {
       const isActive = activePreset === preset.value
       return (
         <button

@@ -193,12 +193,6 @@ body {
   scrollbar-width: none;    /* Firefox */
 }
 
-.hero-gradient {
-  background:
-    radial-gradient(ellipse 80% 60% at 80% -10%, color-mix(in srgb, var(--color-accent2) 20%, transparent), transparent 70%),
-    var(--color-ink);
-}
-
 /* Deliberately cinematic-dark regardless of site theme (a common pattern
    for hero moments) — re-pins every token nested content might read back
    to dark-mode values, AND sets `color` directly (not just the custom

@@ -1015,6 +1015,75 @@ the result count, the preset↔filter interaction works as designed, and
 
 ---
 
+### 2.9 — Rollout to `/shows`
+
+User liked 2.8's result enough to ask for the identical treatment on
+`/shows`, superseding that phase's "deliberately out of scope" note
+above. Generalized the Movies-only HUD components into shared
+`mediaType`-aware ones rather than duplicating a parallel TV version —
+matches this codebase's own precedent (`Discover.jsx` already serves
+both movie/tv, `Anime.jsx` thin-wraps it).
+
+- [x] `useMovieConsole.jsx`: `PRESET_ENDPOINTS` restructured to
+      `{ movie: {...}, tv: {...} }` — movie keeps `now_playing`/
+      `upcoming` (TMDB has no TV equivalent for either); TV gets
+      `on_the_air`/`airing_today` instead. `trending` and `popular`/
+      `top_rated` exist on both.
+- [x] `useMarqueeBackdrops.jsx`: added a `mediaType` param (default
+      `'movie'`), fetches `/{mediaType}/popular` instead of a hardcoded
+      `/movie/popular`.
+- [x] `PresetChips.jsx`: hardcoded `PRESETS` constant replaced with an
+      exported `MOVIE_PRESETS`/`TV_PRESETS` pair (caller passes
+      whichever applies via a new `presets` prop) — this component
+      itself no longer knows or cares which media type it's rendering
+      chips for.
+- [x] `ConsoleHeader.jsx`: hardcoded `"Movies"` headline text and
+      `"Cinegraph // Movie Index"` eyebrow replaced with `title`/
+      `eyebrowLabel` props.
+- [x] `MovieGridHud.jsx` / `MovieCardHud.jsx` / `FilterPanelHud.jsx`:
+      each gained/threaded a `mediaType` prop (default `'movie'`,
+      MovieCardHud already had this) instead of hardcoding `'movie'`
+      internally.
+- [x] New `MediaConsole.jsx` — the full page previously inlined in
+      `Movies.jsx` (state, `useMovieConsole`/`useMarqueeBackdrops`/
+      `useGenres`/`useMultiSearch` wiring, infinite-scroll observer,
+      the search-vs-browse branch), now taking `mediaType`/`title`/
+      `eyebrowLabel`/`presets` as props. `Movies.jsx` and the new
+      `Shows.jsx` are now ~10-line wrappers passing their respective
+      values — all real logic lives in one place, so a future bug fix
+      or design tweak doesn't need to be made twice.
+- [x] `Shows.jsx` rewritten from scratch (old file replaced entirely,
+      not extended) — mirrors `Movies.jsx`'s wrapper shape exactly:
+      `mediaType="tv"`, `title="TV Shows"`,
+      `eyebrowLabel="Cinegraph // Series Index"`, `TV_PRESETS`.
+- [x] Cleanup, grep-verified before deleting: `browse/MainContainer.jsx`,
+      `browse/VideoTitle.jsx`, `shows/ShowsSecondaryContainer.jsx`, and
+      all four TV list hooks (`useOnTheAirShows`, `usePopularShows`,
+      `useTopRatedShows`, `useAiringTodayShows`) — none had any
+      consumer left once `Shows.jsx` stopped needing them.
+      `browse/VideoBackground.jsx` and `useTrailer.jsx` were **kept** —
+      `DetailPage.jsx` still uses `VideoBackground` for its own hero,
+      for both movie and tv title pages. `tvSlice.jsx` trimmed to just
+      `trailerVideo`/`addTvTrailerVideo` (same reasoning); the other
+      four state fields and their reducers deleted, matching what 2.8
+      did to `moviesSlice.jsx`.
+- [x] No routing change needed — `Body.jsx`'s `/shows` → `Shows.jsx`
+      lazy import already pointed at the right file path; only the
+      file's contents changed.
+
+**Verified**: build/lint clean (0 errors, warning count dropped 20→18
+from removing the four dead TV hooks' own `exhaustive-deps` warnings).
+Runtime-checked via `browser-automation`: `/shows` renders the full HUD
+console with live TMDB TV data (correct TV-only genres like Kids/News/
+Reality/Soap/War & Politics, correct preset set with "Airing Today"
+instead of "Upcoming"), clicking "Top Rated" correctly switches to
+TV top-rated data; `/movies` re-verified fully unregressed by the
+generalization; `/discover` (still uses `FilterPanel.jsx` directly,
+untouched) and a `/title/movie/:id` detail page (still uses
+`VideoBackground`) both spot-checked working.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).

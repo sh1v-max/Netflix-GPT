@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { API_OPTIONS, TMDB_BASE_URL } from '../utils/constant'
 
-// Dedicated, larger pool just for the Movies console's ambient carousel —
+// Dedicated, larger pool just for the console's ambient carousel —
 // deliberately NOT the same `results` the grid renders (that read as a
 // duplicate/bug, not a design choice) and deliberately more than one page
-// of `usePopularMovies` (20 titles looped too tightly to feel like "a lot").
-// Fetches several pages of TMDB's popular list in parallel, once, and
-// keeps only the backdrop (not poster — no baked-in title text) paths.
+// of a single `/popular` page (20 titles looped too tightly to
+// feel like "a lot"). Fetches several pages of TMDB's popular list (movie
+// or tv) in parallel, once, and keeps only the backdrop (not poster — no
+// baked-in title text) paths.
 const PAGE_COUNT = 5
 
-const useMarqueeBackdrops = () => {
+const useMarqueeBackdrops = (mediaType = 'movie') => {
   const [backdrops, setBackdrops] = useState([])
 
   useEffect(() => {
@@ -19,7 +20,7 @@ const useMarqueeBackdrops = () => {
       const pages = await Promise.all(
         Array.from({ length: PAGE_COUNT }, (_, i) =>
           fetch(
-            `${TMDB_BASE_URL}/movie/popular?language=en-US&page=${i + 1}`,
+            `${TMDB_BASE_URL}/${mediaType}/popular?language=en-US&page=${i + 1}`,
             API_OPTIONS
           ).then((res) => res.json())
         )
@@ -27,8 +28,8 @@ const useMarqueeBackdrops = () => {
       if (cancelled) return
       const paths = pages
         .flatMap((page) => page.results || [])
-        .filter((movie) => movie.backdrop_path)
-        .map((movie) => movie.backdrop_path)
+        .filter((item) => item.backdrop_path)
+        .map((item) => item.backdrop_path)
       setBackdrops(paths)
     }
 
@@ -36,7 +37,7 @@ const useMarqueeBackdrops = () => {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [mediaType])
 
   return backdrops
 }
