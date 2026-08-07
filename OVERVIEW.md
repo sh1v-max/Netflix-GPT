@@ -75,8 +75,10 @@ netflixgpt/
 │   │   ├── shows/               Shows.jsx (/shows) — thin wrapper around
 │   │   │                       ../movies/MediaConsole, mirrors Movies.jsx
 │   │   ├── discover/           Discover.jsx (filterable catalog + search) + FilterPanel
-│   │   ├── anime/               Anime.jsx — thin wrapper around Discover with
-│   │   │                       fixed genre/language filters baked in
+│   │   ├── anime/               Anime.jsx (/anime) — thin wrapper around
+│   │   │                       ../movies/MediaConsole (same HUD console as
+│   │   │                       Movies/Shows), forced Animation genre +
+│   │   │                       Japanese language, movie/tv toggle
 │   │   ├── detail/              DetailPage.jsx + CastGrid.jsx
 │   │   ├── shared/              MovieCard, MovieList, RatingControl — reused
 │   │   │                       everywhere a poster or a rating appears
@@ -117,7 +119,7 @@ Defined in `src/components/Body.jsx` via `createBrowserRouter`:
 | `/movies` | `Movies` | Yes — dense, filterable "Sci-Fi HUD" catalog (preset chips + genre/year/rating filters + infinite scroll), not a streaming-style hero+rows page — see §8 |
 | `/shows` | `Shows` | Yes — same "Sci-Fi HUD" catalog as `/movies`, TV-specific presets/genres — see §8 |
 | `/discover` | `Discover` | Yes |
-| `/anime` | `Anime` | Yes |
+| `/anime` | `Anime` | Yes — same "Sci-Fi HUD" catalog, forced Animation genre + Japanese language, movie/tv toggle — see §8 |
 | `/title/:mediaType/:id` | `DetailPage` | Yes |
 | `/watchlist` | `Watchlist` | Yes |
 | `/profile` | `Profile` | Yes — identity (editable name + avatar picker), stats, taste graph, watchlist preview, sign out |
@@ -317,33 +319,42 @@ only has 2 pseudo-elements, not 4 corners). (An earlier `.hud-grid-texture`
 faint line-grid overlay was tried and later removed on user feedback —
 deleted from both `index.css` and `ConsoleHeader.jsx`, not just hidden.)
 
-**Components** (`src/components/movies/` — shared by both pages, TV
-doesn't get its own parallel directory): `MediaConsole.jsx` is the
-actual page — takes `mediaType`/`title`/`eyebrowLabel`/`presets` as
-props, owns all state and data wiring, wraps its root in
-`.theme-dark-scope` (a HUD console is dark-only regardless of the app
-theme toggle) → `ConsoleHeader.jsx` (giant `mix-blend-mode: difference`
-wordmark that inverts against whatever's behind it, a continuous
-right-to-left backdrop carousel — `BackdropCarousel`, CSS `@keyframes`-
-driven, deliberately not gated behind `prefers-reduced-motion` like
-the rest of this file, see the component's own comment for why — a
-4-edge vignette, and the search/stat panel) → `PresetChips.jsx` (chip
-list itself is generic; `MOVIE_PRESETS`/`TV_PRESETS` are exported
-constants the caller picks between) → `FilterPanelHud.jsx` (wraps the
-existing `discover/FilterPanel.jsx` unmodified, passing its
-`variant="hud"` prop and a `mediaType` — `Discover.jsx`/`Anime.jsx`
-keep passing no `variant` and are unaffected) → `MovieGridHud.jsx`
-(dense responsive grid, infinite scroll via the same
-`IntersectionObserver` sentinel pattern `Discover.jsx` uses, threads
-`mediaType` down) → `MovieCardHud.jsx` (sibling to
+**Components** (`src/components/movies/` — shared by all three pages,
+TV/Anime don't get their own parallel directories): `MediaConsole.jsx`
+is the actual page — takes `mediaType` (fixed) or `mediaTypes` (array,
+enables a movie/tv toggle instead — Anime only), `title`/
+`eyebrowLabel`/`presets` (`[]` hides the preset-chip row entirely — a
+constrained catalog like Anime can't offer TMDB's fixed-list presets,
+since those endpoints don't accept genre/language params, so a preset
+would silently ignore the constraint), and
+`baseGenres`/`originLanguage`/`excludeGenreIds` (Anime's forced
+Animation+Japanese constraint; `[]`/`null` for Movies/Shows). Owns all
+state and data wiring, wraps its root in `.theme-dark-scope` (a HUD
+console is dark-only regardless of the app theme toggle) →
+`ConsoleHeader.jsx` (giant `mix-blend-mode: difference` wordmark that
+inverts against whatever's behind it, a continuous right-to-left
+backdrop carousel — `BackdropCarousel`, CSS `@keyframes`-driven,
+deliberately not gated behind `prefers-reduced-motion` like the rest
+of this file, see the component's own comment for why — a 4-edge
+vignette, and the search/stat panel) → an optional `MediaTypeTabs`
+(inline in `MediaConsole.jsx`, only rendered when `mediaTypes` is
+passed) → `PresetChips.jsx` (chip list itself is generic;
+`MOVIE_PRESETS`/`TV_PRESETS` are exported constants the caller picks
+between, or omitted for a constrained page) → `FilterPanelHud.jsx`
+(wraps the existing `discover/FilterPanel.jsx` unmodified, passing its
+`variant="hud"` prop, a `mediaType`, and `excludeGenreIds` — plain
+`Discover.jsx` itself keeps passing no `variant` and is unaffected) →
+`MovieGridHud.jsx` (dense responsive grid, infinite scroll via the
+same `IntersectionObserver` sentinel pattern `Discover.jsx` uses,
+threads `mediaType` down) → `MovieCardHud.jsx` (sibling to
 `shared/MovieCard.jsx`, not a variant prop on it — persistent, not
 hover-gated, rating/year/genre readout, since a database shouldn't
 hide its data behind a hover; adds a text-only fallback card for
 missing posters instead of `MovieCard`'s `return null`). `HudFrame.jsx`
 is the shared 4-corner-bracket wrapper used by both `ConsoleHeader` and
-`MovieCardHud`. `Movies.jsx` and `shows/Shows.jsx` are now ~10-line
-wrappers around `MediaConsole` — see routing table (§4) for the exact
-props each passes.
+`MovieCardHud`. `Movies.jsx`, `shows/Shows.jsx`, and `anime/Anime.jsx`
+are now ~10–25-line wrappers around `MediaConsole` — see routing table
+(§4) for the exact props each passes.
 
 **Data sources**: `src/hooks/useMovieConsole.jsx` — sibling to
 `useDiscover.jsx` (untouched apart from exporting its
@@ -353,11 +364,16 @@ props each passes.
 `top_rated`/`upcoming`/`trending`; tv: `on_the_air`/`popular`/
 `top_rated`/`airing_today`/`trending` — TV has no "upcoming"
 equivalent, movie has no "on_the_air"/"airing_today"); `null`, it falls
-through to `/discover/{mediaType}` exactly like `useDiscover`. Both
-paths return the identical `{results, isLoading, error, hasMore,
-loadMore, retry, totalResults}` shape. `src/hooks/useMarqueeBackdrops.jsx`
-— the console header's ambient carousel pool, also takes a `mediaType`
-param, fetches 5 pages of `/{mediaType}/popular` in parallel once.
+through to `/discover/{mediaType}` exactly like `useDiscover` (this is
+the only path Anime's preset-less pages ever take).
+`src/hooks/useMarqueeBackdrops.jsx` also takes an optional
+`{ baseGenres, originLanguage }` — unconstrained, it hits
+`/{mediaType}/popular`; constrained (Anime), it switches to
+`/discover/{mediaType}` with those params so the ambient carousel
+shows on-theme backdrops instead of a random sample of the whole
+catalog. Both `useMovieConsole` paths return the identical
+`{results, isLoading, error, hasMore, loadMore, retry, totalResults}`
+shape, regardless of which one is active.
 
 **Preset ↔ filter interaction**: touching any `FilterPanel` control
 while a preset chip is active silently clears the preset and converts
@@ -366,11 +382,17 @@ the query to its `/discover` equivalent (`MediaConsole.jsx`'s
 — a fixed TMDB list endpoint can't be filtered further, so this keeps
 the two mechanisms from fighting each other. "Trending" has no discover
 equivalent at all, so touching filters while it's active just drops it
-and starts a fresh discover query.
+and starts a fresh discover query. Switching `MediaTypeTabs` (Anime
+only) resets `filters` back to `defaultFilters` entirely — genre ids
+aren't comparable across movie/tv.
 
 **Deliberately still out of scope**: DetailPage enrichment (TMDB
 keywords, collections, full crew, certifications, budget/revenue —
-flagged as a natural fast-follow once both catalog pages were settled).
+flagged as a natural fast-follow once all three catalog pages were
+settled), and `/discover` itself (still the original `Discover.jsx`/
+`FilterPanel.jsx` UI — a fundamentally different page shape, full
+movie+tv catalog with live search-as-you-type, already reused as-is
+elsewhere, no request yet to give it the HUD treatment too).
 
 ---
 
@@ -388,8 +410,9 @@ Image CDN constants: `IMG_CDN_URL` (posters, w500), `BACKDROP_CDN_URL`
 
 **Anime approximation**: TMDB has no first-class "anime" type — the
 `/anime` page is `/discover/{movie,tv}` with `with_genres=16`
-(Animation) AND'd with `with_original_language=ja`, via `Discover.jsx`'s
-`baseGenres`/`originLanguage` props.
+(Animation) AND'd with `with_original_language=ja`, via
+`MediaConsole.jsx`'s `baseGenres`/`originLanguage` props (originally
+`Discover.jsx`'s, before Anime moved to the HUD console in 2.10).
 
 ### Gemini via `gpt-proxy-worker` (GPT search)
 GPT search calls Gemini's OpenAI-compatible endpoint
@@ -455,11 +478,14 @@ npx firebase deploy --only hosting,firestore:rules   # deploy
 Watchlist (2.4), profile computation (2.5), the Taste Profile page
 (2.6), the server-side move of the GPT call (2.7, ad hoc — see §9),
 the `/movies` "Sci-Fi HUD" rebuild (2.8, ad hoc — see §8), and its
-rollout to `/shows` (2.9, ad hoc — see §8) are done. What's left:
-rolling the same HUD treatment out to any other remaining pages if
-that's ever wanted, DetailPage enrichment (keywords, collections, full
-crew, certifications, budget/revenue — flagged as a natural fast-follow
-once both catalog pages were settled), and personalized AI
-recommendations (prompt injection using the taste profile, "why this
-was picked" captions, "For You" rows) — see `re-do.md` Phase 3 for the
-concrete, in-order plan.
+rollout to `/shows` (2.9) and `/anime` (2.10) are done — all four
+media-browsing pages (`/movies`, `/shows`, `/anime`, plus `/discover`
+still on the original UI) now share `MediaConsole.jsx`. What's left:
+giving `/discover` the same HUD treatment too if that's ever wanted
+(deliberately not done yet — different page shape, see §8), DetailPage
+enrichment (keywords, collections, full crew, certifications,
+budget/revenue — flagged as a natural fast-follow once the catalog
+pages were settled), and personalized AI recommendations (prompt
+injection using the taste profile, "why this was picked" captions,
+"For You" rows) — see `re-do.md` Phase 3 for the concrete, in-order
+plan.

@@ -22,32 +22,81 @@ const shuffle = (arr) => {
   return copy
 }
 
-const defaultFilters = {
-  preset: null,
-  withGenres: [],
-  baseGenres: [],
-  originLanguage: null,
-  minYear: null,
-  maxYear: null,
-  minRating: null,
-  sortBy: 'popularity.desc',
-}
+// Small bracket-corner tab pair for pages that span both media types
+// (Anime) — visually distinct from PresetChips (query-mode switches) since
+// this instead changes *what catalog* is being queried entirely.
+const MediaTypeTabs = ({ mediaTypes, mediaType, onSelect }) => (
+  <div className="flex gap-2 px-4 md:px-8 pb-3">
+    {mediaTypes.map((type) => {
+      const isActive = mediaType === type.value
+      return (
+        <button
+          key={type.value}
+          onClick={() => onSelect(type.value)}
+          className={`relative font-mono text-[11px] uppercase tracking-wide px-3.5 py-1.5 cursor-pointer transition-colors duration-200 ${
+            isActive
+              ? 'hud-panel text-hud-cyan border-hud-cyan'
+              : 'bg-transparent text-text-dark-muted border border-border-hairline hover:border-hud-line hover:text-text-dark'
+          }`}
+        >
+          {isActive && (
+            <>
+              <span className="hud-corner hud-corner--tl" aria-hidden="true" />
+              <span className="hud-corner hud-corner--tr" aria-hidden="true" />
+              <span className="hud-corner hud-corner--bl" aria-hidden="true" />
+              <span className="hud-corner hud-corner--br" aria-hidden="true" />
+            </>
+          )}
+          {type.label}
+        </button>
+      )
+    })}
+  </div>
+)
 
-// The "Sci-Fi HUD / Data Console" catalog page, shared by Movies.jsx and
-// Shows.jsx — a dense, filterable data console instead of a streaming-style
-// hero + horizontal shelves. See re-do.md Phase 2.8 for the full rationale
-// and Phase 2.9 for how this got generalized from movie-only to also serve
-// TV. `mediaType`/`title`/`eyebrowLabel`/`presets` are the only things that
-// differ per page — everything else (grid, filters, carousel, search) is
-// identical behavior for both.
-const MediaConsole = ({ mediaType, title, eyebrowLabel, presets }) => {
-  const [filters, setFilters] = useState(defaultFilters)
+// The "Sci-Fi HUD / Data Console" catalog page, shared by Movies.jsx,
+// Shows.jsx, and Anime.jsx — a dense, filterable data console instead of a
+// streaming-style hero + horizontal shelves. See re-do.md Phase 2.8 for the
+// full rationale, 2.9 for the movie-only → also-TV generalization, and 2.10
+// for the baseGenres/originLanguage/mediaTypes additions Anime needed.
+//
+// `presets` (fixed TMDB list shortcuts) intentionally has no /discover
+// equivalent for a constrained catalog — TMDB's fixed lists don't accept
+// genre/language params — so a page with `baseGenres`/`originLanguage` set
+// should simply pass `presets={[]}`, which hides the whole chip row rather
+// than offering presets that would silently ignore the constraint.
+const MediaConsole = ({
+  mediaType: initialMediaType,
+  mediaTypes,
+  title,
+  eyebrowLabel,
+  presets = [],
+  baseGenres = [],
+  originLanguage = null,
+  excludeGenreIds = [],
+}) => {
+  const [mediaType, setMediaType] = useState(initialMediaType || mediaTypes?.[0]?.value)
   const [showFilters, setShowFilters] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const sentinelRef = useRef(null)
 
+  const defaultFilters = useMemo(
+    () => ({
+      preset: null,
+      withGenres: [],
+      baseGenres,
+      originLanguage,
+      minYear: null,
+      maxYear: null,
+      minRating: null,
+      sortBy: 'popularity.desc',
+    }),
+    [baseGenres, originLanguage]
+  )
+  const [filters, setFilters] = useState(defaultFilters)
+
   const presetLabels = useMemo(
-    () => Object.fromEntries(presets.map((p) => [p.value, p.label])),
+    () => ({ null: 'All Titles', ...Object.fromEntries(presets.map((p) => [p.value, p.label])) }),
     [presets]
   )
 
@@ -65,11 +114,14 @@ const MediaConsole = ({ mediaType, title, eyebrowLabel, presets }) => {
 
   const allGenres = useGenres(mediaType)
   const genreMap = Object.fromEntries((allGenres || []).map((g) => [g.id, g.name]))
+  const visibleGenreCount = allGenres
+    ? allGenres.filter((g) => !excludeGenreIds.includes(g.id)).length
+    : null
 
   // Marquee is deliberately a separate, larger data source from `results`
   // — using the same list the grid renders would just replay the first
   // row as ambient background, which read as a bug, not a design choice.
-  const rawMarqueeBackdrops = useMarqueeBackdrops(mediaType)
+  const rawMarqueeBackdrops = useMarqueeBackdrops(mediaType, { baseGenres, originLanguage })
   const marqueeBackdrops = useMemo(() => shuffle(rawMarqueeBackdrops), [rawMarqueeBackdrops])
 
   const avgRating = results.length
@@ -78,6 +130,13 @@ const MediaConsole = ({ mediaType, title, eyebrowLabel, presets }) => {
 
   const selectPreset = (preset) => {
     setFilters((prev) => ({ ...prev, preset }))
+  }
+
+  const selectMediaType = (type) => {
+    setMediaType(type)
+    // Genre ids differ between movie/tv, so reset to this page's own
+    // constraints rather than carrying over a now-meaningless selection.
+    setFilters(defaultFilters)
   }
 
   // Touching any filter control drops the active preset — a preset is a
@@ -120,7 +179,7 @@ const MediaConsole = ({ mediaType, title, eyebrowLabel, presets }) => {
           marqueeBackdrops={marqueeBackdrops}
           totalResults={isSearching ? searchResults.length : totalResults}
           activePresetLabel={isSearching ? 'Search' : presetLabels[filters.preset]}
-          genreCount={allGenres?.length}
+          genreCount={visibleGenreCount}
           avgRating={isSearching ? null : avgRating}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -140,9 +199,14 @@ const MediaConsole = ({ mediaType, title, eyebrowLabel, presets }) => {
           </div>
         ) : (
           <>
-            <PresetChips presets={presets} activePreset={filters.preset} onSelect={selectPreset} />
+            {mediaTypes && (
+              <MediaTypeTabs mediaTypes={mediaTypes} mediaType={mediaType} onSelect={selectMediaType} />
+            )}
+            {presets.length > 0 && (
+              <PresetChips presets={presets} activePreset={filters.preset} onSelect={selectPreset} />
+            )}
 
-            <div className="px-4 md:px-8 pb-12">
+            <div className="px-4 md:px-8 pb-12 pt-2">
               <div className="flex items-center justify-between gap-4 mb-4 lg:hidden">
                 <button
                   onClick={() => setShowFilters((v) => !v)}
@@ -168,6 +232,7 @@ const MediaConsole = ({ mediaType, title, eyebrowLabel, presets }) => {
                     filters={filters}
                     onFiltersChange={handleFiltersChange}
                     mediaType={mediaType}
+                    excludeGenreIds={excludeGenreIds}
                   />
                 </div>
               )}
@@ -192,6 +257,7 @@ const MediaConsole = ({ mediaType, title, eyebrowLabel, presets }) => {
                       filters={filters}
                       onFiltersChange={handleFiltersChange}
                       mediaType={mediaType}
+                      excludeGenreIds={excludeGenreIds}
                     />
                   </div>
                 </aside>

@@ -1084,6 +1084,87 @@ untouched) and a `/title/movie/:id` detail page (still uses
 
 ---
 
+### 2.10 — Rollout to `/anime`
+
+Same request, third page. Anime is meaningfully different from Movies/
+Shows though: it's constrained (Animation genre + Japanese original
+language, forced and non-removable) and spans both movie and TV via a
+toggle, rather than being a single fixed, unconstrained `mediaType`.
+Both needed genuinely new capability in `MediaConsole.jsx`, not just a
+new set of props.
+
+- [x] `useMarqueeBackdrops.jsx`: now accepts an options object
+      (`{ baseGenres, originLanguage }`). Unconstrained (Movies/Shows):
+      unchanged `/{mediaType}/popular` behavior. Constrained (Anime):
+      switches to `/discover/{mediaType}` with those params via the
+      shared `buildDiscoverParams` — otherwise the ambient carousel
+      would show random non-anime backdrops, which would directly
+      contradict the page it's decorating.
+- [x] `FilterPanelHud.jsx`: threads a new `excludeGenreIds` prop down
+      to the underlying `FilterPanel.jsx` (which already supported it,
+      just wasn't wired through this wrapper).
+- [x] `MediaConsole.jsx`: three additions —
+      1. `baseGenres`/`originLanguage`/`excludeGenreIds` props, folded
+         into `defaultFilters` and threaded to `useMovieConsole`,
+         `useMarqueeBackdrops`, and `FilterPanelHud`.
+      2. `presets` now defaults to `[]` and the whole `PresetChips` row
+         is conditionally rendered (`presets.length > 0`) — a
+         constrained catalog can't offer fixed-list presets at all,
+         since TMDB's dedicated list endpoints (`/movie/popular`,
+         `/tv/top_rated`, etc.) don't accept genre/language params, so
+         a "Popular" preset on the Anime page would silently ignore
+         the Animation+Japanese constraint and show ordinary movies.
+         Anime passes `presets={[]}`, hiding the row outright rather
+         than offering presets that lie.
+      3. New optional `mediaTypes` prop (`[{value,label}, ...]`) — when
+         given, renders a small bracket-corner `MediaTypeTabs` toggle
+         (styled like `PresetChips` but visually distinct, since it
+         changes *which catalog* is queried, not just the sort/filter
+         mode) and manages `mediaType` as internal state instead of a
+         fixed prop; switching resets filters back to
+         `defaultFilters` (genre ids aren't comparable across
+         movie/tv). Movies/Shows don't pass `mediaTypes`, so they keep
+         their original fixed-`mediaType`, no-toggle behavior exactly
+         as before.
+      4. Header's "Genres tracked" stat now excludes `excludeGenreIds`
+         from the count (`visibleGenreCount`), so Anime correctly
+         reports 18/15 tracked (19/16 total minus the hidden Animation
+         chip) instead of the misleading raw total.
+- [x] `Anime.jsx` rewritten from scratch — was a 10-line wrapper around
+      `Discover` (`baseGenres={[16]}`, `originLanguage="ja"`,
+      `excludeGenreIds={[16]}`), now the same shape around
+      `MediaConsole` instead, plus `mediaTypes={[movie, tv]}`,
+      `title="Anime"`, `eyebrowLabel="Cinegraph // Anime Index"`. Old
+      `Discover.jsx` itself is completely untouched — still serves
+      `/discover` directly, Anime just stopped being its consumer.
+- [x] No routing change — `Body.jsx`'s `/anime` → `Anime.jsx` import
+      already pointed at the right file path.
+
+**Verified**: build/lint clean (0 errors — the few new warnings are
+the same accepted categories already present elsewhere: an
+`exhaustive-deps` warning matching `useDiscover.jsx`'s existing
+pattern, and `react-refresh/only-export-components` on
+`PresetChips.jsx` for its two exported preset-list constants, matching
+the existing warning on `ui/button.jsx`/`ui/tabs.jsx`). Runtime-checked
+via `browser-automation`: `/anime` renders real, correctly-filtered
+anime titles (Spirited Away, Your Name, Ghost in the Shell, Princess
+Mononoke), the Animation genre chip is correctly absent from the
+filter panel while the header's genre-tracked count correctly excludes
+it (18 of 19 total movie genres), the ambient carousel shows anime
+backdrops specifically (not random movies), and clicking the "TV
+Shows" tab correctly re-fetches TV anime with TV's own genre taxonomy
+(15 tracked vs. 18) and different results (Bleach, Mushoku Tensei).
+`/movies` and `/shows` re-verified fully unregressed by the
+`MediaConsole.jsx` restructuring.
+
+**Deliberately out of scope**: `/discover` itself (still the original
+`Discover.jsx`/`FilterPanel.jsx` UI, untouched — no request yet to give
+it the HUD treatment too, and it's a fundamentally different page
+shape: full movie+tv catalog with a live search-as-you-type mode,
+already reused as-is by two consumers).
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).

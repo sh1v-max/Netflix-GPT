@@ -5,7 +5,7 @@ import { TV_PRESETS } from '../movies/PresetChips'
 const Shows = () => (
   <MediaConsole
     mediaType="tv"
-    title="Shows"
+    title="TV Shows"
     eyebrowLabel="Cinegraph // Series Index"
     presets={TV_PRESETS}
   />
