@@ -964,6 +964,32 @@ is approved, it rolls out there and elsewhere next.
       opacity bumped `55%` → `65%`. If this still doesn't show, the
       likely fix is a hard refresh / dev server restart on the user's
       side, not another code change.
+- [x] **Eighteenth follow-up — the actual root cause, correcting the
+      previous bullet's wrong "stale cache" diagnosis.** The user's
+      screenshot was accurate; the vignette genuinely never rendered
+      visibly, on any browser, cached or not. Real cause: `BackdropCarousel`'s
+      wrapper div (`ConsoleHeader.jsx`) is `absolute inset-0` with no
+      explicit `z-index` (defaults to `auto`), while the vignette and
+      grid-texture divs use `-z-20`. In CSS stacking order, positioned
+      elements with `z-index: auto` paint *above* elements with an
+      explicit negative `z-index` — so the carousel was always
+      compositing on top of the vignette, silently hiding it
+      completely, on every browser, the entire time. Every earlier
+      "verification" in this session was a false positive from
+      eyeballing screenshots and mistaking naturally-dark movie frames
+      near the edges for the vignette effect. Fix: added `-z-30` to the
+      carousel's wrapper div, so the paint order is now carousel (back)
+      → grid texture → vignette → content (front), as originally
+      intended. This time verified with `document.elementFromPoint()`
+      at an edge coordinate — confirmed the vignette div itself (not a
+      carousel `<img>`) is the actual topmost element there, which is
+      definitive proof (not a screenshot judgment call). Screenshot
+      afterward shows the edges genuinely crushed to black. Lesson: for
+      any future "X isn't visible" report, check `elementFromPoint`/
+      computed z-index stacking before assuming caching, motion
+      settings, or CSS gradient math — a hidden-behind-another-layer
+      bug produces the exact same symptom as those and is easy to
+      misdiagnose from a screenshot alone.
 
 **Deliberately out of scope**: `/shows` and its shared hero components
 (`MainContainer`/`VideoBackground`/`VideoTitle` in `browse/`) — untouched,

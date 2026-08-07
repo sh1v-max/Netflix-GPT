@@ -46,7 +46,7 @@ const BackdropCarousel = ({ backdropPaths }) => {
   const doubled = [...base, ...base]
 
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute inset-0 -z-30 overflow-hidden">
       <div
         className="marquee-track flex h-full"
         style={{ width: `${(doubled.length / VISIBLE_COUNT) * 100}%` }}
