@@ -84,7 +84,6 @@ const ConsoleHeader = ({
 }) => (
   <div className="isolate relative w-full pt-16 md:pt-24 pb-8 px-4 md:px-8 overflow-hidden">
     <BackdropCarousel backdropPaths={marqueeBackdrops} />
-    <div className="hud-grid-texture absolute inset-0 -z-20" />
     {/* Vignette — darkens all four edges, bright in the middle. Two
         independent linear gradients (left/right, top/bottom) instead of
         a single radial ellipse: this header is much wider than it is

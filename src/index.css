@@ -294,17 +294,6 @@ body {
 .hud-corner--bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--color-hud-cyan); border-left: 2px solid var(--color-hud-cyan); }
 .hud-corner--br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--color-hud-cyan); border-right: 2px solid var(--color-hud-cyan); }
 
-/* Subtle technical grid texture behind the console header — a faint line
-   grid, not a full scanline/glitch treatment (that direction was explicitly
-   rejected for readability). */
-.hud-grid-texture {
-  background-image:
-    linear-gradient(var(--color-hud-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-hud-line) 1px, transparent 1px);
-  background-size: 32px 32px;
-  opacity: 0.4;
-}
-
 /* Continuous right-to-left backdrop carousel (Movies console header).
    Deliberately NOT gated behind `prefers-reduced-motion` like every other
    animation in this file — two prior attempts (a gated CSS version, and a

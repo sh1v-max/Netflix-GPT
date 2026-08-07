@@ -990,6 +990,13 @@ is approved, it rolls out there and elsewhere next.
       settings, or CSS gradient math — a hidden-behind-another-layer
       bug produces the exact same symptom as those and is easy to
       misdiagnose from a screenshot alone.
+- [x] **Nineteenth follow-up, same round** — user asked to remove the
+      faint light-blue grid-line pattern behind the header (didn't look
+      good). Removed the `.hud-grid-texture` div from `ConsoleHeader.jsx`
+      entirely, and deleted the now-fully-unused `.hud-grid-texture` CSS
+      rule from `index.css` (grep-confirmed no other consumers first).
+      Vignette and carousel untouched — header now reads cleaner without
+      the grid overlay competing with the carousel imagery.
 
 **Deliberately out of scope**: `/shows` and its shared hero components
 (`MainContainer`/`VideoBackground`/`VideoTitle` in `browse/`) — untouched,
