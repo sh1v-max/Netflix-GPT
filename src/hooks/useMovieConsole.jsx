@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { API_OPTIONS, TMDB_BASE_URL } from '../utils/constant'
-import { buildDiscoverParams } from './useDiscover'
+import { buildDiscoverParams } from '../utils/discoverParams'
 
 // Fixed TMDB list endpoints that have no /discover equivalent (or whose
 // equivalent isn't worth reproducing exactly) — "Trending" in particular
@@ -23,11 +23,11 @@ const PRESET_ENDPOINTS = {
   },
 }
 
-// Same shape as useDiscover, plus a `preset` field on filters and a
-// `totalResults` return value (for the console header's stat readout).
+// Filters take a `preset` field alongside the usual discover fields, plus
+// a `totalResults` return value (for the console header's stat readout).
 // preset set -> hits the matching fixed TMDB list endpoint (paginated via
 // that endpoint's own page/total_pages). preset null -> falls through to
-// /discover/{mediaType} via the same buildDiscoverParams useDiscover uses,
+// /discover/{mediaType} via `buildDiscoverParams` (utils/discoverParams.jsx),
 // so both paths share one loading/pagination state machine.
 const useMovieConsole = (mediaType, filters) => {
   const [results, setResults] = useState([])

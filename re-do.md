@@ -1257,6 +1257,54 @@ already reused as-is by two consumers).
 
 ---
 
+### 2.11 — Rollout to `/discover`
+
+Fourth and final page. Turned out to be the *simplest* rollout of the
+four — `MediaConsole.jsx` already supported everything `/discover`
+needed (a `mediaTypes` toggle + no presets), since Anime already used
+that exact combination, just with an added genre/language constraint
+Discover doesn't have. Zero new capability needed in `MediaConsole.jsx`
+itself.
+
+- [x] `Discover.jsx` rewritten from scratch — was the original,
+      first-built page (full movie+tv catalog, live search-as-you-type,
+      genre/year/rating filters — the template `Anime.jsx` was later
+      built on top of via `baseGenres`/`originLanguage`/
+      `excludeGenreIds`). Now a ~15-line wrapper around `MediaConsole`:
+      `mediaTypes={[movie, tv]}`, `presets={[]}` (Discover was always a
+      pure filter/search tool, not a curated page with quick
+      shortcuts — deliberately not adding presets here, matching its
+      original scope rather than expanding it), `title="Discover"`,
+      `eyebrowLabel="Cinegraph // Catalog Index"`. No
+      `baseGenres`/`originLanguage` (the one thing that made Anime's
+      wrapper different) — full, unconstrained catalog.
+- [x] Cleanup, grep-verified before deleting: the old `useDiscover`
+      hook (`src/hooks/useDiscover.jsx`) had exactly one consumer — the
+      old `Discover.jsx` page component, now gone — so it became fully
+      dead. Its `buildDiscoverParams` export, however, is still very
+      much alive (`useMovieConsole.jsx`, `useMarqueeBackdrops.jsx` both
+      depend on it) — moved that one function to a new
+      `src/utils/discoverParams.jsx` (a plain helper, not a hook, so
+      `hooks/` was never really the right home for it) and deleted the
+      now-empty `useDiscover.jsx` entirely, updating both import sites.
+- [x] No routing change — `Body.jsx`'s `/discover` → `Discover.jsx`
+      import already pointed at the right file path.
+
+**Verified**: build/lint clean (0 errors, warning count dropped 19→18
+from removing the dead `useDiscover` hook's own `exhaustive-deps`
+warning). Runtime-checked via `browser-automation`: `/discover` renders
+the full HUD console (giant "DISCOVER" wordmark, backdrop carousel,
+vignette), the preset row is correctly absent, the Movies/TV Shows
+toggle works, the full unconstrained genre list shows (19 genres, no
+exclusions), and search-as-you-type still works (typing "batman"
+correctly returns 10 Batman titles, "MODE: SEARCH"). `/movies` and
+`/anime` re-verified fully unregressed. All four media-browsing pages
+(`/movies`, `/shows`, `/anime`, `/discover`) now share one
+`MediaConsole.jsx` — this branch of `re-do.md`'s ad hoc HUD rollout
+work is complete.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).

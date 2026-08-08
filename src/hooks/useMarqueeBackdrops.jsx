@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { API_OPTIONS, TMDB_BASE_URL } from '../utils/constant'
-import { buildDiscoverParams } from './useDiscover'
+import { buildDiscoverParams } from '../utils/discoverParams'
 
 // Dedicated, larger pool just for the console's ambient carousel —
 // deliberately NOT the same `results` the grid renders (that read as a
