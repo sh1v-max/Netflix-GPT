@@ -9,8 +9,13 @@ const useMediaDetails = (mediaType, id) => {
   const details = useSelector((store) => store.details.mediaDetails[key])
 
   const getMediaDetails = async () => {
+    // Ride keywords + certifications along on the same request instead of
+    // separate hooks/endpoints — release_dates (movie) / content_ratings
+    // (tv) is where TMDB nests age certifications.
+    const appendFields =
+      mediaType === 'movie' ? 'keywords,release_dates' : 'keywords,content_ratings'
     const data = await fetch(
-      `${TMDB_BASE_URL}/${mediaType}/${id}?language=en-US`,
+      `${TMDB_BASE_URL}/${mediaType}/${id}?language=en-US&append_to_response=${appendFields}`,
       API_OPTIONS
     )
     const json = await data.json()

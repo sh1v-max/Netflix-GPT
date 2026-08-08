@@ -14,7 +14,7 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: EASE } },
 }
 
-const CastGrid = ({ cast }) => {
+const CastGrid = ({ cast, getSubtitle = (member) => member.character }) => {
   return (
     <motion.div
       initial="hidden"
@@ -46,7 +46,7 @@ const CastGrid = ({ cast }) => {
             {member.name}
           </p>
           <p className="text-[11px] md:text-xs text-text-dark-muted truncate">
-            {member.character}
+            {getSubtitle(member)}
           </p>
         </motion.div>
       ))}

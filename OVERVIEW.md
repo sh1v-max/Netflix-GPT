@@ -83,7 +83,11 @@ netflixgpt/
 │   │   │                       ../movies/MediaConsole (same HUD console as
 │   │   │                       Movies/Shows), forced Animation genre +
 │   │   │                       Japanese language, movie/tv toggle
-│   │   ├── detail/              DetailPage.jsx + CastGrid.jsx
+│   │   ├── detail/              DetailPage.jsx (hero + collection banner
+│   │   │                       + overview/keywords + where-to-watch +
+│   │   │                       details panel + cast/crew) + CastGrid.jsx
+│   │   │                       (shared cast/crew grid, subtitle field
+│   │   │                       swappable via a getSubtitle prop)
 │   │   ├── shared/              MovieCard, MovieList, RatingControl — reused
 │   │   │                       everywhere a poster or a rating appears
 │   │   └── gpt/                 GptSearch, GptSearchBar, GptMovieSuggestions
@@ -401,10 +405,13 @@ fresh discover query. Switching `MediaTypeTabs` (Anime/Discover) resets
 both `filters` and `displayPreset` — genre ids aren't comparable across
 movie/tv.
 
-**Deliberately still out of scope**: DetailPage enrichment (TMDB
-keywords, collections, full crew, certifications, budget/revenue) —
-flagged as a natural fast-follow now that all four catalog pages
-(`/movies`, `/shows`, `/anime`, `/discover`) share the HUD console.
+DetailPage enrichment (keywords, collection banner, full crew,
+certifications, budget/revenue), flagged here as the natural fast-follow
+once all four catalog pages shared the HUD console, is now done (see the
+"DetailPage enrichment" note under §6/§9 below) — `DetailPage.jsx` keeps
+its pre-existing card/gradient hero style, not the HUD console; a detail
+page and a catalog page are different jobs, so the two were never meant
+to converge visually.
 
 ---
 
@@ -414,7 +421,12 @@ flagged as a natural fast-follow now that all four catalog pages
 Base URL centralized as `TMDB_BASE_URL` in `src/utils/constant.jsx`.
 Auth via `API_OPTIONS` (Bearer token, `VITE_TMDB_KEY`). Endpoints in
 active use: `/movie|tv/{now_playing,popular,top_rated,upcoming,on_the_air,airing_today}`,
-`/movie|tv/{id}`, `/movie|tv/{id}/credits`, `/movie|tv/{id}/similar`,
+`/movie|tv/{id}` (via `useMediaDetails`, with
+`append_to_response=keywords,release_dates` for movie or
+`keywords,content_ratings` for tv — one request instead of separate
+calls; `budget`/`revenue`/`belongs_to_collection`/`created_by` are
+already part of the base response and needed no extra param),
+`/movie|tv/{id}/credits`, `/movie|tv/{id}/similar`,
 `/movie|tv/{id}/videos`, `/movie|tv/{id}/watch/providers`,
 `/genre/{mediaType}/list`, `/discover/{mediaType}`, `/search/multi`.
 Image CDN constants: `IMG_CDN_URL` (posters, w500), `BACKDROP_CDN_URL`
@@ -489,13 +501,13 @@ npx firebase deploy --only hosting,firestore:rules   # deploy
 
 Watchlist (2.4), profile computation (2.5), the Taste Profile page
 (2.6), the server-side move of the GPT call (2.7, ad hoc — see §9),
-the `/movies` "Sci-Fi HUD" rebuild (2.8, ad hoc — see §8), and its
-rollout to `/shows` (2.9), `/anime` (2.10), and `/discover` (2.11) are
-all done — every media-browsing page (`/movies`, `/shows`, `/anime`,
-`/discover`) now shares `MediaConsole.jsx`, with zero page-specific
-catalog UI left in the app. What's left: DetailPage enrichment
-(keywords, collections, full crew, certifications, budget/revenue —
-flagged as a natural fast-follow now that the catalog pages are
-settled), and personalized AI recommendations (prompt injection using
-the taste profile, "why this was picked" captions, "For You" rows) —
-see `re-do.md` Phase 3 for the concrete, in-order plan.
+the `/movies` "Sci-Fi HUD" rebuild (2.8, ad hoc — see §8), its rollout
+to `/shows` (2.9), `/anime` (2.10), and `/discover` (2.11), and
+DetailPage enrichment (2.12 — keywords, collection banner, full crew,
+certifications, budget/revenue) are all done — every media-browsing
+page (`/movies`, `/shows`, `/anime`, `/discover`) shares
+`MediaConsole.jsx`, and `DetailPage.jsx` now surfaces effectively
+everything TMDB returns for a title. What's left: personalized AI
+recommendations (prompt injection using the taste profile, "why this
+was picked" captions, "For You" rows) — see `re-do.md` Phase 3 for the
+concrete, in-order plan.

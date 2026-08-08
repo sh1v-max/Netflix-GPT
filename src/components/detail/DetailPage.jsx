@@ -20,6 +20,24 @@ import { BACKDROP_CDN_URL, IMG_CDN_URL } from '../../utils/constant'
 import { EASE } from '@/lib/motion'
 
 const OVERVIEW_TRUNCATE_LENGTH = 260
+// Curated, priority-ordered job list for the Crew section — the full
+// credits.crew array includes dozens of minor roles (foley, gaffer, etc.)
+// that aren't useful to surface here.
+const CREW_JOB_PRIORITY = [
+  'Director',
+  'Writer',
+  'Screenplay',
+  'Story',
+  'Producer',
+  'Director of Photography',
+  'Original Music Composer',
+  'Editor',
+]
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  notation: 'compact',
+})
 
 const DetailPage = () => {
   const { mediaType, id } = useParams()
@@ -100,6 +118,49 @@ const DetailPage = () => {
   const overview = details.overview || 'No overview available.'
   const overviewIsLong = overview.length > OVERVIEW_TRUNCATE_LENGTH
 
+  const certification =
+    mediaType === 'movie'
+      ? details.release_dates?.results
+          ?.find((r) => r.iso_3166_1 === 'US')
+          ?.release_dates?.find((rd) => rd.certification)?.certification || null
+      : details.content_ratings?.results?.find((r) => r.iso_3166_1 === 'US')
+          ?.rating || null
+
+  const keywords =
+    (mediaType === 'movie' ? details.keywords?.keywords : details.keywords?.results) || []
+
+  const directorNames =
+    mediaType === 'movie'
+      ? credits?.crew?.filter((m) => m.job === 'Director').map((m) => m.name) || []
+      : []
+  const creatorNames = mediaType === 'tv' ? (details.created_by || []).map((c) => c.name) : []
+
+  const crewForGrid = (() => {
+    if (!credits?.crew?.length) return []
+    const byId = new Map()
+    credits.crew.forEach((member) => {
+      if (!CREW_JOB_PRIORITY.includes(member.job)) return
+      const existing = byId.get(member.id)
+      if (existing) {
+        existing.job = `${existing.job}, ${member.job}`
+      } else {
+        byId.set(member.id, { ...member })
+      }
+    })
+    return Array.from(byId.values())
+      .sort(
+        (a, b) =>
+          CREW_JOB_PRIORITY.indexOf(a.job.split(',')[0].trim()) -
+          CREW_JOB_PRIORITY.indexOf(b.job.split(',')[0].trim())
+      )
+      .slice(0, 12)
+  })()
+
+  const collection = mediaType === 'movie' ? details.belongs_to_collection : null
+  const budget = mediaType === 'movie' && details.budget > 0 ? currencyFormatter.format(details.budget) : null
+  const revenue = mediaType === 'movie' && details.revenue > 0 ? currencyFormatter.format(details.revenue) : null
+  const hasDetailsPanel = Boolean(details.status || details.original_language || budget || revenue)
+
   return (
     <div className="min-h-screen bg-ink text-text-dark flex flex-col">
       <Header />
@@ -156,6 +217,14 @@ const DetailPage = () => {
                     <span>{runtime}</span>
                   </>
                 )}
+                {certification && (
+                  <>
+                    <span>&middot;</span>
+                    <span className="text-[11px] md:text-xs border border-border-hairline rounded px-1.5 py-0.5 font-medium">
+                      {certification}
+                    </span>
+                  </>
+                )}
                 {details.vote_average > 0 && (
                   <>
                     <span>&middot;</span>
@@ -175,6 +244,15 @@ const DetailPage = () => {
                   </>
                 )}
               </div>
+
+              {(directorNames.length > 0 || creatorNames.length > 0) && (
+                <p className="text-xs md:text-sm text-text-dark-muted mb-3">
+                  {mediaType === 'movie' ? 'Directed by ' : 'Created by '}
+                  <span className="text-text-dark">
+                    {(mediaType === 'movie' ? directorNames : creatorNames).join(', ')}
+                  </span>
+                </p>
+              )}
 
               {details.genres?.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
@@ -204,6 +282,26 @@ const DetailPage = () => {
         </motion.div>
       </div>
 
+      {/* Collection banner */}
+      {collection && (
+        <div className="relative w-full h-20 md:h-28 overflow-hidden">
+          {collection.backdrop_path && (
+            <img
+              src={BACKDROP_CDN_URL + collection.backdrop_path}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover opacity-40"
+            />
+          )}
+          <div className="absolute inset-0 bg-ink/70" />
+          <div className="relative max-w-5xl mx-auto px-6 md:px-12 h-full flex items-center">
+            <p className="text-sm md:text-base text-text-dark">
+              Part of <span className="font-semibold">{collection.name}</span>
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Overview + where to watch */}
       <div className="max-w-5xl mx-auto px-6 md:px-12 py-8 md:py-12 grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
@@ -228,6 +326,19 @@ const DetailPage = () => {
                 <ChevronDown size={14} />
               </motion.span>
             </button>
+          )}
+
+          {keywords.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {keywords.slice(0, 12).map((kw) => (
+                <span
+                  key={kw.id}
+                  className="text-[11px] md:text-xs text-text-dark-muted bg-white/5 border border-border-hairline px-2.5 py-1 rounded-full"
+                >
+                  {kw.name}
+                </span>
+              ))}
+            </div>
           )}
         </div>
 
@@ -260,6 +371,40 @@ const DetailPage = () => {
               Not currently available to stream.
             </p>
           )}
+
+          {hasDetailsPanel && (
+            <div className="mt-8">
+              <h2 className="font-display text-lg font-semibold mb-3">Details</h2>
+              <dl className="space-y-2 text-sm">
+                {details.status && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-text-dark-muted">Status</dt>
+                    <dd className="text-text-dark text-right">{details.status}</dd>
+                  </div>
+                )}
+                {details.original_language && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-text-dark-muted">Original language</dt>
+                    <dd className="text-text-dark text-right uppercase">
+                      {details.original_language}
+                    </dd>
+                  </div>
+                )}
+                {budget && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-text-dark-muted">Budget</dt>
+                    <dd className="text-text-dark text-right">{budget}</dd>
+                  </div>
+                )}
+                {revenue && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-text-dark-muted">Revenue</dt>
+                    <dd className="text-text-dark text-right">{revenue}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          )}
         </div>
       </div>
 
@@ -268,6 +413,14 @@ const DetailPage = () => {
         <div className="max-w-5xl mx-auto px-6 md:px-12 pb-8 md:pb-12">
           <h2 className="font-display text-lg font-semibold mb-4">Cast</h2>
           <CastGrid cast={credits.cast} />
+        </div>
+      )}
+
+      {/* Crew */}
+      {crewForGrid.length > 0 && (
+        <div className="max-w-5xl mx-auto px-6 md:px-12 pb-8 md:pb-12">
+          <h2 className="font-display text-lg font-semibold mb-4">Crew</h2>
+          <CastGrid cast={crewForGrid} getSubtitle={(member) => member.job} />
         </div>
       )}
 

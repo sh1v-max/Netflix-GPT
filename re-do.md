@@ -1305,6 +1305,64 @@ work is complete.
 
 ---
 
+### 2.12 — DetailPage enrichment
+
+Flagged as a fast-follow once all four catalog pages shared the HUD
+console (2.8–2.11). `DetailPage.jsx` was only rendering a slice of what
+TMDB already returns for every title.
+
+- [x] `useMediaDetails.jsx` — added `append_to_response` to the existing
+      fetch (no new hook/endpoint): `keywords,release_dates` for movie,
+      `keywords,content_ratings` for tv. Extra keys land inside the same
+      cached `mediaDetails[key]` object, no Redux shape change.
+- [x] Certification badge (e.g. "PG-13", "TV-MA") in the hero metadata
+      row, parsed from the US entry of `release_dates`/`content_ratings`
+      — hidden when absent.
+- [x] Keywords — muted tag-chip row under the Overview paragraph, capped
+      at 12, normalized across the movie (`keywords.keywords`) vs tv
+      (`keywords.results`) response shapes.
+- [x] Collection banner (movie only) — `details.belongs_to_collection`
+      was already in the base response and unused; now shown as a small
+      backdrop strip ("Part of the {name}") between the hero and the
+      Overview grid. Static acknowledgment only — no fetch of the
+      collection's other entries, no new route.
+- [x] "Directed by"/"Created by" credit line near the genre chips — movie
+      pulls Director(s) from `credits.crew` (already fetched by
+      `useCredits`, previously only `credits.cast` was read); tv reads
+      `details.created_by` (already native to `/tv/{id}`, no crew parsing
+      needed).
+- [x] Full crew section below Cast — `credits.crew` filtered to a
+      curated, priority-ordered job list (Director, Writer/Screenplay/
+      Story, Producer, Director of Photography, Original Music Composer,
+      Editor), deduped by person id (multiple jobs merge into one comma-
+      joined subtitle), capped at 12. Reuses `CastGrid.jsx`, generalized
+      with a `getSubtitle` prop (defaults to `member.character`, so the
+      existing Cast usage is unchanged) instead of hardcoding
+      `member.character`.
+- [x] Details info panel (Status, Original Language, and — movie only —
+      Budget/Revenue formatted via `Intl.NumberFormat(..., { notation:
+      'compact' })`, e.g. "$185.0M") stacked below the existing "Where to
+      watch" panel, each line hidden individually when falsy/unknown
+      (TMDB returns `0` for unknown budget/revenue, not a missing key).
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18 warnings).
+Runtime-checked via `browser-automation` using the TEMP-DEBUG pattern in
+`Header.jsx` (reverted cleanly, `grep -n "TEMP-DEBUG"` exit 1 afterward):
+`/title/movie/862` (Toy Story) — certification "G", "Directed by John
+Lasseter", collection banner ("Part of Toy Story Collection"), 12
+keyword chips, Details panel showing Budget "$30M"/Revenue "$962M", and
+a Crew section (Director/Screenplay/Producer roles) all render correctly
+alongside the existing Cast grid. `/title/tv/1399` (Game of Thrones) —
+certification "TV-MA", "Created by David Benioff, D. B. Weiss", no
+collection/budget/revenue (movie-only branches correctly suppressed),
+Crew section shows Producers/Composer (GoT's aggregate credits don't
+carry per-episode directors). `/title/movie/550` (Fight Club, standalone
+— no collection) — certification "R", "Directed by David Fincher", no
+collection banner, layout stays intact with graceful hiding of the
+missing optional section.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).
