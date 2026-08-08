@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react'
 import { API_OPTIONS, TMDB_BASE_URL } from '../utils/constant'
 
 // filters: { withGenres: [id, ...], baseGenres: [id, ...], minYear, maxYear,
-//            minRating, sortBy, originLanguage }
+//            minRating, minVoteCount, sortBy, originLanguage }
+//
+// `minVoteCount` is not user-facing in FilterPanel — it's injected
+// programmatically (see MediaConsole.jsx's PRESET_SORT_FALLBACK) when a
+// preset like "Top Rated" converts into a plain `sort_by=vote_average.desc`
+// discover query, since sorting by rating alone surfaces obscure titles
+// with a single 10/10 vote ahead of anything genuinely well-regarded.
 //
 // `baseGenres` is for constraints a page always applies (e.g. the Anime page
 // forcing Animation) that the user can't remove — when present, the whole
@@ -32,6 +38,9 @@ export const buildDiscoverParams = (filters = {}, page = 1) => {
   }
   if (filters.minRating) {
     params.set('vote_average.gte', filters.minRating)
+  }
+  if (filters.minVoteCount) {
+    params.set('vote_count.gte', filters.minVoteCount)
   }
   if (filters.originLanguage) {
     params.set('with_original_language', filters.originLanguage)

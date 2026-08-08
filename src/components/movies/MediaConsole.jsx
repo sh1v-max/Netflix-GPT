@@ -22,6 +22,35 @@ const shuffle = (arr) => {
   return copy
 }
 
+// A fixed-list preset has no direct /discover equivalent, but most of them
+// have an obvious *sort order* equivalent — when a filter touch converts
+// "Top Rated" into a /discover query, the query should still be sorted by
+// rating, not silently fall back to whatever sortBy happened to be sitting
+// in state (popularity.desc, the default). "Trending" has no equivalent at
+// all (no discover sort approximates a trending algorithm), so it's simply
+// omitted — that preset just drops to the default sort like before.
+//
+// `minVoteCount` matters specifically for `vote_average.desc`: sorting by
+// raw rating alone surfaces obscure titles with a single 10/10 vote ahead
+// of anything genuinely well-regarded (TMDB's own /top_rated endpoints
+// apply a similar weighting internally, which a plain vote_average sort
+// doesn't reproduce) — it's not user-facing in FilterPanel, purely an
+// internal floor applied only while approximating a rating-sorted preset.
+const PRESET_SORT_FALLBACK = {
+  movie: {
+    popular: { sortBy: 'popularity.desc' },
+    top_rated: { sortBy: 'vote_average.desc', minVoteCount: 200 },
+    now_playing: { sortBy: 'primary_release_date.desc' },
+    upcoming: { sortBy: 'primary_release_date.desc' },
+  },
+  tv: {
+    popular: { sortBy: 'popularity.desc' },
+    top_rated: { sortBy: 'vote_average.desc', minVoteCount: 100 },
+    on_the_air: { sortBy: 'first_air_date.desc' },
+    airing_today: { sortBy: 'first_air_date.desc' },
+  },
+}
+
 // Small bracket-corner tab pair for pages that span both media types
 // (Anime) — visually distinct from PresetChips (query-mode switches) since
 // this instead changes *what catalog* is being queried entirely.
@@ -89,11 +118,20 @@ const MediaConsole = ({
       minYear: null,
       maxYear: null,
       minRating: null,
+      minVoteCount: null,
       sortBy: 'popularity.desc',
     }),
     [baseGenres, originLanguage]
   )
   const [filters, setFilters] = useState(defaultFilters)
+  // Separate from filters.preset (which drives the actual query — it must
+  // become null the moment a filter is touched, since a fixed TMDB list
+  // endpoint can't be filtered further). This one only reflects what the
+  // user last clicked, so the chip stays highlighted and the header still
+  // reads "TOP RATED" (etc.) after adding a genre filter on top of it,
+  // instead of misleadingly flipping to "All Titles" — even though under
+  // the hood the query has switched to a /discover call by that point.
+  const [displayPreset, setDisplayPreset] = useState(null)
 
   const presetLabels = useMemo(
     () => ({ null: 'All Titles', ...Object.fromEntries(presets.map((p) => [p.value, p.label])) }),
@@ -129,11 +167,13 @@ const MediaConsole = ({
     : null
 
   const selectPreset = (preset) => {
+    setDisplayPreset(preset)
     setFilters((prev) => ({ ...prev, preset }))
   }
 
   const selectMediaType = (type) => {
     setMediaType(type)
+    setDisplayPreset(null)
     // Genre ids differ between movie/tv, so reset to this page's own
     // constraints rather than carrying over a now-meaningless selection.
     setFilters(defaultFilters)
@@ -142,9 +182,41 @@ const MediaConsole = ({
   // Touching any filter control drops the active preset — a preset is a
   // fixed TMDB list endpoint that ignores filters entirely, so the moment
   // the user wants to filter, this silently converts to a /discover query
-  // (pre-filled with whatever filters were already set).
+  // (pre-filled with whatever filters were already set). If the preset had
+  // an obvious sort-order equivalent (e.g. Top Rated → vote_average.desc
+  // + a minVoteCount floor), carry that over instead of reverting to the
+  // default popularity sort — unless the filter touch itself was a manual
+  // sort change, which always wins over the injected fallback.
+  //
+  // If the result of this change has NO active constraints left (e.g. the
+  // user clicked "Clear all filters," or manually deselected the one genre
+  // chip they'd picked) and a preset was active before all this started
+  // (`displayPreset`), snap back to the *real* preset — re-fetching the
+  // actual TMDB list — instead of sitting in a filterless discover query
+  // sorted by our injected fallback. Without this, clearing filters while
+  // "Top Rated" was active left the query as "all ~1M titles sorted by
+  // rating," which is a completely different (and far larger, far
+  // lower-quality) result set than the real Top Rated list.
   const handleFiltersChange = (partial) => {
-    setFilters((prev) => ({ ...prev, ...partial, preset: null }))
+    setFilters((prev) => {
+      const merged = { ...prev, ...partial }
+      const hasActiveConstraint = Boolean(
+        merged.withGenres?.length || merged.minYear || merged.maxYear || merged.minRating
+      )
+      const isManualSortChange = Object.prototype.hasOwnProperty.call(partial, 'sortBy')
+
+      if (!hasActiveConstraint && !isManualSortChange && displayPreset) {
+        return { ...merged, preset: displayPreset, sortBy: defaultFilters.sortBy, minVoteCount: null }
+      }
+
+      const fallback = prev.preset && PRESET_SORT_FALLBACK[mediaType]?.[prev.preset]
+      return {
+        ...merged,
+        preset: null,
+        sortBy: partial.sortBy || fallback?.sortBy || prev.sortBy,
+        minVoteCount: isManualSortChange ? null : fallback?.minVoteCount ?? prev.minVoteCount,
+      }
+    })
   }
 
   useEffect(() => {
@@ -178,7 +250,7 @@ const MediaConsole = ({
           eyebrowLabel={eyebrowLabel}
           marqueeBackdrops={marqueeBackdrops}
           totalResults={isSearching ? searchResults.length : totalResults}
-          activePresetLabel={isSearching ? 'Search' : presetLabels[filters.preset]}
+          activePresetLabel={isSearching ? 'Search' : presetLabels[displayPreset]}
           genreCount={visibleGenreCount}
           avgRating={isSearching ? null : avgRating}
           searchQuery={searchQuery}
@@ -203,7 +275,7 @@ const MediaConsole = ({
               <MediaTypeTabs mediaTypes={mediaTypes} mediaType={mediaType} onSelect={selectMediaType} />
             )}
             {presets.length > 0 && (
-              <PresetChips presets={presets} activePreset={filters.preset} onSelect={selectPreset} />
+              <PresetChips presets={presets} activePreset={displayPreset} onSelect={selectPreset} />
             )}
 
             <div className="px-4 md:px-8 pb-12 pt-2">

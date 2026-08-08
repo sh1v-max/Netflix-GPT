@@ -1163,6 +1163,98 @@ it the HUD treatment too, and it's a fundamentally different page
 shape: full movie+tv catalog with a live search-as-you-type mode,
 already reused as-is by two consumers).
 
+- [x] **Bug fix, same phase family** — user reported: select "Top
+      Rated", then touch any filter (e.g. a genre chip), and the
+      results silently become "Popular"-sorted instead of staying
+      rating-sorted. Root cause: `handleFiltersChange` correctly
+      dropped the active preset (as designed, since a fixed TMDB list
+      endpoint can't be filtered further) but never translated the
+      preset into an equivalent `/discover` sort order — it just kept
+      whatever `sortBy` was already sitting in `filters` state, which
+      was always the untouched default (`popularity.desc`), since
+      preset mode ignores `filters.sortBy` entirely while it's active.
+      Fixed with a `PRESET_SORT_FALLBACK` map (`MediaConsole.jsx`) —
+      `top_rated` → `vote_average.desc`, `popular` → `popularity.desc`
+      (already the default, listed for completeness),
+      `now_playing`/`upcoming` → `primary_release_date.desc`,
+      `on_the_air`/`airing_today` → `first_air_date.desc`. `Trending`
+      has no sort-order equivalent at all (nothing approximates a
+      trending algorithm), so it's intentionally omitted — touching a
+      filter while Trending is active still just drops to the default
+      sort, same as before. An explicit manual sort-dropdown change
+      always wins over the fallback (`partial.sortBy || fallbackSort ||
+      prev.sortBy`). Verified live: Top Rated → click the "Crime" genre
+      chip → every result shows ★10.0 (rating-sorted), not a mix of
+      popular-but-lower-rated titles.
+- [x] **Follow-up to the bug fix, same session** — the sort-order fix
+      above was real, but the user reported it still "looked" broken:
+      the moment a filter is touched, the active preset chip visually
+      deselects (jumps to "All Titles" highlighted) and the header's
+      "MODE" label flips to "All Titles" too — misleading regardless of
+      whether the underlying query is technically correct, since it
+      looks like the preset was abandoned entirely. Root cause: the
+      chip highlight and mode label both read directly off
+      `filters.preset`, which *must* become `null` for the query to
+      work (that's the whole mechanism), so the display was
+      inextricably tied to an implementation detail the user shouldn't
+      have to know about. Fixed by decoupling them: new `displayPreset`
+      state in `MediaConsole.jsx`, set only when the user explicitly
+      clicks a preset chip or switches media type (via
+      `MediaTypeTabs`/Anime), and left untouched by
+      `handleFiltersChange` — so it keeps reflecting the user's last
+      choice even after the query itself has silently moved to
+      `/discover`. `PresetChips`' `activePreset` and `ConsoleHeader`'s
+      `activePresetLabel` both now read `displayPreset` instead of
+      `filters.preset`. Verified live: Top Rated → Crime now keeps the
+      "Top Rated" chip highlighted (bracket corners and all) and the
+      header still reads "MODE: TOP RATED", while the Sort By dropdown
+      correctly shows "Rating" and every result is both ★10.0 and
+      Crime-genre — the full chain (display, sort, filter) all agree
+      now.
+- [x] **Second follow-up to the bug fix, same session** — user came
+      back with screenshots proving the fix was still incomplete: Top
+      Rated alone showed the correct ~11,072 results; Top Rated +
+      Animation ballooned to 71,155 (versus a real, curated top-rated
+      animation list which should be a few hundred to low thousands),
+      full of obscure unknown titles; and clicking "Clear all filters"
+      afterward ballooned further to 1.16M — the entire catalog. Two
+      distinct root causes, both real:
+      1. **No vote-count floor.** The Top Rated fallback sort
+         (`vote_average.desc`) had no minimum vote count, so an obscure
+         short film with a single 10/10 rating outranks genuinely
+         acclaimed titles with thousands of votes — exactly what TMDB's
+         real `/movie/top_rated` endpoint avoids internally via its own
+         weighting, which a naive discover sort doesn't reproduce.
+         `buildDiscoverParams` (`useDiscover.jsx`) gained support for a
+         new `minVoteCount` filter field (→ `vote_count.gte`) — not
+         user-facing in `FilterPanel`, purely an internal floor.
+         `PRESET_SORT_FALLBACK` (`MediaConsole.jsx`) now pairs each
+         `sortBy` with an optional `minVoteCount` (`top_rated`: 200 for
+         movies, 100 for TV — TV vote counts run lower overall).
+      2. **"Clear all filters" didn't actually clear back to the
+         preset.** It routed through the same `handleFiltersChange` as
+         any other filter touch, which unconditionally drops to
+         discover mode — so clearing filters while "Top Rated" was
+         active left the query as "the entire catalog, sorted by
+         rating," a completely different and vastly larger result set
+         than the real preset. Fixed with a snap-back: `handleFiltersChange`
+         now checks whether the *resulting* filters have zero active
+         constraints (no genres/year/rating) and weren't a deliberate
+         sort-dropdown change — if so, and a `displayPreset` is set, it
+         restores `filters.preset` to the real value instead of staying
+         in discover mode, re-fetching the actual TMDB list. This
+         self-corrects for both "Clear all filters" and manually
+         deselecting the last active filter one at a time, and as a
+         bonus also fixes "Trending" (which has no sort-order fallback
+         at all) the same way, since the snap-back doesn't depend on
+         `PRESET_SORT_FALLBACK` having an entry for the preset.
+      Verified live, reproducing the user's exact repro: Top Rated
+      alone → 11,072 (matches); + Animation → 1,266 real, acclaimed
+      titles (Avatar: The Last Airbender, Attack on Titan, Demon
+      Slayer, Spirited Away — not junk); Clear all filters → back to
+      11,072 with the real Top Rated list (Shawshank Redemption, The
+      Godfather) restored exactly.
+
 ---
 
 ## Phase 3 — AI Recommendation Layer
