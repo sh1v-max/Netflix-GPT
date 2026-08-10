@@ -374,7 +374,7 @@ deleted from both `index.css` and `ConsoleHeader.jsx`, not just hidden.)
 TV/Anime don't get their own parallel directories): `MediaConsole.jsx`
 is the actual page — takes `mediaType` (fixed) or `mediaTypes` (array,
 enables a movie/tv toggle instead — Anime only), `title`/
-`eyebrowLabel`/`presets` (`[]` hides the preset-chip row entirely — a
+`presets` (`[]` hides the preset-chip row entirely — a
 constrained catalog like Anime can't offer TMDB's fixed-list presets,
 since those endpoints don't accept genre/language params, so a preset
 would silently ignore the constraint), and
@@ -382,12 +382,16 @@ would silently ignore the constraint), and
 Animation+Japanese constraint; `[]`/`null` for Movies/Shows). Owns all
 state and data wiring, wraps its root in `.theme-dark-scope` (a HUD
 console is dark-only regardless of the app theme toggle) →
-`ConsoleHeader.jsx` (giant `mix-blend-mode: difference` wordmark that
-inverts against whatever's behind it, a continuous right-to-left
-backdrop carousel — `BackdropCarousel`, CSS `@keyframes`-driven,
-deliberately not gated behind `prefers-reduced-motion` like the rest
-of this file, see the component's own comment for why — a 4-edge
-vignette, and the search/stat panel) → an optional `MediaTypeTabs`
+`ConsoleHeader.jsx` (a `Cinegraph > {title}` breadcrumb — `Link` to
+`/home` + the page's own title, non-interactive — replaced the old
+static `eyebrowLabel` string in 2.26, same root label/style
+`DetailPage.jsx`'s own breadcrumb uses; giant `mix-blend-mode:
+difference` wordmark that inverts against whatever's behind it, a
+continuous right-to-left backdrop carousel — `BackdropCarousel`, CSS
+`@keyframes`-driven, deliberately not gated behind
+`prefers-reduced-motion` like the rest of this file, see the
+component's own comment for why — a 4-edge vignette, and the
+search/stat panel) → an optional `MediaTypeTabs`
 (inline in `MediaConsole.jsx`, only rendered when `mediaTypes` is
 passed) → `PresetChips.jsx` (chip list itself is generic;
 `MOVIE_PRESETS`/`TV_PRESETS` are exported constants the caller picks

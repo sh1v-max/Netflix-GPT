@@ -98,7 +98,6 @@ const MediaConsole = ({
   mediaType: initialMediaType,
   mediaTypes,
   title,
-  eyebrowLabel,
   presets = [],
   baseGenres = [],
   originLanguage = null,
@@ -247,7 +246,6 @@ const MediaConsole = ({
       <main className="flex-1">
         <ConsoleHeader
           title={title}
-          eyebrowLabel={eyebrowLabel}
           marqueeBackdrops={marqueeBackdrops}
           totalResults={isSearching ? searchResults.length : totalResults}
           activePresetLabel={isSearching ? 'Search' : presetLabels[displayPreset]}

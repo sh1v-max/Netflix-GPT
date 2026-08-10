@@ -226,11 +226,16 @@ const DetailPage = () => {
 
   return (
     <div className="theme-dark-scope min-h-screen bg-ink text-text-dark isolate">
-      {/* Persistent backdrop — `fixed`, stays in place behind the hero as
-          the page scrolls. Kept light; the hero's own local gradient below
-          does the real legibility work since text now sits directly on the
-          image with no card behind it. */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+      <div className="relative z-10 min-h-screen flex flex-col">
+      <Header />
+
+      <main className="flex-1">
+      {/* Hero — no boxed panel. Title and metadata sit directly on the
+          backdrop, readable via a local bottom gradient + text-shadow,
+          the way a minimal cinematic hero should read. Backdrop scrolls
+          away with the rest of the page (not `fixed`), so it moves up
+          along with everything else instead of staying pinned. */}
+      <div className="relative w-full h-dvh flex items-end overflow-hidden">
         {details.backdrop_path && (
           <img
             src={BACKDROP_CDN_URL + details.backdrop_path}
@@ -240,16 +245,6 @@ const DetailPage = () => {
           />
         )}
         <div className="absolute inset-0 bg-ink/10" />
-      </div>
-
-      <div className="relative z-10 min-h-screen flex flex-col">
-      <Header />
-
-      <main className="flex-1">
-      {/* Hero — no boxed panel. Title and metadata sit directly on the
-          backdrop, readable via a local bottom gradient + text-shadow,
-          the way a minimal cinematic hero should read. */}
-      <div className="relative w-full h-dvh flex items-end">
         <div className="absolute inset-0 bg-linear-to-t from-ink/95 via-ink/25 to-transparent pointer-events-none" />
 
         <nav
@@ -257,7 +252,7 @@ const DetailPage = () => {
           className="absolute top-0 left-0 right-0 z-10 pt-20 md:pt-24 px-6 md:px-12 lg:px-16 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide text-text-dark-muted"
         >
           <Link to="/home" className="hover:text-hud-cyan-strong transition-colors">
-            Home
+            Cinegraph
           </Link>
           <ChevronRight size={12} className="shrink-0" />
           <Link

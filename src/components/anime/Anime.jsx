@@ -21,7 +21,6 @@ const Anime = () => (
     mediaType="movie"
     mediaTypes={MEDIA_TYPES}
     title="Anime"
-    eyebrowLabel="Cinegraph // Anime Index"
     baseGenres={[ANIMATION_GENRE_ID]}
     originLanguage="ja"
     excludeGenreIds={[ANIMATION_GENRE_ID]}

@@ -6,7 +6,6 @@ const Movies = () => (
   <MediaConsole
     mediaType="movie"
     title="Movies"
-    eyebrowLabel="Cinegraph // Movie Index"
     presets={MOVIE_PRESETS}
   />
 )

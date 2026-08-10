@@ -2050,6 +2050,52 @@ warnings). Visual check skipped per the user's standing instruction.
 
 ---
 
+### 2.26 — Breadcrumbs on the catalog pages too, unified root label
+
+User asked for two things from two screenshots: (1) convert
+`ConsoleHeader`'s static "CINEGRAPH // MOVIE INDEX"-style eyebrow (one
+custom string per catalog page) into a real "Cinegraph > {section}"
+breadcrumb, so it's the same pattern as `DetailPage`'s (2.25); (2) make
+both actually consistent, including the root crumb's label — "make this
+and the cinegraph > movie same" — and reported the DetailPage
+breadcrumb's Home/Movies links as not working.
+
+- [x] **`ConsoleHeader.jsx`**: replaced the `Database` icon + static
+      `eyebrowLabel` string with a real breadcrumb nav — `Cinegraph`
+      (`Link` to `/home`) `>` `{title}` (the page's own title prop —
+      "Movies"/"Shows"/"Anime"/"Discover" — non-interactive, current
+      page). `eyebrowLabel` prop removed from `ConsoleHeader`,
+      `MediaConsole.jsx` (no longer threads it through to
+      `ConsoleHeader`), and all four catalog page wrappers
+      (`Movies.jsx`, `Shows.jsx`, `Anime.jsx`, `Discover.jsx`) — dead
+      prop cleanup now that nothing reads it.
+- [x] **`DetailPage.jsx`**: root crumb label changed from "Home" to
+      "Cinegraph" (still links to `/home`), matching `ConsoleHeader`'s
+      new breadcrumb exactly — both pages now use the identical root
+      label/link/style.
+- [x] **Investigated the "clicking does nothing" report directly**
+      (`browser-automation`, one-off — this was a specific reported bug
+      needing confirmation, not routine visual polish): `document.
+      elementFromPoint` at the breadcrumb `<a>`'s screen position
+      resolved to the link itself (nothing overlapping/blocking it), a
+      simulated click updated `location.pathname` to `/movies`
+      immediately, and after allowing React a moment to re-render, the
+      page had genuinely swapped to the full Movies catalog console
+      (confirmed via body text — "FULL CATALOG SEARCH & FILTERS",
+      "RESULTS: 1,167,908", etc.). The navigation was already working
+      correctly — an initial screenshot taken with no wait after the
+      click still showed the old page, which was a false alarm (render
+      hadn't completed yet at that exact instant), not a real bug. No
+      code change was needed for the click behavior itself, only the
+      breadcrumb-label unification above.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings). Runtime-checked via `browser-automation` for this specific
+click-behavior investigation (not a routine pass) — confirmed working
+as described above.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).

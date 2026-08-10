@@ -1,6 +1,7 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { Database, Search, Activity } from 'lucide-react'
+import { Search, Activity, ChevronRight } from 'lucide-react'
 import { BACKDROP_CDN_URL } from '../../utils/constant'
 import HudFrame from './HudFrame'
 import { EASE } from '@/lib/motion'
@@ -75,7 +76,6 @@ const BackdropCarousel = ({ backdropPaths }) => {
 // cleaner through bold letterforms than a jigsaw of mismatched posters).
 const ConsoleHeader = ({
   title,
-  eyebrowLabel,
   marqueeBackdrops = [],
   totalResults,
   activePresetLabel,
@@ -107,12 +107,16 @@ const ConsoleHeader = ({
       transition={{ duration: 0.5, ease: EASE }}
       className="relative mb-6"
     >
-      <div className="flex items-center gap-2 mb-1 text-hud-cyan">
-        <Database size={14} />
-        <span className="font-mono text-[11px] uppercase tracking-[0.15em]">
-          {eyebrowLabel}
-        </span>
-      </div>
+      <nav
+        aria-label="Breadcrumb"
+        className="flex items-center gap-1.5 mb-1 font-mono text-[11px] uppercase tracking-[0.15em]"
+      >
+        <Link to="/home" className="text-hud-cyan hover:text-hud-cyan-strong transition-colors">
+          Cinegraph
+        </Link>
+        <ChevronRight size={12} className="shrink-0 text-hud-cyan" />
+        <span className="text-hud-cyan-strong">{title}</span>
+      </nav>
 
       <h1
         className="font-display font-bold uppercase leading-[0.8] -ml-1 select-none text-white"

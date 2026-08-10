@@ -15,7 +15,6 @@ const Discover = () => (
     mediaType="movie"
     mediaTypes={MEDIA_TYPES}
     title="Discover"
-    eyebrowLabel="Cinegraph // Catalog Index"
     presets={[]}
   />
 )
