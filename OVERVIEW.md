@@ -112,23 +112,24 @@ netflixgpt/
 │   │   │                       device. See §8 + CastGrid.jsx (shared
 │   │   │                       cast/crew grid, subtitle field swappable
 │   │   │                       via a getSubtitle prop, hud-cyan hover
-│   │   │                       ring, `expanded`/`previewCount` props
-│   │   │                       (2.18) — collapsed is a capped
-│   │   │                       horizontal-scroll row, expanded drops the
-│   │   │                       cap and wraps into the page's normal
-│   │   │                       flow, toggled via a "More"/"Less" button
-│   │   │                       in each section's header) +
+│   │   │                       ring, `forwardRef`-wrapped (2.22) — a
+│   │   │                       single horizontal-scroll row of the full
+│   │   │                       list, no expand/preview cap; the ref lets
+│   │   │                       DetailPage's `RowNavButtons`
+│   │   │                       (chevron-left/right in the section header,
+│   │   │                       replacing 2.18's "More"/"Less" toggle)
+│   │   │                       drive `scrollBy` on it directly) +
 │   │   │                       SimilarTitlesHud.jsx ("More Like This" —
 │   │   │                       MovieCardHud tiles, sibling to
 │   │   │                       ../shared/MovieList, not a shared variant;
 │   │   │                       plain section, no panel) + TrailerBox.jsx
-│   │   │                       (2.21 — a small circular icon button in
-│   │   │                       the hero's action row, same size/style as
-│   │   │                       RatingControl/WatchlistButton, not its own
-│   │   │                       card — click opens a shadcn Dialog
-│   │   │                       "theater" modal with a full-featured,
-│   │   │                       audible YouTube player, unchanged since
-│   │   │                       2.15)
+│   │   │                       (2.22 — a large translucent play button
+│   │   │                       centered over the hero backdrop image via
+│   │   │                       an absolute/pointer-events-none wrapper,
+│   │   │                       not a toolbar icon — click opens a shadcn
+│   │   │                       Dialog "theater" modal with a
+│   │   │                       full-featured, audible YouTube player,
+│   │   │                       unchanged since 2.15)
 │   │   ├── shared/              MovieCard, MovieList, RatingControl — reused
 │   │   │                       everywhere a poster or a rating appears
 │   │   └── gpt/                 GptSearch, GptSearchBar, GptMovieSuggestions

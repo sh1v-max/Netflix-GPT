@@ -10,12 +10,10 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 // page: optional supplementary content that just appears once ready, no
 // reserved loading slot.
 //
-// A small circular icon button, same size/weight as RatingControl's and
-// WatchlistButton's — sits in the hero's action row rather than being its
-// own card/panel. Two earlier versions (a live ambient-loop iframe, then a
-// static thumbnail card) both added a second visual block competing with
-// the title for attention; a minimal page doesn't need a dedicated trailer
-// panel, just an entry point into the same real, full-featured player.
+// A large translucent play button meant to be centered over the hero
+// backdrop image (positioned by the parent via `className`) — the entry
+// point into the trailer reads as "play this scene" rather than a small
+// toolbar icon buried in the action row.
 const TrailerBox = ({ mediaType, id, className = '' }) => {
   useTrailer(mediaType, id)
   const trailerVideo = useSelector((store) =>
@@ -30,12 +28,13 @@ const TrailerBox = ({ mediaType, id, className = '' }) => {
       <motion.button
         type="button"
         onClick={() => setIsTheaterOpen(true)}
-        whileTap={{ scale: 0.85 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.92 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         aria-label="Watch trailer"
-        className={`rounded-full p-1.5 shadow-cg-elevated cursor-pointer transition-colors bg-ink-elevated/70 text-hud-cyan hover:bg-ink-elevated hover:text-hud-cyan-strong ${className}`}
+        className={`flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-black/40 backdrop-blur-sm border border-white/30 text-white cursor-pointer hover:bg-black/55 transition-colors ${className}`}
       >
-        <Play size={16} fill="currentColor" />
+        <Play size={26} fill="currentColor" className="ml-1" />
       </motion.button>
 
       <Dialog open={isTheaterOpen} onOpenChange={setIsTheaterOpen}>

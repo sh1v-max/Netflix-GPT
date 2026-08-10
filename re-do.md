@@ -1915,6 +1915,69 @@ not run unless asked.
 
 ---
 
+### 2.22 — DetailPage: play-on-image, language, runtime format, prev/next Cast/Crew
+
+Four targeted fixes on the 2.21 minimal redesign, from reference
+screenshots of another app showing the specific interaction patterns
+wanted (not a request to copy its overall design):
+
+- [x] **Trailer entry point moved from the action row to the center of
+      the backdrop image.** `TrailerBox.jsx` rewritten again — from a
+      small toolbar icon (2.21) to a large (`w-16 h-16 md:w-20 md:h-20`)
+      translucent circular play button, positioned by `DetailPage.jsx`
+      via an `absolute inset-0 flex items-center justify-center`
+      wrapper over the hero. That wrapper is `pointer-events-none` (it
+      spans the full hero) with `pointer-events-auto` on the button
+      itself, so it doesn't intercept clicks on the poster or the
+      like/watchlist buttons underneath it elsewhere in the hero.
+- [x] **Language added to the hero meta line** — `details.
+      original_language.toUpperCase()`, inserted between runtime and
+      certification (`2026 · 2h 25m · EN · [PG-13] · ★7.1`).
+- [x] **Runtime formatted as hours+minutes.** New `formatRuntime(mins)`
+      helper (`145` → `"2h 25m"`, handles the whole-hour and
+      under-an-hour edge cases) replaces the old `"145 min"` string,
+      movie-only (tv's "N seasons" label is unrelated, unchanged).
+- [x] **Cast/Crew "More" replaced with prev/next scroll buttons** in the
+      section header, matching a reference screenshot's pattern
+      directly. `CastGrid.jsx` dropped its `expanded`/`previewCount`
+      wrap-to-grid mode entirely (added only last round, in 2.18) and
+      is back to always being a single horizontal-scroll row of the
+      *full* list — now wrapped in `React.forwardRef` so
+      `DetailPage.jsx` can hold a ref to the scroll container per
+      section (`castScrollRef`/`crewScrollRef`) and a new
+      `RowNavButtons` component (chevron-left/chevron-right, calling
+      `scrollRef.current.scrollBy(...)`) renders in `SectionEyebrow`'s
+      `action` slot instead of the old "More"/"Less" text button.
+
+**What's unchanged**: the rest of 2.21's minimal, unboxed layout (no
+panels, plain-text genres/keywords, hairline section dividers, plain
+opaque content surface below the hero) — this round only touched the
+four specific things above.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings). Visual check skipped per the user's standing instruction.
+
+---
+
+### 2.23 — CastGrid: right-edge fade instead of a hard crop
+
+Follow-up: with the wider prev/next-scrollable rows from 2.22, the last
+visible cast/crew avatar at the right edge of the row is often cut off
+mid-face by the container's edge — reads oddly ("half cute people look
+weird," per the report). `CastGrid.jsx` now wraps its scroll row in a
+`relative` container with a `pointer-events-none` gradient overlay
+(`bg-linear-to-l from-ink via-ink/70 to-transparent`, `w-16 md:w-24`)
+pinned to the right edge, so whichever avatar lands there dissolves into
+the page background instead of being hard-cropped. `ref` forwarding is
+unaffected — still points at the actual scrollable element, not the new
+wrapper, so `RowNavButtons`' `scrollBy` calls (2.22) keep working
+unchanged.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings). Visual check skipped per the user's standing instruction.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { motion } from 'motion/react'
@@ -6,6 +6,8 @@ import {
   Star,
   Sparkles,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   FileText,
   Tv,
   Info,
@@ -44,14 +46,44 @@ const SectionEyebrow = ({ icon: Icon, children, action }) => (
   </div>
 )
 
+// Prev/next scroll buttons for a horizontal-scroll row (Cast/Crew), placed
+// in the section header instead of a "More" toggle.
+const RowNavButtons = ({ scrollRef }) => {
+  const scroll = (direction) => {
+    scrollRef.current?.scrollBy({ left: direction === 'left' ? -400 : 400, behavior: 'smooth' })
+  }
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        onClick={() => scroll('left')}
+        aria-label="Scroll left"
+        className="p-1 text-text-dark-muted hover:text-hud-cyan-strong cursor-pointer transition-colors"
+      >
+        <ChevronLeft size={16} />
+      </button>
+      <button
+        onClick={() => scroll('right')}
+        aria-label="Scroll right"
+        className="p-1 text-text-dark-muted hover:text-hud-cyan-strong cursor-pointer transition-colors"
+      >
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  )
+}
+
+// "145 min" → "2h 25m" — matches how runtime reads on a real ticket/listing
+// instead of a raw minute count.
+const formatRuntime = (mins) => {
+  if (!mins) return null
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  if (h === 0) return `${m}m`
+  if (m === 0) return `${h}h`
+  return `${h}h ${m}m`
+}
+
 const OVERVIEW_TRUNCATE_LENGTH = 260
-const CAST_PREVIEW_COUNT = 15
-// Lower than CAST_PREVIEW_COUNT on purpose — crew is already filtered down
-// to a curated set of roles (CREW_JOB_PRIORITY), so even a modest list
-// tends to overflow the visible row width without ever being long enough
-// to clear a 12+ cap. This keeps "More" showing whenever the row is
-// actually cropped, not just when the underlying list is unusually long.
-const CREW_PREVIEW_COUNT = 8
 // Curated, priority-ordered job list for the Crew section — the full
 // credits.crew array includes dozens of minor roles (foley, gaffer, etc.)
 // that aren't useful to surface here.
@@ -78,8 +110,8 @@ const DetailPage = () => {
   const similar = useSimilarTitles(mediaType, id)
   const watchProviders = useWatchProviders(mediaType, id)
   const [overviewExpanded, setOverviewExpanded] = useState(false)
-  const [castExpanded, setCastExpanded] = useState(false)
-  const [crewExpanded, setCrewExpanded] = useState(false)
+  const castScrollRef = useRef(null)
+  const crewScrollRef = useRef(null)
 
   const currentDocId = mediaDocId(mediaType, id)
   const ratings = useSelector((store) => store.preferences.ratings)
@@ -138,12 +170,11 @@ const DetailPage = () => {
   const year = releaseDate ? releaseDate.slice(0, 4) : null
   const runtime =
     mediaType === 'movie'
-      ? details.runtime
-        ? `${details.runtime} min`
-        : null
+      ? formatRuntime(details.runtime)
       : details.number_of_seasons
       ? `${details.number_of_seasons} season${details.number_of_seasons > 1 ? 's' : ''}`
       : null
+  const language = details.original_language ? details.original_language.toUpperCase() : null
 
   const usProviders = watchProviders?.US
   const streamProviders =
@@ -221,6 +252,15 @@ const DetailPage = () => {
       <div className="relative w-full h-dvh flex items-end">
         <div className="absolute inset-0 bg-linear-to-t from-ink/95 via-ink/25 to-transparent pointer-events-none" />
 
+        {/* Centered over the backdrop, like a video player's own play
+            affordance, rather than a small icon tucked into the action row.
+            `pointer-events-none` on the full-size wrapper (it would
+            otherwise sit on top of the entire hero, including the poster
+            and action row) + `pointer-events-auto` on the button itself. */}
+        <div className="absolute inset-0 flex items-center justify-center pb-24 md:pb-28 z-10 pointer-events-none">
+          <TrailerBox mediaType={mediaType} id={id} className="pointer-events-auto" />
+        </div>
+
         <motion.div
           key={id}
           initial={{ opacity: 0, y: 20 }}
@@ -258,6 +298,12 @@ const DetailPage = () => {
                   <>
                     <span>&middot;</span>
                     <span>{runtime}</span>
+                  </>
+                )}
+                {language && (
+                  <>
+                    <span>&middot;</span>
+                    <span>{language}</span>
                   </>
                 )}
                 {certification && (
@@ -310,7 +356,6 @@ const DetailPage = () => {
                   size={16}
                 />
                 <WatchlistButton mediaType={mediaType} id={id} size={16} />
-                <TrailerBox mediaType={mediaType} id={id} />
               </div>
             </div>
           </div>
@@ -430,49 +475,20 @@ const DetailPage = () => {
         {/* Cast */}
         {credits?.cast?.length > 0 && (
           <div className="max-w-5xl mx-auto px-6 md:px-12 pb-10 md:pb-14">
-            <SectionEyebrow
-              icon={Users}
-              action={
-                credits.cast.length > CAST_PREVIEW_COUNT && (
-                  <button
-                    onClick={() => setCastExpanded((v) => !v)}
-                    className="font-mono text-[10px] uppercase tracking-wide text-hud-cyan-strong hover:underline cursor-pointer"
-                  >
-                    {castExpanded ? 'Less' : 'More'}
-                  </button>
-                )
-              }
-            >
+            <SectionEyebrow icon={Users} action={<RowNavButtons scrollRef={castScrollRef} />}>
               Cast
             </SectionEyebrow>
-            <CastGrid cast={credits.cast} expanded={castExpanded} previewCount={CAST_PREVIEW_COUNT} />
+            <CastGrid ref={castScrollRef} cast={credits.cast} />
           </div>
         )}
 
         {/* Crew */}
         {crewForGrid.length > 0 && (
           <div className="max-w-5xl mx-auto px-6 md:px-12 pb-10 md:pb-14">
-            <SectionEyebrow
-              icon={Clapperboard}
-              action={
-                crewForGrid.length > CREW_PREVIEW_COUNT && (
-                  <button
-                    onClick={() => setCrewExpanded((v) => !v)}
-                    className="font-mono text-[10px] uppercase tracking-wide text-hud-cyan-strong hover:underline cursor-pointer"
-                  >
-                    {crewExpanded ? 'Less' : 'More'}
-                  </button>
-                )
-              }
-            >
+            <SectionEyebrow icon={Clapperboard} action={<RowNavButtons scrollRef={crewScrollRef} />}>
               Crew
             </SectionEyebrow>
-            <CastGrid
-              cast={crewForGrid}
-              getSubtitle={(member) => member.job}
-              expanded={crewExpanded}
-              previewCount={CREW_PREVIEW_COUNT}
-            />
+            <CastGrid ref={crewScrollRef} cast={crewForGrid} getSubtitle={(member) => member.job} />
           </div>
         )}
 
