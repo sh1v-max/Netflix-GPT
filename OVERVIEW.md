@@ -61,11 +61,13 @@ netflixgpt/
 │   │   ├── home/              Home.jsx — marketing landing page (logged-out)
 │   │   ├── auth/               Login.jsx — sign in / sign up, split-screen layout
 │   │   ├── layout/             Header.jsx, Footer.jsx, Logo.jsx — shared chrome
-│   │   ├── browse/             AiSearchHome.jsx (/home) + VideoBackground
-│   │   │                       (still used by DetailPage's hero, for both
-│   │   │                       movie/tv). MainContainer/VideoTitle deleted —
-│   │   │                       no consumer left once Movies then Shows both
-│   │   │                       moved off the streaming-hero layout
+│   │   ├── browse/             AiSearchHome.jsx (/home) only now —
+│   │   │                       MainContainer/VideoTitle deleted earlier
+│   │   │                       (no consumer once Movies/Shows moved off
+│   │   │                       the streaming-hero layout), and
+│   │   │                       VideoBackground.jsx deleted in 2.15 once
+│   │   │                       DetailPage stopped using it too (its role
+│   │   │                       is now TrailerBox.jsx, see detail/ below)
 │   │   ├── movies/              Shared "Sci-Fi HUD / Data Console" — MediaConsole.jsx
 │   │   │                       (the actual page, mediaType-parametrized),
 │   │   │                       ConsoleHeader, PresetChips, FilterPanelHud,
@@ -85,15 +87,28 @@ netflixgpt/
 │   │   │                       Japanese language, movie/tv toggle
 │   │   ├── detail/              DetailPage.jsx (hero + collection banner
 │   │   │                       + overview/keywords + where-to-watch +
-│   │   │                       details panel + cast/crew), now on the
-│   │   │                       HUD theme (HudFrame hero card, font-mono
-│   │   │                       data readouts, SectionEyebrow headers) +
+│   │   │                       details panel + cast/crew) — v2 "premium
+│   │   │                       glass" theme (2.16): no boxed panels in
+│   │   │                       the hero, typography direct on the
+│   │   │                       backdrop gradient, filled pill chips,
+│   │   │                       accent2 (brand indigo) throughout —
+│   │   │                       deliberately distinct from the catalog
+│   │   │                       pages' cyan bracket-HUD look, see §8 +
 │   │   │                       CastGrid.jsx (shared cast/crew grid,
 │   │   │                       subtitle field swappable via a
-│   │   │                       getSubtitle prop, hud-cyan hover ring) +
+│   │   │                       getSubtitle prop, accent2 hover ring) +
 │   │   │                       SimilarTitlesHud.jsx ("More Like This" —
 │   │   │                       MovieCardHud tiles, sibling to
-│   │   │                       ../shared/MovieList, not a shared variant)
+│   │   │                       ../shared/MovieList, not a shared variant,
+│   │   │                       deliberately still cyan/bracket-HUD — a
+│   │   │                       visual bridge back into browsing) +
+│   │   │                       TrailerBox.jsx (2.15/2.16 — rounded glass
+│   │   │                       card next to the metadata block, a plain
+│   │   │                       YouTube thumbnail image with a play button
+│   │   │                       overlay — no live preview iframe, so no
+│   │   │                       YouTube chrome is ever visible — click
+│   │   │                       opens a shadcn Dialog "theater" modal with
+│   │   │                       a full-featured, audible player)
 │   │   ├── shared/              MovieCard, MovieList, RatingControl — reused
 │   │   │                       everywhere a poster or a rating appears
 │   │   └── gpt/                 GptSearch, GptSearchBar, GptMovieSuggestions
@@ -165,7 +180,7 @@ Seven slices, registered in `src/store/appStore.jsx`:
 | --- | --- | --- |
 | `user` | `null` or `{ uid, email, name, photo }` | Firebase Auth via `Header.jsx`'s listener |
 | `movies` | `popularMovies` (only used by `Home.jsx`'s marketing grid), `trailerVideo` | `usePopularMovies`, `useTrailer` |
-| `tv` | `trailerVideo` only — the four list fields (`onTheAirShows`/etc.) were removed when `/shows` was rebuilt, same as `movies` in 2.8 | `useTrailer` (via `VideoBackground`, used by `DetailPage`) |
+| `tv` | `trailerVideo` only — the four list fields (`onTheAirShows`/etc.) were removed when `/shows` was rebuilt, same as `movies` in 2.8 | `useTrailer` (via `TrailerBox`, used by `DetailPage`) |
 | `details` | `mediaDetails`, `credits`, `similar`, `watchProviders`, `genres` — all keyed by `${mediaType}_${id}` (genres keyed by mediaType alone) | `useMediaDetails`, `useCredits`, `useSimilarTitles`, `useWatchProviders`, `useGenres` |
 | `preferences` | `ratings` (`{ [docId]: 'like' \| 'dislike' }`), `ratedGenres`/`ratedYears` (`{ [docId]: ... }` — mirror `ratings`, power the Detail page's taste-compatibility read and the Taste Profile page), `watchlist` (`{ [docId]: true }`), `isLoaded` | `usePreferencesSync` (two live Firestore `onSnapshot` listeners — ratings, watchlist) |
 | `gpt` | `movieNames`, `movieResults` | `GptSearchBar` / `GptSearch.jsx`'s `runSearch` |
@@ -184,7 +199,7 @@ hooks' `[]`), since it must refetch when you navigate between titles.
 All in `src/hooks/`, one per concern:
 
 **Fixed TMDB lists**: `usePopularMovies` — Redux-cached, used only by `Home.jsx`'s marketing poster grid. All other dedicated list hooks for both movies and TV (`useNowPlayingMovies`/`useTopRatedMovies`/`useUpcomingMovies`/`useOnTheAirShows`/`usePopularShows`/`useTopRatedShows`/`useAiringTodayShows`) were removed — first for movies when `/movies` was rebuilt (2.8), then for TV when `/shows` got the same treatment (2.9) — those presets now go through `useMovieConsole` instead.
-**Trailer**: `useTrailer(mediaType, id)` — generalized for both movie/tv, used by `VideoBackground` (now only consumed by `DetailPage`'s hero, since neither `/movies` nor `/shows` use it anymore)
+**Trailer**: `useTrailer(mediaType, id)` — generalized for both movie/tv, used by `TrailerBox.jsx` (the detail page's click-to-open trailer preview, 2.15 — `VideoBackground.jsx`, its previous consumer, was deleted once `DetailPage` moved off the full-hero autoplay background)
 **Per-title detail data**: `useMediaDetails`, `useCredits`, `useSimilarTitles`, `useWatchProviders`, `useGenres` — all Redux-cached
 **Catalog browsing**: `useMovieConsole(mediaType, filters)` — the single shared data source for all four HUD console pages (`/movies`, `/shows`, `/anime`, `/discover`), NOT Redux-cached (filter-dependent results don't benefit from caching); `filters.preset` set hits a fixed TMDB list endpoint (`PRESET_ENDPOINTS`, a different set per `mediaType`), `preset: null` falls through to `/discover/{mediaType}` via `buildDiscoverParams` (now in `src/utils/discoverParams.jsx`, not a hook) — same return shape either way, see §8; `useMarqueeBackdrops(mediaType, { baseGenres, originLanguage })` — the HUD console header's ambient carousel pool, switches between `/{mediaType}/popular` and `/discover/{mediaType}` depending on whether a constraint is passed (Anime only); `useMultiSearch(query)` — debounced (350ms) internally, also not cached. (`useDiscover.jsx` was deleted once `/discover` itself moved onto `useMovieConsole` — it had no remaining consumers.)
 **Preferences**: `usePreferencesSync()` — the live Firestore listener, called once from `Header.jsx`
@@ -413,15 +428,21 @@ movie/tv.
 
 DetailPage enrichment (keywords, collection banner, full crew,
 certifications, budget/revenue), flagged here as the natural fast-follow
-once all four catalog pages shared the HUD console, is now done (see the
+once all four catalog pages shared the HUD console, is done (see the
 "DetailPage enrichment" note under §6/§9 below). `DetailPage.jsx` was
-then also reskinned onto the same HUD design tokens (`HudFrame` hero
-card, `font-mono` data readouts, bracket-style genre chips, a
-`SectionEyebrow` header pattern reused across every section) — see the
-component tree in §3 above and the `re-do.md` 2.13 entry for the full
-list of visual moves. It's still a fundamentally different page shape
-than the catalog consoles (a hero + stacked content sections, not a
-filterable grid), just no longer on the older v2 "glass panel" look.
+briefly reskinned onto the same bracket-HUD tokens the catalog pages use
+(2.13), but that was reverted in 2.16 after user feedback that the result
+looked "cluttery," in favor of a premium-glass look on `accent2` (the v2
+tokens — `surface-glass`/`blur-cg-glass`/`shadow-cg-elevated` — that
+predate the HUD system and are still what the Header's dropdown/Sign-In
+button use). The `SectionEyebrow` icon+label header pattern from 2.13
+survived that revert (just recolored) — it's still reused across every
+section. See the component tree in §3 above and the `re-do.md` 2.16
+entry for the full list of visual moves. It's still a fundamentally
+different page shape than the catalog consoles (a hero + stacked content
+sections, not a filterable grid) *and* now a deliberately different
+visual language too — cyan/bracket-HUD for browsing, indigo/glass for an
+individual title.
 
 ---
 

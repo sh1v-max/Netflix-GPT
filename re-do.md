@@ -1439,6 +1439,218 @@ were unaffected by the new sibling component.
 
 ---
 
+### 2.14 — DetailPage trailer background fix
+
+User report: the autoplay trailer behind the hero was "very dark" (an
+overlay dimming it out), had YouTube's own play/pause/seek controls
+visible, and its size wasn't consistent. Root causes, all in
+`src/components/browse/VideoBackground.jsx` (the component powering the
+hero's autoplay trailer, shared history with the old Browse.jsx hero but
+now only consumed by `DetailPage`):
+
+- [x] **Double darkening**: `VideoBackground` was rendering its own two
+      internal `bg-linear-to-*` gradient overlays on top of the iframe —
+      stacked on top of `DetailPage`'s own two hero gradient overlays
+      (added for metadata-card legibility). Two vignettes compounding on
+      top of each other is what read as "very dark." Removed
+      `VideoBackground`'s internal overlays entirely — `DetailPage`'s own
+      vignette is the single source of darkening now.
+- [x] **Visible player chrome**: the YouTube embed URL only had
+      `showinfo=0&rel=0` — added `controls=0` (hides the play/pause/seek
+      bar), `modestbranding=1` (no YouTube logo), `disablekb=1` (no
+      keyboard shortcuts), `fs=0` (no fullscreen button), `iv_load_policy=3`
+      (no annotations), `playsinline=1` — a fully chrome-less background
+      video, matching the ask for "clean."
+- [x] **Inconsistent size**: the iframe was sized with a fixed
+      `h-full md:h-screen aspect-video` plus per-breakpoint `scale-*`
+      multipliers (`scale-[1.2] md:scale-[1.8] xl:scale-[1.2]`) — tuned
+      for the old Browse.jsx full-viewport (100vh) hero, wrong for
+      `DetailPage`'s smaller `h-[55vh]`/`h-[70vh]` box (worked out by
+      hand: the box's width:height ratio is far enough from 16:9 at most
+      breakpoints that a flat scale is never right for both, and the
+      breakpoint ordering here was actually backwards — mobile's much
+      taller-relative-to-width box needs *more* overscan than desktop's,
+      not less). Replaced with the standard iframe "cover" formula sized
+      against the full viewport (`w-[177.78vh] h-[100vh] min-w-full
+      min-h-[56.25vw]`, centered via `top-1/2 left-1/2` +
+      `-translate-x-1/2 -translate-y-1/2`) — since the box's width always
+      equals the viewport width, overscanning for a full 100vh cover
+      guarantees it also fully covers this shorter box at every
+      breakpoint, with no letterbox bars and no per-breakpoint tuning.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18 warnings).
+Runtime-checked via `browser-automation` (TEMP-DEBUG pattern, reverted
+cleanly): `/title/movie/862` (Toy Story) — trailer visibly playing full-
+bleed behind the hero card with no YouTube control bar/logo, single
+vignette (no longer double-dark), consistent edge-to-edge coverage.
+
+---
+
+### 2.15 — Trailer: click-to-open box instead of full-hero background
+
+User feedback on 2.14's fix: rather than tuning the full-hero autoplay
+background further, the user wanted a fundamentally different
+presentation — a dedicated preview box sitting next to the metadata
+card, and clicking it opens a bigger "theater" player in a modal.
+
+- [x] **New `src/components/detail/TrailerBox.jsx`** — owns
+      `useTrailer(mediaType, id)` + reads `trailerVideo` from the same
+      Redux slice `VideoBackground` used to read. Renders nothing until
+      `trailerVideo?.key` exists — no loading shimmer, same convention as
+      the Collection banner/Details panel/Crew section (optional content
+      that just appears once ready). An `HudFrame`-wrapped `aspect-video`
+      box holds a small ambient loop — the exact chrome-less embed
+      params from 2.14 (`controls=0&modestbranding=1&disablekb=1&fs=0
+      &iv_load_policy=3&playsinline=1`, muted, looped), sized `w-full
+      h-full` (no oversized cover-formula needed — the box's own aspect
+      already matches 16:9, unlike the old full-viewport hero). A
+      semi-transparent `Play`-icon badge + "WATCH TRAILER" label overlays
+      it; clicking sets `isTheaterOpen`.
+- [x] Theater modal built on the project's existing shadcn
+      `Dialog`/`DialogContent` (`src/components/ui/dialog.jsx` — already
+      present, unmodified), className overridden to a large
+      `aspect-video` black panel. Contains a **second**, full-featured
+      iframe (`autoplay=1&rel=0` only — real controls, real sound),
+      rendered conditionally (`{isTheaterOpen && <iframe .../>}`) inside
+      the dialog rather than just Radix-hidden, so playback and audio
+      genuinely stop the instant it's closed instead of continuing in an
+      off-screen node. Added a visually-hidden `DialogTitle` for a11y
+      (Radix warns without one).
+- [x] **`src/components/browse/VideoBackground.jsx` — deleted.** Zero
+      remaining consumers once `DetailPage` stopped using it for the
+      full-hero background (confirmed via `grep -rn "VideoBackground"
+      src`). `TrailerBox` reuses the same `useTrailer` hook and the same
+      embed params inline instead of composing the old component — the
+      shimmer/cross-fade machinery was specific to a full-bleed hero and
+      doesn't carry over to a box that just doesn't render until ready.
+- [x] `DetailPage.jsx` hero restructure: removed the full-hero
+      `<VideoBackground>` call — the backdrop `<img>` is now the hero's
+      sole (static) background. The floating bottom-of-hero row changed
+      from `poster + HudFrame` to `poster + HudFrame + TrailerBox`,
+      `flex-col` stacked on mobile / `flex-row` side-by-side from `md:`
+      up — the literal "big box next to movie detail" ask. Also removed
+      `overflow-hidden` from the hero's outer wrapper and moved it onto
+      a new inner `absolute inset-0` layer holding just the backdrop
+      image + vignette gradients — the floating content is now a sibling
+      of that clipped layer, not inside it, so it's free to grow taller
+      (stacked card+box on mobile) without ever being cut off. This was
+      the one thing `overflow-hidden` was ever protecting against (the
+      old oversized `VideoBackground` iframe), and that's gone now.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings — including catching and fixing a redundant `allowFullScreen`
+prop on the theater iframe that triggered a benign console warning
+alongside `allow="fullscreen"`). Runtime-checked via `browser-automation`
+(TEMP-DEBUG pattern, reverted cleanly): `/title/movie/862` (Toy Story) —
+trailer box renders next to the metadata card with a Play badge and
+"WATCH TRAILER" label, clicking it opens the theater modal (large,
+centered, dark, close button, 0 console errors). `/title/tv/1399` (Game
+of Thrones) — this title's `/videos` response has no trailer for this
+app's `language=en-US` fetch, so `TrailerBox` correctly renders nothing
+at all rather than a broken/empty frame — confirms the graceful-hide
+path works, not just the happy path.
+
+---
+
+### 2.16 — DetailPage: polished redesign (off HUD, onto premium glass)
+
+User feedback with a screenshot (a title with a busy backdrop): the
+2.13 HUD reskin looked "cluttery and messy," not "polished/
+professional." The concrete problems in the screenshot: (1) the
+trailer preview showed raw YouTube chrome (title card, channel logo,
+prev/play/next controls) because the muted-loop-via-`playlist` iframe
+trick from 2.14/2.15 doesn't reliably suppress all of YouTube's own UI;
+(2) two hard bracket-cornered boxes (metadata card + trailer box) sat
+side-by-side directly on a busy backdrop, reading as competing widgets
+rather than one composed hero; (3) everything — genre chips, the
+certification badge, both boxes — was a sharp-cornered, hard-bordered
+rectangle in the cyan "data console" language built for the catalog
+grids, which reads as busy/technical rather than premium on a
+single-title hero.
+
+Checked the `ui-ux-pro-max` skill's style guidance for cinematic dark
+UI: the recommended pattern here is glassmorphism (soft blur, hairline
+rgba borders, generous radius, restrained glow), not sharp bracket
+panels. The app already has that exact system, unused on this page
+since 2.13 — the v2 tokens in `index.css`
+(`--color-surface-glass`, `--blur-cg-glass`, `--shadow-cg-elevated`,
+`--color-accent2*`) and the `bg-surface-glass backdrop-blur-[...]
+border-border-hairline rounded-panel shadow-cg-elevated` classNames —
+which is what this page looked like *before* 2.13, and is still what
+the Header's dropdown/Sign-In button use today. Also: `accent2`
+(indigo `#5e6ad2`) is the actual Cinegraph brand color (the "graph" in
+`Logo.jsx` is literally `text-accent2`) — `hud-cyan` was always scoped
+to the catalog "Data Console" concept from 2.8. Splitting the two (glass
++ accent2 for the individual-title page, bracket-HUD + cyan for
+browsing/filtering) is intentional, not an inconsistency, matching
+`OVERVIEW.md`'s existing framing that a detail page and a catalog page
+are different jobs.
+
+**Scope**: `DetailPage.jsx`, `TrailerBox.jsx`, `CastGrid.jsx` only —
+`MediaConsole.jsx`, `MovieCardHud.jsx`, `SimilarTitlesHud.jsx`, and all
+four catalog pages untouched. `SimilarTitlesHud`'s "More Like This" row
+deliberately keeps its `MovieCardHud` (cyan/bracket) tiles — same
+record-tile used everywhere else, a visual bridge back into browsing.
+
+- [x] **`TrailerBox.jsx`**: the ambient preview is now a plain
+      `<img src="https://img.youtube.com/vi/{key}/hqdefault.jpg">`
+      instead of a live muted iframe — zero YouTube chrome is possible
+      since there's no iframe at all until the user clicks through.
+      Card restyled from `HudFrame` to a plain `rounded-2xl` glass card
+      (`border-border-hairline`, `shadow-cg-elevated`), with a larger,
+      cleaner white circular play button (`shadow-cg-glow`, scales up on
+      hover) instead of the small `hud-panel` badge + mono label. The
+      theater `Dialog` (open state, iframe only mounted while open,
+      full-featured/audible player) is unchanged from 2.15 — only its
+      outer className softened to `rounded-2xl`.
+- [x] **`DetailPage.jsx` hero recomposition**: dropped `HudFrame`/
+      bracket corners and the "CINEGRAPH // TITLE RECORD" eyebrow line
+      entirely. Metadata (tagline, title, meta row, genres, action
+      buttons) now renders directly over the backdrop's gradient as
+      plain typography (title gets an inline `textShadow` for
+      legibility) instead of being boxed in a bordered card — the way
+      Netflix/Disney+/Apple TV+ detail pages compose their hero.
+      Strengthened the backdrop treatment (added a full-frame
+      `bg-ink/25` tint on top of the existing gradients) so text stays
+      readable regardless of how busy the source photo is, replacing
+      the legibility job a card border used to do. `TrailerBox` is now
+      a clearly secondary element beside the text block, not an
+      equal-weight second panel. Hero height bumped slightly
+      (`h-[55vh]/[70vh]` → `h-[60vh]/[75vh]`) to give the un-boxed
+      composition a bit more room.
+- [x] **Chips → filled pills everywhere**: genre chips
+      (`bg-white/10 rounded-full`, unbordered — literally what they
+      looked like pre-2.13), keyword chips (`bg-white/5 rounded-full`,
+      quieter), certification badge (`bg-white/10 rounded`, no border).
+- [x] **Accent recolor, this page only**: every `hud-cyan`/`hud-cyan-
+      strong`/`hud-line` className in `DetailPage.jsx` and `CastGrid.jsx`
+      → `accent2`/`accent2-strong`/`border-border-hairline` — the
+      `SectionEyebrow` icons/labels, Details panel values, Collection
+      banner accent, "Read more" link, tagline color, and `CastGrid`'s
+      hover ring (`group-hover:border-accent2/50` +
+      `shadow-[...var(--color-accent2-glow)]`, reverting exactly what
+      2.13 changed).
+- [x] Data/derivation logic untouched (certification, keywords,
+      collection, crew, budget/revenue, taste match, overview
+      truncation) — this round is a rendering/className pass only, same
+      discipline as 2.13.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings). Runtime-checked via `browser-automation` (TEMP-DEBUG
+pattern, reverted cleanly): `/title/movie/862` (Toy Story) — hero now
+reads as one composed moment (typography directly on the gradient, no
+competing boxes), trailer card shows a clean thumbnail with a big white
+play button and zero YouTube chrome, genre/keyword chips are soft
+pills, Details panel values render in indigo. `/title/tv/1399` (Game of
+Thrones) — same treatment confirmed on the tv path; this run its
+`/videos` fetch *did* return a trailer (unlike the 2.15 verification
+run, where it didn't — TMDB's response isn't perfectly stable/cached
+between fetches), so this also exercised the trailer box's populated
+path on tv, not just movie. Clicked through to the theater modal —
+opens, plays, closes correctly, rounded corners match the new style.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).
