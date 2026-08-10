@@ -17,6 +17,10 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 // A static `<img>` has zero chrome by construction — there's no iframe at
 // all until the user actually clicks through to the theater modal, which
 // still uses YouTube's normal, full-featured player.
+//
+// This is meant to sit inside DetailPage's outer HudFrame panel — no
+// corner brackets of its own here (that would double up on the parent's),
+// just a plain `hud-panel` (bg-elevated + hairline cyan border) rectangle.
 const TrailerBox = ({ mediaType, id, className = '' }) => {
   useTrailer(mediaType, id)
   const trailerVideo = useSelector((store) =>
@@ -33,7 +37,7 @@ const TrailerBox = ({ mediaType, id, className = '' }) => {
         onClick={() => setIsTheaterOpen(true)}
         whileHover={{ y: -2 }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        className={`group relative shrink-0 w-full sm:w-64 md:w-72 aspect-video rounded-2xl overflow-hidden border border-border-hairline shadow-cg-elevated cursor-pointer ${className}`}
+        className={`hud-panel group relative shrink-0 w-full sm:w-64 md:w-72 aspect-video overflow-hidden cursor-pointer ${className}`}
         aria-label="Watch trailer"
       >
         <img
@@ -43,19 +47,19 @@ const TrailerBox = ({ mediaType, id, className = '' }) => {
           loading="lazy"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-black/40 group-hover:from-black/75 group-hover:to-black/50 transition-colors" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/25 to-black/45 group-hover:from-black/80 group-hover:to-black/55 transition-colors" />
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-          <span className="flex items-center justify-center w-14 h-14 rounded-full bg-white/90 text-ink shadow-cg-glow group-hover:scale-110 group-hover:bg-white transition-transform duration-200">
+          <span className="flex items-center justify-center w-14 h-14 rounded-full hud-panel border-hud-cyan text-hud-cyan-strong shadow-[0_0_30px_var(--color-hud-cyan-glow)] group-hover:scale-110 transition-transform duration-200">
             <Play size={20} fill="currentColor" className="ml-0.5" />
           </span>
-          <span className="text-xs font-medium text-white tracking-wide">
+          <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-hud-cyan-strong">
             Watch Trailer
           </span>
         </div>
       </motion.button>
 
       <Dialog open={isTheaterOpen} onOpenChange={setIsTheaterOpen}>
-        <DialogContent className="sm:max-w-4xl w-full p-0 aspect-video overflow-hidden bg-black rounded-2xl border-border-hairline">
+        <DialogContent className="sm:max-w-4xl w-full p-0 aspect-video overflow-hidden bg-black rounded-none border-hud-line">
           <DialogTitle className="sr-only">Trailer</DialogTitle>
           {isTheaterOpen && (
             <iframe

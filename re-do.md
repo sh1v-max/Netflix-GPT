@@ -1651,6 +1651,142 @@ opens, plays, closes correctly, rounded corners match the new style.
 
 ---
 
+### 2.17 — DetailPage: restore the HUD/"space theme" (correction of 2.16)
+
+User feedback on 2.16: the indigo/glass redesign dropped the "space
+theme" the rest of the app (`/movies`, `/shows`, `/anime`, `/discover`)
+uses, and looked inconsistent. This round restores `hud-cyan`/`font-mono`/
+bracket-corner styling on `DetailPage.jsx`, `TrailerBox.jsx`, and
+`CastGrid.jsx`, while **keeping** the two real, non-color fixes from
+2.16 that had nothing to do with which accent color was used:
+
+- The trailer preview is still a static `hqdefault.jpg` thumbnail, not a
+  live iframe — that fix (zero YouTube chrome, ever) was about a broken
+  mechanism, not a color choice, and stays.
+- The hero is still **one** consolidated panel instead of two competing
+  boxes — but now that panel *is* an `HudFrame` (bracket corners
+  restored) wrapping poster + metadata + `TrailerBox` together, with the
+  "CINEGRAPH // TITLE RECORD" eyebrow back at its top. This keeps 2.16's
+  actual structural win (no more two separate bracket panels sitting
+  side by side on a busy backdrop) while bringing the cyan/mono/bracket
+  identity back — the clutter in the original screenshot was two
+  competing HUD panels plus broken YouTube chrome, not the HUD language
+  itself.
+- [x] `hud-cyan`/`-strong`/`-line` restored everywhere 2.16 had swapped
+      to `accent2` — `SectionEyebrow`, tagline, taste-match, "Read more"
+      link, Collection banner, Details panel values, meta row (back to
+      `font-mono`), `CastGrid`'s hover ring.
+- [x] Genre chips back to bracket-style (`font-mono` uppercase,
+      `border-hud-line`, no fill); keyword chips back to the small
+      bordered-rectangle mono style; certification badge back to a
+      `border-hud-line` box — all reverted from 2.16's rounded-pill
+      softening.
+- [x] `TrailerBox.jsx`: card is now a plain `hud-panel` rectangle (no
+      corner brackets of its own — it sits inside the parent `HudFrame`,
+      and double-bracketing would reintroduce the nested-box clutter
+      2.16 was trying to fix in the first place). Play button recolored
+      to `hud-panel border-hud-cyan text-hud-cyan-strong` with a
+      `--color-hud-cyan-glow` shadow instead of the white circle +
+      indigo glow from 2.16. Theater modal's outer corners squared off
+      (`rounded-none`) to match, border back to `border-hud-line`.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings). Runtime-checked via `browser-automation` (TEMP-DEBUG
+pattern, reverted cleanly): `/title/movie/862` (Toy Story) and
+`/title/tv/1399` (Game of Thrones) — single bracket-corner hero panel
+with the record eyebrow, cyan data readouts throughout, trailer box
+with the cyan play badge and no YouTube chrome, theater modal still
+opens/plays/closes correctly with squared-off corners matching the
+HUD language.
+
+---
+
+### 2.18 — DetailPage: full-viewport hero + expandable Cast/Crew
+
+User feedback with a screenshot: the hero's `HudFrame` panel was
+covering a large chunk of the backdrop image because the hero box
+itself was still capped at `h-[60vh]`/`h-[75vh]` — the panel took up
+most of a short box. Also asked for the full cast/crew list to be
+reachable (previously hard-capped at 15/12 with no way to see more).
+
+- [x] Hero height changed from `h-[60vh] md:h-[75vh]` to `h-dvh` (and
+      the loading skeleton to match) — the backdrop image now fills the
+      entire viewport on load, the `HudFrame` panel stays pinned to the
+      bottom via its existing `absolute bottom-0`, and Overview/Cast/
+      Crew/etc. only come into view once the user scrolls past the
+      hero. `h-dvh` over `h-screen` specifically for mobile correctness
+      (avoids the address-bar-collapse gap `100vh` has on phones).
+- [x] `SectionEyebrow` gained an `action` slot (right-aligned, next to
+      the icon+label) — used to add a "More"/"Less" toggle button to the
+      Cast and Crew headers, `font-mono text-hud-cyan-strong`, matching
+      the page's existing type system. Only rendered when there's
+      actually more to show (`list.length > previewCount`).
+- [x] `crewForGrid`'s derivation in `DetailPage.jsx` no longer hard-caps
+      at `.slice(0, 12)` — the full curated (still job-filtered via
+      `CREW_JOB_PRIORITY`) list is now computed, with the cap applied
+      only at render time via the new `previewCount` prop, same as Cast.
+- [x] `CastGrid.jsx` gained `expanded`/`previewCount` props: collapsed
+      (default) is the original horizontal-scroll row, capped; expanded
+      drops the cap and switches the container from
+      `overflow-x-scroll` to `flex-wrap` — so the rest of the cast/crew
+      becomes reachable by scrolling the *page* down (per the user's
+      explicit ask), not by dragging the row sideways.
+- [x] `DetailPage.jsx` owns `castExpanded`/`crewExpanded` state (one
+      each, independent) and passes both the toggle button and the
+      `expanded` flag down.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings). Runtime-checked via `browser-automation` (TEMP-DEBUG
+pattern, reverted cleanly) on `/title/movie/1284041` (the exact title
+from the user's screenshot) — hero now fills the full viewport with the
+backdrop clearly visible above the panel, "MORE" appears next to Cast
+(24 cast members total, well over the 15-preview cap) and correctly
+does *not* appear next to Crew (only 7 members, under the 12-preview
+cap — confirms the conditional works both ways). Clicked "More" on
+Cast: label flips to "Less", the row switches from a horizontal scroll
+to a wrapped grid revealing all 24 cast members across multiple rows,
+pushing the Crew/More Like This sections further down the page.
+
+---
+
+### 2.19 — DetailPage: glass hero panel + crew "More" threshold fix
+
+Two follow-ups from a screenshot of a different title (Supergirl):
+
+- [x] **Crew "More" missing**: `CREW_PREVIEW_COUNT` was 12, but crew is
+      already filtered down to a curated set of roles
+      (`CREW_JOB_PRIORITY` — Director/Writer/Producer/etc., not every
+      credited role), so it rarely reaches 12 even when the row visibly
+      overflows and needs horizontal scrolling to see everyone. Lowered
+      `CREW_PREVIEW_COUNT` to 8 so "More" reliably appears whenever the
+      row is actually cropped, matching Cast's behavior instead of only
+      firing on unusually long crew lists.
+- [x] **Glass hero panel**: the hero's `HudFrame` record panel was fully
+      opaque (`.hud-panel`'s `background: var(--color-bg-elevated)`),
+      which the user pointed out was hiding the backdrop photo behind
+      it — on top of 2.18's full-viewport fix, which already made more
+      of the backdrop visible *around* the panel, the panel itself
+      still blocked the image wherever it sat. `HudFrame.jsx`
+      (`src/components/movies/HudFrame.jsx`) gained an optional `glass`
+      prop: `false` (default) keeps every existing consumer
+      (`ConsoleHeader`, `MovieCardHud`, all four catalog pages) on the
+      original opaque console-panel look, unchanged; `true` swaps the
+      background for `bg-ink/35 backdrop-blur-lg border border-hud-line`
+      — translucent and blurred, so the backdrop shows through instead
+      of being hidden, while keeping the same bracket corners. Only
+      `DetailPage.jsx`'s hero panel passes `glass` — a one-line change
+      (`<HudFrame glass className="...">`), nothing else in the app
+      opted in.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings). Runtime-checked via `browser-automation` (TEMP-DEBUG
+pattern, reverted cleanly): `/title/movie/862` (Toy Story) — the
+backdrop (Buzz and Woody) is now visibly blurred-through behind the
+record panel instead of hidden by a solid black box, and "MORE" now
+appears next to both Cast and Crew.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).

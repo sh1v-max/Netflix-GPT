@@ -6,6 +6,7 @@ import {
   Star,
   Sparkles,
   ChevronDown,
+  Database,
   FileText,
   Tv,
   Info,
@@ -18,6 +19,7 @@ import Footer from '../layout/Footer'
 import TrailerBox from './TrailerBox'
 import SimilarTitlesHud from './SimilarTitlesHud'
 import CastGrid from './CastGrid'
+import HudFrame from '../movies/HudFrame'
 import { Skeleton } from '@/components/ui/skeleton'
 import useMediaDetails from '../../hooks/useMediaDetails'
 import useCredits from '../../hooks/useCredits'
@@ -33,14 +35,24 @@ import { EASE } from '@/lib/motion'
 // same visual family as ConsoleHeader's own eyebrow (Database icon +
 // eyebrowLabel). Used for every section heading on this page instead of
 // the old plain `font-display text-lg font-semibold` headers.
-const SectionEyebrow = ({ icon: Icon, children }) => (
-  <div className="flex items-center gap-2 mb-3 text-accent2-strong">
-    <Icon size={14} />
-    <span className="font-mono text-[11px] uppercase tracking-[0.15em]">{children}</span>
+const SectionEyebrow = ({ icon: Icon, children, action }) => (
+  <div className="flex items-center justify-between gap-2 mb-3">
+    <div className="flex items-center gap-2 text-hud-cyan">
+      <Icon size={14} />
+      <span className="font-mono text-[11px] uppercase tracking-[0.15em]">{children}</span>
+    </div>
+    {action}
   </div>
 )
 
 const OVERVIEW_TRUNCATE_LENGTH = 260
+const CAST_PREVIEW_COUNT = 15
+// Lower than CAST_PREVIEW_COUNT on purpose — crew is already filtered down
+// to a curated set of roles (CREW_JOB_PRIORITY), so even a modest list
+// tends to overflow the visible row width without ever being long enough
+// to clear a 12+ cap. This keeps "More" showing whenever the row is
+// actually cropped, not just when the underlying list is unusually long.
+const CREW_PREVIEW_COUNT = 8
 // Curated, priority-ordered job list for the Crew section — the full
 // credits.crew array includes dozens of minor roles (foley, gaffer, etc.)
 // that aren't useful to surface here.
@@ -67,6 +79,8 @@ const DetailPage = () => {
   const similar = useSimilarTitles(mediaType, id)
   const watchProviders = useWatchProviders(mediaType, id)
   const [overviewExpanded, setOverviewExpanded] = useState(false)
+  const [castExpanded, setCastExpanded] = useState(false)
+  const [crewExpanded, setCrewExpanded] = useState(false)
 
   const currentDocId = mediaDocId(mediaType, id)
   const ratings = useSelector((store) => store.preferences.ratings)
@@ -110,7 +124,7 @@ const DetailPage = () => {
     return (
       <div className="theme-dark-scope min-h-screen bg-ink">
         <Header />
-        <Skeleton className="h-[60vh] md:h-[75vh] w-full rounded-none" />
+        <Skeleton className="h-dvh w-full rounded-none" />
         <div className="max-w-5xl mx-auto px-6 md:px-12 py-8 md:py-12 space-y-3">
           <Skeleton className="h-4 w-2/3" />
           <Skeleton className="h-4 w-1/2" />
@@ -168,13 +182,11 @@ const DetailPage = () => {
         byId.set(member.id, { ...member })
       }
     })
-    return Array.from(byId.values())
-      .sort(
-        (a, b) =>
-          CREW_JOB_PRIORITY.indexOf(a.job.split(',')[0].trim()) -
-          CREW_JOB_PRIORITY.indexOf(b.job.split(',')[0].trim())
-      )
-      .slice(0, 12)
+    return Array.from(byId.values()).sort(
+      (a, b) =>
+        CREW_JOB_PRIORITY.indexOf(a.job.split(',')[0].trim()) -
+        CREW_JOB_PRIORITY.indexOf(b.job.split(',')[0].trim())
+    )
   })()
 
   const collection = mediaType === 'movie' ? details.belongs_to_collection : null
@@ -188,7 +200,7 @@ const DetailPage = () => {
 
       <main className="flex-1">
       {/* Hero */}
-      <div className="relative w-full h-[60vh] md:h-[75vh] bg-ink">
+      <div className="relative w-full h-dvh bg-ink">
         {/* Backdrop — clipped to the hero's fixed height. The floating
             content below is a sibling, NOT inside this clipped box, so
             it's free to grow taller without ever being cut off. */}
@@ -209,120 +221,126 @@ const DetailPage = () => {
           <div className="absolute inset-0 bg-linear-to-r from-ink/60 via-transparent to-transparent" />
         </div>
 
-        {/* Metadata + trailer — plain typography over the gradient, not
-            boxed in a panel; a single supporting trailer card sits beside
-            it rather than a second competing panel. */}
+        {/* Metadata + trailer — one consolidated HUD panel (bracket
+            corners, cyan/mono, the same "Data Console" language as the
+            catalog pages) instead of two separate competing panels. */}
         <motion.div
           key={id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: EASE }}
-          className="absolute bottom-0 left-0 right-0 p-5 md:p-10 lg:p-12 z-20"
+          className="absolute bottom-0 left-0 right-0 p-4 md:p-8 z-20"
         >
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-10">
-            <div className="flex gap-4 md:gap-6 items-end min-w-0">
-              {details.poster_path && (
-                <motion.img
-                  layoutId={`poster-${mediaType}-${id}`}
-                  src={IMG_CDN_URL + details.poster_path}
-                  alt=""
-                  aria-hidden="true"
-                  className="hidden sm:block w-24 md:w-32 rounded-lg shadow-cg-elevated border border-border-hairline shrink-0"
-                />
-              )}
-
-              <div className="max-w-2xl min-w-0">
-                {details.tagline && (
-                  <p className="text-accent2-strong text-sm md:text-base italic mb-2">
-                    {details.tagline}
-                  </p>
-                )}
-                <h1
-                  className="font-display text-3xl md:text-5xl lg:text-6xl font-semibold mb-3 leading-[1.05]"
-                  style={{ textShadow: '0 2px 16px rgba(0,0,0,0.5)' }}
-                >
-                  {title}
-                </h1>
-
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-text-dark-muted mb-3">
-                  {year && <span>{year}</span>}
-                  {runtime && (
-                    <>
-                      <span>&middot;</span>
-                      <span>{runtime}</span>
-                    </>
-                  )}
-                  {certification && (
-                    <>
-                      <span>&middot;</span>
-                      <span className="text-xs bg-white/10 rounded px-1.5 py-0.5 font-medium">
-                        {certification}
-                      </span>
-                    </>
-                  )}
-                  {details.vote_average > 0 && (
-                    <>
-                      <span>&middot;</span>
-                      <span className="inline-flex items-center gap-1 text-accent-soft font-medium">
-                        <Star size={13} fill="currentColor" />
-                        {details.vote_average.toFixed(1)}
-                      </span>
-                    </>
-                  )}
-                  {tasteMatch !== null && (
-                    <>
-                      <span>&middot;</span>
-                      <span className="inline-flex items-center gap-1 text-accent2-strong font-medium">
-                        <Sparkles size={13} />
-                        {tasteMatch}% match for you
-                      </span>
-                    </>
-                  )}
-                </div>
-
-                {(directorNames.length > 0 || creatorNames.length > 0) && (
-                  <p className="text-sm text-text-dark-muted mb-3">
-                    {mediaType === 'movie' ? 'Directed by ' : 'Created by '}
-                    <span className="text-text-dark font-medium">
-                      {(mediaType === 'movie' ? directorNames : creatorNames).join(', ')}
-                    </span>
-                  </p>
-                )}
-
-                {details.genres?.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {details.genres.map((genre) => (
-                      <span
-                        key={genre.id}
-                        className="text-xs bg-white/10 text-text-dark px-3 py-1 rounded-full"
-                      >
-                        {genre.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2">
-                  <RatingControl
-                    mediaType={mediaType}
-                    id={id}
-                    genreIds={details.genres?.map((genre) => genre.id) || []}
-                    releaseYear={year ? Number(year) : null}
-                    size={16}
-                  />
-                  <WatchlistButton mediaType={mediaType} id={id} size={16} />
-                </div>
-              </div>
+          <HudFrame glass className="max-w-6xl mx-auto p-5 md:p-8">
+            <div className="flex items-center gap-2 mb-4 text-hud-cyan">
+              <Database size={13} />
+              <span className="font-mono text-[10px] uppercase tracking-[0.15em]">
+                Cinegraph // Title Record
+              </span>
             </div>
 
-            <TrailerBox mediaType={mediaType} id={id} />
-          </div>
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-10">
+              <div className="flex gap-4 md:gap-6 items-end min-w-0">
+                {details.poster_path && (
+                  <motion.img
+                    layoutId={`poster-${mediaType}-${id}`}
+                    src={IMG_CDN_URL + details.poster_path}
+                    alt=""
+                    aria-hidden="true"
+                    className="hidden sm:block w-24 md:w-32 rounded-lg shadow-cg-elevated border border-border-hairline shrink-0"
+                  />
+                )}
+
+                <div className="max-w-2xl min-w-0">
+                  {details.tagline && (
+                    <p className="text-hud-cyan-strong text-sm md:text-base italic mb-2">
+                      {details.tagline}
+                    </p>
+                  )}
+                  <h1 className="font-display text-3xl md:text-5xl lg:text-6xl font-semibold mb-3 leading-[1.05]">
+                    {title}
+                  </h1>
+
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 font-mono text-sm text-text-dark-muted mb-3">
+                    {year && <span>{year}</span>}
+                    {runtime && (
+                      <>
+                        <span>&middot;</span>
+                        <span>{runtime}</span>
+                      </>
+                    )}
+                    {certification && (
+                      <>
+                        <span>&middot;</span>
+                        <span className="text-xs border border-hud-line rounded px-1.5 py-0.5 font-medium">
+                          {certification}
+                        </span>
+                      </>
+                    )}
+                    {details.vote_average > 0 && (
+                      <>
+                        <span>&middot;</span>
+                        <span className="inline-flex items-center gap-1 text-accent-soft font-medium">
+                          <Star size={13} fill="currentColor" />
+                          {details.vote_average.toFixed(1)}
+                        </span>
+                      </>
+                    )}
+                    {tasteMatch !== null && (
+                      <>
+                        <span>&middot;</span>
+                        <span className="inline-flex items-center gap-1 text-hud-cyan-strong font-medium">
+                          <Sparkles size={13} />
+                          {tasteMatch}% match for you
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  {(directorNames.length > 0 || creatorNames.length > 0) && (
+                    <p className="font-mono text-sm text-text-dark-muted mb-3">
+                      {mediaType === 'movie' ? 'Directed by ' : 'Created by '}
+                      <span className="text-text-dark">
+                        {(mediaType === 'movie' ? directorNames : creatorNames).join(', ')}
+                      </span>
+                    </p>
+                  )}
+
+                  {details.genres?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {details.genres.map((genre) => (
+                        <span
+                          key={genre.id}
+                          className="font-mono text-[10px] uppercase tracking-wide border border-hud-line text-text-dark px-2.5 py-1"
+                        >
+                          {genre.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <RatingControl
+                      mediaType={mediaType}
+                      id={id}
+                      genreIds={details.genres?.map((genre) => genre.id) || []}
+                      releaseYear={year ? Number(year) : null}
+                      size={16}
+                    />
+                    <WatchlistButton mediaType={mediaType} id={id} size={16} />
+                  </div>
+                </div>
+              </div>
+
+              <TrailerBox mediaType={mediaType} id={id} />
+            </div>
+          </HudFrame>
         </motion.div>
       </div>
 
       {/* Collection banner */}
       {collection && (
-        <div className="relative w-full h-20 md:h-28 overflow-hidden border-y border-border-hairline">
+        <div className="relative w-full h-20 md:h-28 overflow-hidden border-y border-hud-line">
           {collection.backdrop_path && (
             <img
               src={BACKDROP_CDN_URL + collection.backdrop_path}
@@ -333,7 +351,7 @@ const DetailPage = () => {
           )}
           <div className="absolute inset-0 bg-ink/70" />
           <div className="relative max-w-5xl mx-auto px-6 md:px-12 h-full flex flex-col justify-center gap-1">
-            <div className="flex items-center gap-2 text-accent2-strong">
+            <div className="flex items-center gap-2 text-hud-cyan">
               <Layers size={12} />
               <span className="font-mono text-[10px] uppercase tracking-[0.15em]">
                 Part of Collection
@@ -358,7 +376,7 @@ const DetailPage = () => {
           {overviewIsLong && (
             <button
               onClick={() => setOverviewExpanded((v) => !v)}
-              className="mt-2 inline-flex items-center gap-1 text-accent2-strong text-sm font-medium hover:underline cursor-pointer"
+              className="mt-2 inline-flex items-center gap-1 text-hud-cyan-strong text-sm font-medium hover:underline cursor-pointer"
             >
               {overviewExpanded ? 'Show less' : 'Read more'}
               <motion.span
@@ -375,7 +393,7 @@ const DetailPage = () => {
               {keywords.slice(0, 12).map((kw) => (
                 <span
                   key={kw.id}
-                  className="text-xs text-text-dark-muted bg-white/5 px-3 py-1 rounded-full"
+                  className="font-mono text-[10px] text-text-dark-muted bg-white/5 border border-border-hairline px-2.5 py-1"
                 >
                   {kw.name}
                 </span>
@@ -384,7 +402,7 @@ const DetailPage = () => {
           )}
         </div>
 
-        <div className="md:border-l md:border-border-hairline md:pl-8">
+        <div className="md:border-l md:border-hud-line/20 md:pl-8">
           <SectionEyebrow icon={Tv}>Where to Watch</SectionEyebrow>
           {streamProviders?.length > 0 ? (
             <motion.div
@@ -419,13 +437,13 @@ const DetailPage = () => {
                 {details.status && (
                   <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
                     <dt className="text-text-dark-muted">Status</dt>
-                    <dd className="text-accent2-strong text-right">{details.status}</dd>
+                    <dd className="text-hud-cyan-strong text-right">{details.status}</dd>
                   </div>
                 )}
                 {details.original_language && (
                   <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
                     <dt className="text-text-dark-muted">Original language</dt>
-                    <dd className="text-accent2-strong text-right">
+                    <dd className="text-hud-cyan-strong text-right">
                       {details.original_language}
                     </dd>
                   </div>
@@ -433,13 +451,13 @@ const DetailPage = () => {
                 {budget && (
                   <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
                     <dt className="text-text-dark-muted">Budget</dt>
-                    <dd className="text-accent2-strong text-right">{budget}</dd>
+                    <dd className="text-hud-cyan-strong text-right">{budget}</dd>
                   </div>
                 )}
                 {revenue && (
                   <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
                     <dt className="text-text-dark-muted">Revenue</dt>
-                    <dd className="text-accent2-strong text-right">{revenue}</dd>
+                    <dd className="text-hud-cyan-strong text-right">{revenue}</dd>
                   </div>
                 )}
               </dl>
@@ -451,16 +469,49 @@ const DetailPage = () => {
       {/* Cast */}
       {credits?.cast?.length > 0 && (
         <div className="max-w-5xl mx-auto px-6 md:px-12 pb-8 md:pb-12">
-          <SectionEyebrow icon={Users}>Cast</SectionEyebrow>
-          <CastGrid cast={credits.cast} />
+          <SectionEyebrow
+            icon={Users}
+            action={
+              credits.cast.length > CAST_PREVIEW_COUNT && (
+                <button
+                  onClick={() => setCastExpanded((v) => !v)}
+                  className="font-mono text-[10px] uppercase tracking-wide text-hud-cyan-strong hover:underline cursor-pointer"
+                >
+                  {castExpanded ? 'Less' : 'More'}
+                </button>
+              )
+            }
+          >
+            Cast
+          </SectionEyebrow>
+          <CastGrid cast={credits.cast} expanded={castExpanded} previewCount={CAST_PREVIEW_COUNT} />
         </div>
       )}
 
       {/* Crew */}
       {crewForGrid.length > 0 && (
         <div className="max-w-5xl mx-auto px-6 md:px-12 pb-8 md:pb-12">
-          <SectionEyebrow icon={Clapperboard}>Crew</SectionEyebrow>
-          <CastGrid cast={crewForGrid} getSubtitle={(member) => member.job} />
+          <SectionEyebrow
+            icon={Clapperboard}
+            action={
+              crewForGrid.length > CREW_PREVIEW_COUNT && (
+                <button
+                  onClick={() => setCrewExpanded((v) => !v)}
+                  className="font-mono text-[10px] uppercase tracking-wide text-hud-cyan-strong hover:underline cursor-pointer"
+                >
+                  {crewExpanded ? 'Less' : 'More'}
+                </button>
+              )
+            }
+          >
+            Crew
+          </SectionEyebrow>
+          <CastGrid
+            cast={crewForGrid}
+            getSubtitle={(member) => member.job}
+            expanded={crewExpanded}
+            previewCount={CREW_PREVIEW_COUNT}
+          />
         </div>
       )}
 
