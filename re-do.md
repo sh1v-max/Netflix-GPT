@@ -1787,6 +1787,134 @@ appears next to both Cast and Crew.
 
 ---
 
+### 2.20 — DetailPage: persistent fixed backdrop + glass on every section
+
+Follow-up round: the overlay was still "too dark," and the user wanted
+the backdrop image to act as one static background for the *whole*
+page (not just the hero, re-appearing/re-clipped per section), with
+every section below getting the same glass treatment the hero panel
+got in 2.19 rather than sitting on the opaque page background.
+
+- [x] **Lighter overlay**: the hero's darkening was `bg-ink/25` +
+      `via-ink/70` + a second horizontal gradient — dropped to a single
+      light full-frame `bg-ink/15` plus one gentle bottom gradient
+      (`from-ink/45`). The glass panels below now do their own local
+      contrast work (translucent + blurred), so the global tint no
+      longer has to carry all of it alone.
+- [x] **Backdrop moved from per-section to page-level, `position:
+      fixed`**: previously the backdrop `<img>` lived inside the hero's
+      own `overflow-hidden` box, clipped to `h-dvh` and gone once you
+      scrolled past it. It's now a single `fixed inset-0` layer at the
+      root of `DetailPage.jsx`, sized to the viewport and `pointer-
+      events-none` — it stays in place while every section scrolls over
+      it (the classic "static background" effect), instead of only
+      existing behind the hero.
+  - Stacking fix that made this safe: the root wrapper gained
+    `isolate`, and the backdrop layer explicit `z-0` vs. a new
+    `relative z-10` wrapper around `Header`/`main`/`Footer` — this
+    project has hit ambiguous z-index/stacking bugs before (2.8's
+    "vignette not visible" saga, notably), so this was set up the same
+    proven way rather than relying on paint-order default behavior.
+- [x] **Every section below the hero is now a glass panel**, matching
+      the hero's `HudFrame glass` look but without corner brackets
+      (kept exclusive to the hero panel, so it stays the visually
+      "primary" one): `bg-ink/35 backdrop-blur-[--blur-cg-glass] border
+      border-hud-line`, each with `mt-6` spacing from the one above —
+      Overview/Where-to-Watch/Details grid, Cast, Crew, and
+      `SimilarTitlesHud.jsx`'s "More Like This" row (edited directly,
+      not wrapped externally — it's only ever used here). The
+      Collection banner keeps its own distinct backdrop image (the
+      franchise's own artwork, not the title's) but its overlay
+      softened from opaque `bg-ink/70` to `bg-ink/40` +
+      `backdrop-blur-[--blur-cg-glass]`, same glass family.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings). Per the user's standing instruction from this point forward,
+skipped the `browser-automation` visual pass this round — only run it
+going forward when explicitly asked to.
+
+---
+
+### 2.21 — DetailPage: full redesign — minimal, no boxes, space theme kept
+
+2.16 through 2.20 kept iterating on *how much* glass/blur/panel a boxed
+layout should have, and the user called it: "it doesn't look good... i
+did a mistake here... redesign it entirely." Asked to keep the space
+theme (cyan, mono type) but make it read as a genuinely professional,
+minimal movie detail page — not a dashboard made of stacked panels.
+Presented three reference-style directions (cinematic-minimal /
+refined-console / editorial); the user rejected picking from references
+outright ("i want something new, no copy") and asked for an original
+take instead of a copy of another product's layout.
+
+**The actual change, structurally**: every "box" this page has carried
+since 2.13 — `HudFrame` bracket panels, then glass-blur panels — is
+gone. Content is separated by whitespace and a thin hairline rule under
+each section label, not by a filled/bordered container.
+
+- [x] **Hero has no panel at all.** Title, tagline, meta line, genres,
+      and the action row now sit directly on the backdrop image, with a
+      local bottom gradient (`from-ink/95 via-ink/25 to-transparent`,
+      scoped to the hero only) and an inline `textShadow` on the `<h1>`
+      doing the legibility work instead of a card. Dropped the
+      "CINEGRAPH // TITLE RECORD" eyebrow line entirely — decorative
+      console jargon that didn't earn its place once the panel it
+      labeled was gone.
+- [x] **Genres and keywords are plain text, not chips.** Genres:
+      `Horror · Science Fiction · Thriller` inline under the meta row.
+      Keywords: a small comma-separated muted line under Overview.
+      Certification: `[PG-13]` as plain bracketed mono text in the meta
+      line, no border box. This was the single biggest visual
+      declutter — the bordered-rectangle-everywhere look is what read
+      as "dashboard," not the cyan/mono language itself.
+- [x] **`TrailerBox.jsx` rewritten from a card to a small circular icon
+      button** — same size/shape/style as `RatingControl`'s and
+      `WatchlistButton`'s buttons, dropped into the same action row
+      instead of being its own panel next to the title. Still opens the
+      same theater `Dialog` with the real, full-featured YouTube player
+      (unchanged since 2.15) — only the entry point changed, not the
+      modal.
+- [x] **Collection banner reduced from an image strip to one plain text
+      line** — "Part of `<name>`" with a small `Layers` icon, no
+      backdrop image, no overlay, no border.
+- [x] **Content below the hero sits on a plain opaque `bg-ink` surface**,
+      not the fixed backdrop bleeding through — the "image as whole-page
+      wallpaper" idea from 2.20 is what forced glass panels into
+      existence everywhere in the first place (plain text directly on a
+      busy photo doesn't work, so every section needed its own tinted
+      box). The backdrop stays `fixed` and photographic, but scoped back
+      to being a hero device; reading content below it works better on a
+      clean, quiet ground. `isolate` + explicit z-index tiers (from 2.20)
+      kept, since that stacking setup is correct independent of how much
+      of the page uses the image.
+- [x] `SectionEyebrow` (Overview/Where-to-Watch/Details/Cast/Crew/More
+      Like This headers) restyled from "icon + label" to "icon + label +
+      thin `border-b border-hud-line/25`" — a hairline still does the
+      wayfinding job a filled panel did, with none of the weight.
+- [x] `HudFrame.jsx`'s `glass` prop (added in 2.19, only ever consumed
+      by `DetailPage.jsx`) removed as dead code now that `DetailPage`
+      doesn't use `HudFrame` at all anymore. `HudFrame` itself is
+      unchanged and still used exactly as before by `ConsoleHeader` and
+      `MovieCardHud` on the catalog pages.
+- [x] `SimilarTitlesHud.jsx` reverted from a glass panel back to a plain
+      section (hairline header, no background/border), matching the
+      rest of the page.
+
+**What's unchanged**: all data/derivation logic (certification,
+keywords, collection, crew, budget/revenue, taste match, overview
+truncation), `CastGrid.jsx`'s avatar-circle layout and `expanded`/
+`previewCount` "More" behavior (2.18/2.19 — already minimal, no box to
+remove), `RatingControl`/`WatchlistButton` (untouched, same precedent
+as every prior round), the catalog pages (`/movies`/`/shows`/`/anime`/
+`/discover`) and their cyan bracket-HUD look — none of this round's
+changes touch `MediaConsole.jsx` or anything outside `detail/`.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings). Visual check skipped per the user's standing instruction —
+not run unless asked.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).

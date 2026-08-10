@@ -6,7 +6,6 @@ import {
   Star,
   Sparkles,
   ChevronDown,
-  Database,
   FileText,
   Tv,
   Info,
@@ -19,7 +18,6 @@ import Footer from '../layout/Footer'
 import TrailerBox from './TrailerBox'
 import SimilarTitlesHud from './SimilarTitlesHud'
 import CastGrid from './CastGrid'
-import HudFrame from '../movies/HudFrame'
 import { Skeleton } from '@/components/ui/skeleton'
 import useMediaDetails from '../../hooks/useMediaDetails'
 import useCredits from '../../hooks/useCredits'
@@ -31,14 +29,15 @@ import { mediaDocId } from '../../utils/firestorePaths'
 import { BACKDROP_CDN_URL, IMG_CDN_URL } from '../../utils/constant'
 import { EASE } from '@/lib/motion'
 
-// Small reusable HUD section eyebrow — icon + font-mono uppercase label,
-// same visual family as ConsoleHeader's own eyebrow (Database icon +
-// eyebrowLabel). Used for every section heading on this page instead of
-// the old plain `font-display text-lg font-semibold` headers.
+// Minimal section divider — icon + mono label + a thin hairline, instead of
+// a filled/bordered panel. Every "box" this page used to wrap content in
+// (HudFrame panels, glass cards) read as clutter once there were several of
+// them stacked down the page — a hairline rule does the same wayfinding job
+// with none of the visual weight.
 const SectionEyebrow = ({ icon: Icon, children, action }) => (
-  <div className="flex items-center justify-between gap-2 mb-3">
+  <div className="flex items-center justify-between gap-2 mb-4 pb-2 border-b border-hud-line/25">
     <div className="flex items-center gap-2 text-hud-cyan">
-      <Icon size={14} />
+      <Icon size={13} />
       <span className="font-mono text-[11px] uppercase tracking-[0.15em]">{children}</span>
     </div>
     {action}
@@ -195,331 +194,295 @@ const DetailPage = () => {
   const hasDetailsPanel = Boolean(details.status || details.original_language || budget || revenue)
 
   return (
-    <div className="theme-dark-scope min-h-screen bg-ink text-text-dark flex flex-col">
+    <div className="theme-dark-scope min-h-screen bg-ink text-text-dark isolate">
+      {/* Persistent backdrop — `fixed`, stays in place behind the hero as
+          the page scrolls. Kept light; the hero's own local gradient below
+          does the real legibility work since text now sits directly on the
+          image with no card behind it. */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        {details.backdrop_path && (
+          <img
+            src={BACKDROP_CDN_URL + details.backdrop_path}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+        <div className="absolute inset-0 bg-ink/10" />
+      </div>
+
+      <div className="relative z-10 min-h-screen flex flex-col">
       <Header />
 
       <main className="flex-1">
-      {/* Hero */}
-      <div className="relative w-full h-dvh bg-ink">
-        {/* Backdrop — clipped to the hero's fixed height. The floating
-            content below is a sibling, NOT inside this clipped box, so
-            it's free to grow taller without ever being cut off. */}
-        <div className="absolute inset-0 overflow-hidden">
-          {details.backdrop_path && (
-            <img
-              src={BACKDROP_CDN_URL + details.backdrop_path}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          )}
-          {/* One strong gradient plus a light full-frame tint does the
-              legibility work a bordered card used to — text sits directly
-              on the image, readable regardless of how busy the photo is. */}
-          <div className="absolute inset-0 bg-ink/25" />
-          <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/70 to-transparent" />
-          <div className="absolute inset-0 bg-linear-to-r from-ink/60 via-transparent to-transparent" />
-        </div>
+      {/* Hero — no boxed panel. Title and metadata sit directly on the
+          backdrop, readable via a local bottom gradient + text-shadow,
+          the way a minimal cinematic hero should read. */}
+      <div className="relative w-full h-dvh flex items-end">
+        <div className="absolute inset-0 bg-linear-to-t from-ink/95 via-ink/25 to-transparent pointer-events-none" />
 
-        {/* Metadata + trailer — one consolidated HUD panel (bracket
-            corners, cyan/mono, the same "Data Console" language as the
-            catalog pages) instead of two separate competing panels. */}
         <motion.div
           key={id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: EASE }}
-          className="absolute bottom-0 left-0 right-0 p-4 md:p-8 z-20"
+          className="relative z-10 w-full px-6 md:px-12 lg:px-16 pb-14 md:pb-20"
         >
-          <HudFrame glass className="max-w-6xl mx-auto p-5 md:p-8">
-            <div className="flex items-center gap-2 mb-4 text-hud-cyan">
-              <Database size={13} />
-              <span className="font-mono text-[10px] uppercase tracking-[0.15em]">
-                Cinegraph // Title Record
-              </span>
-            </div>
+          <div className="max-w-6xl mx-auto flex gap-5 md:gap-8 items-end">
+            {details.poster_path && (
+              <motion.img
+                layoutId={`poster-${mediaType}-${id}`}
+                src={IMG_CDN_URL + details.poster_path}
+                alt=""
+                aria-hidden="true"
+                className="hidden sm:block w-28 md:w-36 rounded-md shadow-2xl shrink-0"
+              />
+            )}
 
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-10">
-              <div className="flex gap-4 md:gap-6 items-end min-w-0">
-                {details.poster_path && (
-                  <motion.img
-                    layoutId={`poster-${mediaType}-${id}`}
-                    src={IMG_CDN_URL + details.poster_path}
-                    alt=""
-                    aria-hidden="true"
-                    className="hidden sm:block w-24 md:w-32 rounded-lg shadow-cg-elevated border border-border-hairline shrink-0"
-                  />
+            <div className="max-w-2xl min-w-0">
+              {details.tagline && (
+                <p className="text-hud-cyan-strong text-sm md:text-base italic mb-2">
+                  {details.tagline}
+                </p>
+              )}
+              <h1
+                className="font-display text-4xl md:text-6xl lg:text-7xl font-semibold mb-4 leading-[1.05]"
+                style={{ textShadow: '0 4px 24px rgba(0,0,0,0.6)' }}
+              >
+                {title}
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 font-mono text-sm text-text-dark-muted mb-2">
+                {year && <span>{year}</span>}
+                {runtime && (
+                  <>
+                    <span>&middot;</span>
+                    <span>{runtime}</span>
+                  </>
                 )}
-
-                <div className="max-w-2xl min-w-0">
-                  {details.tagline && (
-                    <p className="text-hud-cyan-strong text-sm md:text-base italic mb-2">
-                      {details.tagline}
-                    </p>
-                  )}
-                  <h1 className="font-display text-3xl md:text-5xl lg:text-6xl font-semibold mb-3 leading-[1.05]">
-                    {title}
-                  </h1>
-
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 font-mono text-sm text-text-dark-muted mb-3">
-                    {year && <span>{year}</span>}
-                    {runtime && (
-                      <>
-                        <span>&middot;</span>
-                        <span>{runtime}</span>
-                      </>
-                    )}
-                    {certification && (
-                      <>
-                        <span>&middot;</span>
-                        <span className="text-xs border border-hud-line rounded px-1.5 py-0.5 font-medium">
-                          {certification}
-                        </span>
-                      </>
-                    )}
-                    {details.vote_average > 0 && (
-                      <>
-                        <span>&middot;</span>
-                        <span className="inline-flex items-center gap-1 text-accent-soft font-medium">
-                          <Star size={13} fill="currentColor" />
-                          {details.vote_average.toFixed(1)}
-                        </span>
-                      </>
-                    )}
-                    {tasteMatch !== null && (
-                      <>
-                        <span>&middot;</span>
-                        <span className="inline-flex items-center gap-1 text-hud-cyan-strong font-medium">
-                          <Sparkles size={13} />
-                          {tasteMatch}% match for you
-                        </span>
-                      </>
-                    )}
-                  </div>
-
-                  {(directorNames.length > 0 || creatorNames.length > 0) && (
-                    <p className="font-mono text-sm text-text-dark-muted mb-3">
-                      {mediaType === 'movie' ? 'Directed by ' : 'Created by '}
-                      <span className="text-text-dark">
-                        {(mediaType === 'movie' ? directorNames : creatorNames).join(', ')}
-                      </span>
-                    </p>
-                  )}
-
-                  {details.genres?.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {details.genres.map((genre) => (
-                        <span
-                          key={genre.id}
-                          className="font-mono text-[10px] uppercase tracking-wide border border-hud-line text-text-dark px-2.5 py-1"
-                        >
-                          {genre.name}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <RatingControl
-                      mediaType={mediaType}
-                      id={id}
-                      genreIds={details.genres?.map((genre) => genre.id) || []}
-                      releaseYear={year ? Number(year) : null}
-                      size={16}
-                    />
-                    <WatchlistButton mediaType={mediaType} id={id} size={16} />
-                  </div>
-                </div>
+                {certification && (
+                  <>
+                    <span>&middot;</span>
+                    <span>[{certification}]</span>
+                  </>
+                )}
+                {details.vote_average > 0 && (
+                  <>
+                    <span>&middot;</span>
+                    <span className="inline-flex items-center gap-1 text-accent-soft font-medium">
+                      <Star size={13} fill="currentColor" />
+                      {details.vote_average.toFixed(1)}
+                    </span>
+                  </>
+                )}
+                {tasteMatch !== null && (
+                  <>
+                    <span>&middot;</span>
+                    <span className="inline-flex items-center gap-1 text-hud-cyan-strong font-medium">
+                      <Sparkles size={13} />
+                      {tasteMatch}% match
+                    </span>
+                  </>
+                )}
               </div>
 
-              <TrailerBox mediaType={mediaType} id={id} />
+              {(directorNames.length > 0 || creatorNames.length > 0) && (
+                <p className="text-sm text-text-dark-muted mb-1">
+                  {mediaType === 'movie' ? 'Directed by ' : 'Created by '}
+                  <span className="text-text-dark">
+                    {(mediaType === 'movie' ? directorNames : creatorNames).join(', ')}
+                  </span>
+                </p>
+              )}
+
+              {details.genres?.length > 0 && (
+                <p className="text-sm text-text-dark-muted mb-5">
+                  {details.genres.map((genre) => genre.name).join(' · ')}
+                </p>
+              )}
+
+              <div className="flex items-center gap-2">
+                <RatingControl
+                  mediaType={mediaType}
+                  id={id}
+                  genreIds={details.genres?.map((genre) => genre.id) || []}
+                  releaseYear={year ? Number(year) : null}
+                  size={16}
+                />
+                <WatchlistButton mediaType={mediaType} id={id} size={16} />
+                <TrailerBox mediaType={mediaType} id={id} />
+              </div>
             </div>
-          </HudFrame>
+          </div>
         </motion.div>
       </div>
 
-      {/* Collection banner */}
-      {collection && (
-        <div className="relative w-full h-20 md:h-28 overflow-hidden border-y border-hud-line">
-          {collection.backdrop_path && (
-            <img
-              src={BACKDROP_CDN_URL + collection.backdrop_path}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover opacity-40"
-            />
-          )}
-          <div className="absolute inset-0 bg-ink/70" />
-          <div className="relative max-w-5xl mx-auto px-6 md:px-12 h-full flex flex-col justify-center gap-1">
-            <div className="flex items-center gap-2 text-hud-cyan">
-              <Layers size={12} />
-              <span className="font-mono text-[10px] uppercase tracking-[0.15em]">
-                Part of Collection
-              </span>
-            </div>
-            <p className="font-display text-sm md:text-base text-text-dark">{collection.name}</p>
+      {/* Everything below the hero sits on a plain, opaque surface — the
+          backdrop photo is a hero device, not full-page wallpaper; reading
+          the rest of the record works better on a clean, quiet ground. */}
+      <div className="relative bg-ink">
+        {collection && (
+          <div className="max-w-5xl mx-auto px-6 md:px-12 pt-8 md:pt-10 flex items-center gap-2 text-sm text-text-dark-muted">
+            <Layers size={13} className="text-hud-cyan shrink-0" />
+            <span>
+              Part of <span className="text-hud-cyan-strong">{collection.name}</span>
+            </span>
+          </div>
+        )}
+
+        {/* Overview + where to watch */}
+        <div className="max-w-5xl mx-auto px-6 md:px-12 py-10 md:py-14 grid md:grid-cols-3 gap-10">
+          <div className="md:col-span-2">
+            <SectionEyebrow icon={FileText}>Overview</SectionEyebrow>
+            <p
+              className={`text-text-dark-muted text-sm md:text-base leading-relaxed transition-all duration-300 ${
+                overviewIsLong && !overviewExpanded ? 'line-clamp-4' : ''
+              }`}
+            >
+              {overview}
+            </p>
+            {overviewIsLong && (
+              <button
+                onClick={() => setOverviewExpanded((v) => !v)}
+                className="mt-2 inline-flex items-center gap-1 text-hud-cyan-strong text-sm font-medium hover:underline cursor-pointer"
+              >
+                {overviewExpanded ? 'Show less' : 'Read more'}
+                <motion.span
+                  animate={{ rotate: overviewExpanded ? 180 : 0 }}
+                  transition={{ duration: 0.2, ease: EASE }}
+                >
+                  <ChevronDown size={14} />
+                </motion.span>
+              </button>
+            )}
+
+            {keywords.length > 0 && (
+              <p className="text-xs text-text-dark-muted/70 mt-4 leading-relaxed">
+                {keywords.slice(0, 12).map((kw) => kw.name).join(', ')}
+              </p>
+            )}
+          </div>
+
+          <div className="md:border-l md:border-hud-line/20 md:pl-8">
+            <SectionEyebrow icon={Tv}>Where to Watch</SectionEyebrow>
+            {streamProviders?.length > 0 ? (
+              <motion.div
+                initial="hidden"
+                animate="show"
+                variants={{ show: { transition: { staggerChildren: 0.04 } } }}
+                className="flex flex-wrap gap-3"
+              >
+                {streamProviders.map((provider) => (
+                  <motion.img
+                    key={provider.provider_id}
+                    variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
+                    whileHover={{ y: -3 }}
+                    src={IMG_CDN_URL + provider.logo_path}
+                    alt={provider.provider_name}
+                    title={provider.provider_name}
+                    loading="lazy"
+                    className="w-10 h-10 rounded-lg border border-border-hairline"
+                  />
+                ))}
+              </motion.div>
+            ) : (
+              <p className="text-text-dark-muted text-sm">
+                Not currently available to stream.
+              </p>
+            )}
+
+            {hasDetailsPanel && (
+              <div className="mt-8">
+                <SectionEyebrow icon={Info}>Details</SectionEyebrow>
+                <dl className="space-y-2">
+                  {details.status && (
+                    <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
+                      <dt className="text-text-dark-muted">Status</dt>
+                      <dd className="text-hud-cyan-strong text-right">{details.status}</dd>
+                    </div>
+                  )}
+                  {details.original_language && (
+                    <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
+                      <dt className="text-text-dark-muted">Original language</dt>
+                      <dd className="text-hud-cyan-strong text-right">
+                        {details.original_language}
+                      </dd>
+                    </div>
+                  )}
+                  {budget && (
+                    <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
+                      <dt className="text-text-dark-muted">Budget</dt>
+                      <dd className="text-hud-cyan-strong text-right">{budget}</dd>
+                    </div>
+                  )}
+                  {revenue && (
+                    <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
+                      <dt className="text-text-dark-muted">Revenue</dt>
+                      <dd className="text-hud-cyan-strong text-right">{revenue}</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            )}
           </div>
         </div>
-      )}
 
-      {/* Overview + where to watch */}
-      <div className="max-w-5xl mx-auto px-6 md:px-12 py-8 md:py-12 grid md:grid-cols-3 gap-8">
-        <div className="md:col-span-2">
-          <SectionEyebrow icon={FileText}>Overview</SectionEyebrow>
-          <p
-            className={`text-text-dark-muted text-sm md:text-base leading-relaxed transition-all duration-300 ${
-              overviewIsLong && !overviewExpanded ? 'line-clamp-4' : ''
-            }`}
-          >
-            {overview}
-          </p>
-          {overviewIsLong && (
-            <button
-              onClick={() => setOverviewExpanded((v) => !v)}
-              className="mt-2 inline-flex items-center gap-1 text-hud-cyan-strong text-sm font-medium hover:underline cursor-pointer"
+        {/* Cast */}
+        {credits?.cast?.length > 0 && (
+          <div className="max-w-5xl mx-auto px-6 md:px-12 pb-10 md:pb-14">
+            <SectionEyebrow
+              icon={Users}
+              action={
+                credits.cast.length > CAST_PREVIEW_COUNT && (
+                  <button
+                    onClick={() => setCastExpanded((v) => !v)}
+                    className="font-mono text-[10px] uppercase tracking-wide text-hud-cyan-strong hover:underline cursor-pointer"
+                  >
+                    {castExpanded ? 'Less' : 'More'}
+                  </button>
+                )
+              }
             >
-              {overviewExpanded ? 'Show less' : 'Read more'}
-              <motion.span
-                animate={{ rotate: overviewExpanded ? 180 : 0 }}
-                transition={{ duration: 0.2, ease: EASE }}
-              >
-                <ChevronDown size={14} />
-              </motion.span>
-            </button>
-          )}
+              Cast
+            </SectionEyebrow>
+            <CastGrid cast={credits.cast} expanded={castExpanded} previewCount={CAST_PREVIEW_COUNT} />
+          </div>
+        )}
 
-          {keywords.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {keywords.slice(0, 12).map((kw) => (
-                <span
-                  key={kw.id}
-                  className="font-mono text-[10px] text-text-dark-muted bg-white/5 border border-border-hairline px-2.5 py-1"
-                >
-                  {kw.name}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="md:border-l md:border-hud-line/20 md:pl-8">
-          <SectionEyebrow icon={Tv}>Where to Watch</SectionEyebrow>
-          {streamProviders?.length > 0 ? (
-            <motion.div
-              initial="hidden"
-              animate="show"
-              variants={{ show: { transition: { staggerChildren: 0.04 } } }}
-              className="flex flex-wrap gap-3"
+        {/* Crew */}
+        {crewForGrid.length > 0 && (
+          <div className="max-w-5xl mx-auto px-6 md:px-12 pb-10 md:pb-14">
+            <SectionEyebrow
+              icon={Clapperboard}
+              action={
+                crewForGrid.length > CREW_PREVIEW_COUNT && (
+                  <button
+                    onClick={() => setCrewExpanded((v) => !v)}
+                    className="font-mono text-[10px] uppercase tracking-wide text-hud-cyan-strong hover:underline cursor-pointer"
+                  >
+                    {crewExpanded ? 'Less' : 'More'}
+                  </button>
+                )
+              }
             >
-              {streamProviders.map((provider) => (
-                <motion.img
-                  key={provider.provider_id}
-                  variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
-                  whileHover={{ y: -3 }}
-                  src={IMG_CDN_URL + provider.logo_path}
-                  alt={provider.provider_name}
-                  title={provider.provider_name}
-                  loading="lazy"
-                  className="w-10 h-10 rounded-lg border border-border-hairline"
-                />
-              ))}
-            </motion.div>
-          ) : (
-            <p className="text-text-dark-muted text-sm">
-              Not currently available to stream.
-            </p>
-          )}
+              Crew
+            </SectionEyebrow>
+            <CastGrid
+              cast={crewForGrid}
+              getSubtitle={(member) => member.job}
+              expanded={crewExpanded}
+              previewCount={CREW_PREVIEW_COUNT}
+            />
+          </div>
+        )}
 
-          {hasDetailsPanel && (
-            <div className="mt-8">
-              <SectionEyebrow icon={Info}>Details</SectionEyebrow>
-              <dl className="space-y-2">
-                {details.status && (
-                  <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
-                    <dt className="text-text-dark-muted">Status</dt>
-                    <dd className="text-hud-cyan-strong text-right">{details.status}</dd>
-                  </div>
-                )}
-                {details.original_language && (
-                  <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
-                    <dt className="text-text-dark-muted">Original language</dt>
-                    <dd className="text-hud-cyan-strong text-right">
-                      {details.original_language}
-                    </dd>
-                  </div>
-                )}
-                {budget && (
-                  <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
-                    <dt className="text-text-dark-muted">Budget</dt>
-                    <dd className="text-hud-cyan-strong text-right">{budget}</dd>
-                  </div>
-                )}
-                {revenue && (
-                  <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
-                    <dt className="text-text-dark-muted">Revenue</dt>
-                    <dd className="text-hud-cyan-strong text-right">{revenue}</dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-          )}
-        </div>
+        {/* Similar titles */}
+        <SimilarTitlesHud movies={similar} mediaType={mediaType} />
       </div>
-
-      {/* Cast */}
-      {credits?.cast?.length > 0 && (
-        <div className="max-w-5xl mx-auto px-6 md:px-12 pb-8 md:pb-12">
-          <SectionEyebrow
-            icon={Users}
-            action={
-              credits.cast.length > CAST_PREVIEW_COUNT && (
-                <button
-                  onClick={() => setCastExpanded((v) => !v)}
-                  className="font-mono text-[10px] uppercase tracking-wide text-hud-cyan-strong hover:underline cursor-pointer"
-                >
-                  {castExpanded ? 'Less' : 'More'}
-                </button>
-              )
-            }
-          >
-            Cast
-          </SectionEyebrow>
-          <CastGrid cast={credits.cast} expanded={castExpanded} previewCount={CAST_PREVIEW_COUNT} />
-        </div>
-      )}
-
-      {/* Crew */}
-      {crewForGrid.length > 0 && (
-        <div className="max-w-5xl mx-auto px-6 md:px-12 pb-8 md:pb-12">
-          <SectionEyebrow
-            icon={Clapperboard}
-            action={
-              crewForGrid.length > CREW_PREVIEW_COUNT && (
-                <button
-                  onClick={() => setCrewExpanded((v) => !v)}
-                  className="font-mono text-[10px] uppercase tracking-wide text-hud-cyan-strong hover:underline cursor-pointer"
-                >
-                  {crewExpanded ? 'Less' : 'More'}
-                </button>
-              )
-            }
-          >
-            Crew
-          </SectionEyebrow>
-          <CastGrid
-            cast={crewForGrid}
-            getSubtitle={(member) => member.job}
-            expanded={crewExpanded}
-            previewCount={CREW_PREVIEW_COUNT}
-          />
-        </div>
-      )}
-
-      {/* Similar titles */}
-      <SimilarTitlesHud movies={similar} mediaType={mediaType} />
       </main>
 
       <Footer />
+      </div>
     </div>
   )
 }

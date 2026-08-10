@@ -85,42 +85,50 @@ netflixgpt/
 │   │   │                       ../movies/MediaConsole (same HUD console as
 │   │   │                       Movies/Shows), forced Animation genre +
 │   │   │                       Japanese language, movie/tv toggle
-│   │   ├── detail/              DetailPage.jsx (hero + collection banner
+│   │   ├── detail/              DetailPage.jsx (hero + collection line
 │   │   │                       + overview/keywords + where-to-watch +
-│   │   │                       details panel + cast/crew) — same cyan/
-│   │   │                       bracket-HUD language as the catalog pages
-│   │   │                       (2.17, after a brief indigo/glass detour
-│   │   │                       in 2.16 that user feedback reverted for
-│   │   │                       breaking visual consistency with the rest
-│   │   │                       of the app). One consolidated HudFrame
-│   │   │                       panel per hero (poster + metadata +
-│   │   │                       TrailerBox together — not two separate
-│   │   │                       competing panels, which was 2.16's real,
-│   │   │                       still-kept structural fix), inside a
-│   │   │                       full-viewport (`h-dvh`) hero so the
-│   │   │                       backdrop is fully visible above it (2.18)
-│   │   │                       — Overview/Cast/Crew/etc. only come into
-│   │   │                       view on scroll, see §8 + CastGrid.jsx
-│   │   │                       (shared cast/crew grid, subtitle field
-│   │   │                       swappable via a getSubtitle prop, hud-cyan
-│   │   │                       hover ring, `expanded`/`previewCount`
-│   │   │                       props (2.18) — collapsed is a capped
+│   │   │                       details list + cast/crew) — minimal,
+│   │   │                       unboxed redesign (2.21, after 2.13-2.20's
+│   │   │                       progressively-less-successful attempts at
+│   │   │                       a panel/glass-based HUD look). No
+│   │   │                       HudFrame/bracket panels and no glass-blur
+│   │   │                       cards anywhere on this page anymore —
+│   │   │                       content is separated by whitespace and a
+│   │   │                       thin `border-b border-hud-line/25` under
+│   │   │                       each section label, not by a filled
+│   │   │                       container. Hero has no panel at all:
+│   │   │                       title/meta/genres/actions sit directly on
+│   │   │                       the backdrop image (full-viewport `h-dvh`,
+│   │   │                       fixed page-level backdrop layer, `isolate`
+│   │   │                       + explicit z-index tiers), legible via a
+│   │   │                       local bottom gradient + an inline
+│   │   │                       `textShadow` on the `<h1>`. Genres/
+│   │   │                       keywords/certification are plain text
+│   │   │                       (`Horror · Thriller`, `[PG-13]`), not
+│   │   │                       bordered chips. Content below the hero
+│   │   │                       sits on a plain opaque `bg-ink` surface,
+│   │   │                       not the backdrop bleeding through — the
+│   │   │                       image is scoped back to being a hero
+│   │   │                       device. See §8 + CastGrid.jsx (shared
+│   │   │                       cast/crew grid, subtitle field swappable
+│   │   │                       via a getSubtitle prop, hud-cyan hover
+│   │   │                       ring, `expanded`/`previewCount` props
+│   │   │                       (2.18) — collapsed is a capped
 │   │   │                       horizontal-scroll row, expanded drops the
 │   │   │                       cap and wraps into the page's normal
 │   │   │                       flow, toggled via a "More"/"Less" button
 │   │   │                       in each section's header) +
 │   │   │                       SimilarTitlesHud.jsx ("More Like This" —
 │   │   │                       MovieCardHud tiles, sibling to
-│   │   │                       ../shared/MovieList, not a shared variant) +
-│   │   │                       TrailerBox.jsx (2.15/2.16/2.17 — a plain
-│   │   │                       hud-panel card inside the hero's HudFrame
-│   │   │                       — no corner brackets of its own, to avoid
-│   │   │                       nesting — showing a static YouTube
-│   │   │                       thumbnail image with a cyan play-button
-│   │   │                       overlay; no live preview iframe, so no
-│   │   │                       YouTube chrome is ever visible — click
-│   │   │                       opens a shadcn Dialog "theater" modal with
-│   │   │                       a full-featured, audible player)
+│   │   │                       ../shared/MovieList, not a shared variant;
+│   │   │                       plain section, no panel) + TrailerBox.jsx
+│   │   │                       (2.21 — a small circular icon button in
+│   │   │                       the hero's action row, same size/style as
+│   │   │                       RatingControl/WatchlistButton, not its own
+│   │   │                       card — click opens a shadcn Dialog
+│   │   │                       "theater" modal with a full-featured,
+│   │   │                       audible YouTube player, unchanged since
+│   │   │                       2.15)
 │   │   ├── shared/              MovieCard, MovieList, RatingControl — reused
 │   │   │                       everywhere a poster or a rating appears
 │   │   └── gpt/                 GptSearch, GptSearchBar, GptMovieSuggestions
@@ -444,24 +452,31 @@ movie/tv.
 DetailPage enrichment (keywords, collection banner, full crew,
 certifications, budget/revenue), flagged here as the natural fast-follow
 once all four catalog pages shared the HUD console, is done (see the
-"DetailPage enrichment" note under §6/§9 below). `DetailPage.jsx` was
-reskinned onto the same bracket-HUD tokens the catalog pages use (2.13),
-but the original version boxed the metadata and the trailer preview into
-two separate `HudFrame` panels side by side, which read as cluttered —
-briefly swapped for an indigo/glass look instead (2.16), then that swap
-itself got reverted after user feedback that it broke visual consistency
-with the rest of the app (2.17). The page has settled on: full HUD
-styling (cyan, `font-mono`, bracket corners, the `SectionEyebrow`
-icon+label pattern reused across every section), but with the hero's
-poster + metadata + `TrailerBox` consolidated into **one** `HudFrame`
-panel instead of two competing ones — that consolidation, and swapping
-the trailer preview from a live (chrome-leaking) iframe to a static
-thumbnail image, were the two real fixes underneath the color back-and-
-forth, and both are still in place. See the component tree in §3 above
-and the `re-do.md` 2.13/2.16/2.17 entries for the full history. It's
-still a fundamentally different page shape than the catalog consoles (a
-hero + stacked content sections, not a filterable grid), just no longer
-a different visual language too.
+"DetailPage enrichment" note under §6/§9 below). `DetailPage.jsx` went
+through several rounds of visual rework (2.13, 2.16–2.20) trying a
+bracket-panel HUD reskin, then an indigo/glass look, then various
+amounts of glass-panel-per-section — all read as some flavor of
+"cluttered dashboard" to the user, who eventually asked for a full
+redesign (2.21) rather than another tuning pass. The page has settled
+on: **no boxes anywhere** — no `HudFrame` panels, no glass-blur cards.
+Content is separated by whitespace and a thin `border-b
+border-hud-line/25` under each `SectionEyebrow` label instead of a
+filled container. The hero has no panel at all — title/meta/genres/
+actions sit directly on the backdrop image, legible via a local
+gradient + an inline text-shadow, not a card behind them. Genres/
+keywords/certification are plain text, not bordered chips (the single
+biggest declutter — bordered-rectangle-everywhere is what read as
+"dashboard," not the cyan/mono language itself, which is kept). Content
+below the hero sits on a plain opaque `bg-ink` surface rather than the
+backdrop bleeding through every section, since that's what forced glass
+panels into existence in the first place. `TrailerBox` is a small
+circular icon button in the hero's action row now, not a card. See the
+component tree in §3 above and the `re-do.md` 2.13/2.16–2.21 entries for
+the full history. It's still a fundamentally different page shape than
+the catalog consoles (a hero + stacked content sections, not a
+filterable grid) and, deliberately, a calmer visual register too — the
+catalog pages are a "browse/filter database" job, this page is a "read
+about one title" job.
 
 ---
 

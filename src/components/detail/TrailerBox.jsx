@@ -6,21 +6,16 @@ import useTrailer from '../../hooks/useTrailer'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
 // Renders nothing until a trailer is confirmed present — same convention
-// as the Collection banner / Details panel / Crew section elsewhere on
-// this page: optional supplementary content that just appears once ready,
-// no reserved loading slot.
+// as the Collection line / Details list / Crew section elsewhere on this
+// page: optional supplementary content that just appears once ready, no
+// reserved loading slot.
 //
-// The preview is a plain thumbnail image, not a live iframe — an earlier
-// version tried a muted/looped "chrome-less" embed here, but YouTube's own
-// UI (title card, channel logo, prev/next) isn't reliably suppressable
-// once you're using the loop-via-playlist trick, and it read as cluttered.
-// A static `<img>` has zero chrome by construction — there's no iframe at
-// all until the user actually clicks through to the theater modal, which
-// still uses YouTube's normal, full-featured player.
-//
-// This is meant to sit inside DetailPage's outer HudFrame panel — no
-// corner brackets of its own here (that would double up on the parent's),
-// just a plain `hud-panel` (bg-elevated + hairline cyan border) rectangle.
+// A small circular icon button, same size/weight as RatingControl's and
+// WatchlistButton's — sits in the hero's action row rather than being its
+// own card/panel. Two earlier versions (a live ambient-loop iframe, then a
+// static thumbnail card) both added a second visual block competing with
+// the title for attention; a minimal page doesn't need a dedicated trailer
+// panel, just an entry point into the same real, full-featured player.
 const TrailerBox = ({ mediaType, id, className = '' }) => {
   useTrailer(mediaType, id)
   const trailerVideo = useSelector((store) =>
@@ -35,27 +30,12 @@ const TrailerBox = ({ mediaType, id, className = '' }) => {
       <motion.button
         type="button"
         onClick={() => setIsTheaterOpen(true)}
-        whileHover={{ y: -2 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        className={`hud-panel group relative shrink-0 w-full sm:w-64 md:w-72 aspect-video overflow-hidden cursor-pointer ${className}`}
+        whileTap={{ scale: 0.85 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         aria-label="Watch trailer"
+        className={`rounded-full p-1.5 shadow-cg-elevated cursor-pointer transition-colors bg-ink-elevated/70 text-hud-cyan hover:bg-ink-elevated hover:text-hud-cyan-strong ${className}`}
       >
-        <img
-          src={`https://img.youtube.com/vi/${trailerVideo.key}/hqdefault.jpg`}
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/25 to-black/45 group-hover:from-black/80 group-hover:to-black/55 transition-colors" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-          <span className="flex items-center justify-center w-14 h-14 rounded-full hud-panel border-hud-cyan text-hud-cyan-strong shadow-[0_0_30px_var(--color-hud-cyan-glow)] group-hover:scale-110 transition-transform duration-200">
-            <Play size={20} fill="currentColor" className="ml-0.5" />
-          </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-hud-cyan-strong">
-            Watch Trailer
-          </span>
-        </div>
+        <Play size={16} fill="currentColor" />
       </motion.button>
 
       <Dialog open={isTheaterOpen} onOpenChange={setIsTheaterOpen}>

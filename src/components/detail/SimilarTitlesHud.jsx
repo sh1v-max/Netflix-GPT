@@ -40,9 +40,9 @@ const SimilarTitlesHud = ({ movies, mediaType = 'movie' }) => {
   }
 
   return (
-    <div className="relative max-w-5xl mx-auto px-6 md:px-12 pb-8 md:pb-12">
-      <div className="flex items-center gap-2 mb-4 text-hud-cyan">
-        <Layers size={14} />
+    <div className="relative max-w-5xl mx-auto px-6 md:px-12 pb-10 md:pb-14">
+      <div className="flex items-center gap-2 mb-4 pb-2 border-b border-hud-line/25 text-hud-cyan">
+        <Layers size={13} />
         <span className="font-mono text-[11px] uppercase tracking-[0.15em]">
           More Like This
         </span>
