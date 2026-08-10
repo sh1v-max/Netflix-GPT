@@ -1978,6 +1978,57 @@ warnings). Visual check skipped per the user's standing instruction.
 
 ---
 
+### 2.24 — Fix: same trailer showing on every title
+
+User report: "it's not showing the right trailer in all the movies, it's
+showing the same trailer everywhere, the one i'm clicking on for the
+first time after opening the page, or after reloading the page." Real
+bug, not a caching illusion — `useTrailer.jsx` stored `trailerVideo` as a
+**single global value per mediaType** in `moviesSlice`/`tvSlice`
+(`state.trailerVideo = action.payload`), not keyed by title id at all.
+The hook's fetch guard was `!trailerVideo && getVideos()` with an empty
+effect dependency array — so the *first* title's trailer fetched on a
+given page load got written to that one shared field, and every other
+movie (or every other tv show) visited afterward saw `trailerVideo`
+already truthy and skipped fetching entirely, reusing the first title's
+trailer. A reload cleared Redux and let the next title's fetch through
+correctly — until the second title was visited, which reproduced the
+bug again. Every other per-title cache in the app (`mediaDetails`,
+`credits`, `similar`, `watchProviders`) already avoided exactly this
+class of bug by keying on `` `${mediaType}_${id}` `` — `trailerVideo`
+was the one holdout still keyed by mediaType alone.
+
+- [x] Moved `trailerVideo` caching into the shared `details` slice
+      (`detailsSlice.jsx`), as a `{}` map keyed the same way as
+      `mediaDetails`/`credits`/etc., with a matching `addTrailerVideo`
+      reducer (`{ key, data }` payload).
+- [x] `useTrailer.jsx` rewritten to key on `` `${mediaType}_${id}` ``,
+      guard the effect on `if (!mediaType || !id) return`, and depend on
+      `[mediaType, id]` (previously `[]`) so navigating between titles
+      re-runs the fetch instead of trusting a value that belongs to a
+      different title. Also now **returns** `trailerVideo` directly
+      (matching `useMediaDetails`/`useCredits`'s own return-the-cached-
+      value convention), so `TrailerBox.jsx` no longer needs its own
+      separate `useSelector` for the same data.
+- [x] **`moviesSlice.jsx`**: dropped the now-dead `trailerVideo` field
+      and `addTrailerVideo` reducer — `popularMovies` (used by
+      `Home.jsx`'s marketing grid) is all that's left in it.
+- [x] **`tvSlice.jsx` deleted entirely** — `trailerVideo` was its only
+      field, so once that moved out the whole slice was dead weight;
+      removed its registration from `appStore.jsx` too. (`grep`-confirmed
+      zero remaining references before deleting, same discipline as
+      every prior dead-file removal in this project — `useDiscover.jsx`
+      in 2.11, `VideoBackground.jsx` in 2.15.)
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings — `useTrailer.jsx`'s pre-existing `exhaustive-deps` warning
+persists, expected, same shape as `useMediaDetails`/`useCredits`'s own
+identical warnings). Visual check skipped per the user's standing
+instruction — this one is logic-only (a Redux keying fix), not a visual
+change, so there wasn't a UI difference to check anyway.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).

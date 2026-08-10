@@ -8,11 +8,16 @@ const detailsSlice = createSlice({
     similar: {},        // key -> results array
     watchProviders: {}, // key -> providers object
     genres: {},          // mediaType -> genres array
+    trailerVideo: {},   // key -> trailer video object
   },
   reducers: {
     addMediaDetails: (state, action) => {
       const { key, data } = action.payload
       state.mediaDetails[key] = data
+    },
+    addTrailerVideo: (state, action) => {
+      const { key, data } = action.payload
+      state.trailerVideo[key] = data
     },
     addCredits: (state, action) => {
       const { key, data } = action.payload
@@ -35,6 +40,7 @@ const detailsSlice = createSlice({
 
 export const {
   addMediaDetails,
+  addTrailerVideo,
   addCredits,
   addSimilar,
   addWatchProviders,

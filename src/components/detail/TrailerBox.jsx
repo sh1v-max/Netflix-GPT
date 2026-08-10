@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useSelector } from 'react-redux'
 import { motion } from 'motion/react'
 import { Play } from 'lucide-react'
 import useTrailer from '../../hooks/useTrailer'
@@ -15,10 +14,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 // point into the trailer reads as "play this scene" rather than a small
 // toolbar icon buried in the action row.
 const TrailerBox = ({ mediaType, id, className = '' }) => {
-  useTrailer(mediaType, id)
-  const trailerVideo = useSelector((store) =>
-    mediaType === 'tv' ? store.tv?.trailerVideo : store.movies?.trailerVideo
-  )
+  const trailerVideo = useTrailer(mediaType, id)
   const [isTheaterOpen, setIsTheaterOpen] = useState(false)
 
   if (!trailerVideo?.key) return null

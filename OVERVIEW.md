@@ -195,14 +195,15 @@ consistently.
 
 ## 5. State management (Redux Toolkit)
 
-Seven slices, registered in `src/store/appStore.jsx`:
+Six slices, registered in `src/store/appStore.jsx` (`tv` was deleted in
+2.24 — `trailerVideo` was its only field, and once that moved into
+`details` the whole slice was dead):
 
 | Slice | Holds | Populated by |
 | --- | --- | --- |
 | `user` | `null` or `{ uid, email, name, photo }` | Firebase Auth via `Header.jsx`'s listener |
-| `movies` | `popularMovies` (only used by `Home.jsx`'s marketing grid), `trailerVideo` | `usePopularMovies`, `useTrailer` |
-| `tv` | `trailerVideo` only — the four list fields (`onTheAirShows`/etc.) were removed when `/shows` was rebuilt, same as `movies` in 2.8 | `useTrailer` (via `TrailerBox`, used by `DetailPage`) |
-| `details` | `mediaDetails`, `credits`, `similar`, `watchProviders`, `genres` — all keyed by `${mediaType}_${id}` (genres keyed by mediaType alone) | `useMediaDetails`, `useCredits`, `useSimilarTitles`, `useWatchProviders`, `useGenres` |
+| `movies` | `popularMovies` only, used by `Home.jsx`'s marketing grid (`trailerVideo` moved out to `details` in 2.24) | `usePopularMovies` |
+| `details` | `mediaDetails`, `credits`, `similar`, `watchProviders`, `genres`, `trailerVideo` (2.24) — all keyed by `${mediaType}_${id}` (genres keyed by mediaType alone) | `useMediaDetails`, `useCredits`, `useSimilarTitles`, `useWatchProviders`, `useGenres`, `useTrailer` |
 | `preferences` | `ratings` (`{ [docId]: 'like' \| 'dislike' }`), `ratedGenres`/`ratedYears` (`{ [docId]: ... }` — mirror `ratings`, power the Detail page's taste-compatibility read and the Taste Profile page), `watchlist` (`{ [docId]: true }`), `isLoaded` | `usePreferencesSync` (two live Firestore `onSnapshot` listeners — ratings, watchlist) |
 | `gpt` | `movieNames`, `movieResults` | `GptSearchBar` / `GptSearch.jsx`'s `runSearch` |
 | `config` | `lang` (defaults `'en'`) | `Header`'s language selector (only shown in AI-search mode) |
@@ -220,7 +221,7 @@ hooks' `[]`), since it must refetch when you navigate between titles.
 All in `src/hooks/`, one per concern:
 
 **Fixed TMDB lists**: `usePopularMovies` — Redux-cached, used only by `Home.jsx`'s marketing poster grid. All other dedicated list hooks for both movies and TV (`useNowPlayingMovies`/`useTopRatedMovies`/`useUpcomingMovies`/`useOnTheAirShows`/`usePopularShows`/`useTopRatedShows`/`useAiringTodayShows`) were removed — first for movies when `/movies` was rebuilt (2.8), then for TV when `/shows` got the same treatment (2.9) — those presets now go through `useMovieConsole` instead.
-**Trailer**: `useTrailer(mediaType, id)` — generalized for both movie/tv, used by `TrailerBox.jsx` (the detail page's click-to-open trailer preview, 2.15 — `VideoBackground.jsx`, its previous consumer, was deleted once `DetailPage` moved off the full-hero autoplay background)
+**Trailer**: `useTrailer(mediaType, id)` — used by `TrailerBox.jsx` (the detail page's click-to-open trailer preview, 2.15 — `VideoBackground.jsx`, its previous consumer, was deleted once `DetailPage` moved off the full-hero autoplay background). Cached in `details.trailerVideo` keyed by `${mediaType}_${id}` (2.24 — previously a single global value per mediaType in `movies`/`tv`, which meant every title after the first one visited on a given page load silently reused that first title's trailer instead of fetching its own; now matches every other per-title cache in this table)
 **Per-title detail data**: `useMediaDetails`, `useCredits`, `useSimilarTitles`, `useWatchProviders`, `useGenres` — all Redux-cached
 **Catalog browsing**: `useMovieConsole(mediaType, filters)` — the single shared data source for all four HUD console pages (`/movies`, `/shows`, `/anime`, `/discover`), NOT Redux-cached (filter-dependent results don't benefit from caching); `filters.preset` set hits a fixed TMDB list endpoint (`PRESET_ENDPOINTS`, a different set per `mediaType`), `preset: null` falls through to `/discover/{mediaType}` via `buildDiscoverParams` (now in `src/utils/discoverParams.jsx`, not a hook) — same return shape either way, see §8; `useMarqueeBackdrops(mediaType, { baseGenres, originLanguage })` — the HUD console header's ambient carousel pool, switches between `/{mediaType}/popular` and `/discover/{mediaType}` depending on whether a constraint is passed (Anime only); `useMultiSearch(query)` — debounced (350ms) internally, also not cached. (`useDiscover.jsx` was deleted once `/discover` itself moved onto `useMovieConsole` — it had no remaining consumers.)
 **Preferences**: `usePreferencesSync()` — the live Firestore listener, called once from `Header.jsx`
