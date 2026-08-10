@@ -17,7 +17,7 @@ import Logo from './Logo'
 import { addUser, removeUser } from '../../store/userSlice'
 import { changeLanguages } from '../../store/configSlice'
 import usePreferencesSync from '../../hooks/usePreferencesSync'
-import { User, LogOut, Sun, Moon, Bookmark, Globe, ChevronDown } from 'lucide-react'
+import { User, LogOut, Bookmark, Globe, ChevronDown } from 'lucide-react'
 
 const Header = () => {
   const navigate = useNavigate()
@@ -29,19 +29,8 @@ const Header = () => {
   // no Redux view-state flag needed, the URL itself is the source of truth.
   const isGptActive = location.pathname === '/home'
   const [isScrolled, setIsScrolled] = useState(false)
-  const [theme, setTheme] = useState(
-    () => localStorage.getItem('cinegraph-theme') || 'dark'
-  )
   usePreferencesSync()
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('cinegraph-theme', theme)
-  }, [theme])
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
-  }
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
@@ -139,7 +128,7 @@ const Header = () => {
     <header
       className={`fixed top-0 left-0 w-full z-30 flex items-center justify-between px-4 md:px-8 transition-all duration-500 ${
         isScrolled
-          ? 'backdrop-blur-[--blur-cg-glass] bg-surface-glass border-b border-border-hairline py-1 md:py-1'
+          ? 'bg-ink/75 backdrop-blur-xl border-b border-hud-line py-2 md:py-3'
           : isGptActive
           ? 'bg-linear-to-b from-ink to-transparent py-3 md:py-4'
           : 'bg-ink py-3 md:py-4'
@@ -173,14 +162,6 @@ const Header = () => {
         </nav>
       </div>
       <div className="flex items-center gap-2 md:gap-2">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={toggleTheme}
-          aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-          className="text-text-dark-muted hover:text-text-dark p-2 md:p-3 cursor-pointer transition-colors"
-        >
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-        </motion.button>
         {!user && location.pathname !== '/login' && (
           <Button
             asChild
@@ -207,7 +188,7 @@ const Header = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-36 backdrop-blur-[--blur-cg-glass] bg-surface-glass border-border-hairline rounded-panel shadow-cg-elevated p-1.5"
+                className="w-36 bg-ink-elevated/85 backdrop-blur-xl border border-hud-line shadow-cg-elevated p-1.5"
               >
                 {SUPPORTED_LANG.map((lang) => (
                   <DropdownMenuItem
@@ -244,7 +225,7 @@ const Header = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-34 md:w-42 backdrop-blur-[--blur-cg-glass] bg-surface-glass border-border-hairline rounded-panel shadow-cg-elevated p-1.5"
+              className="w-34 md:w-42 bg-ink-elevated/85 backdrop-blur-xl border border-hud-line shadow-cg-elevated p-1.5"
             >
               <DropdownMenuItem asChild className="gap-2 py-2 pl-3 text-text-dark focus:bg-white/10 focus:text-text-dark">
                 <Link to="/profile">
