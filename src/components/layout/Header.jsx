@@ -17,24 +17,14 @@ import Logo from './Logo'
 import { addUser, removeUser } from '../../store/userSlice'
 import { changeLanguages } from '../../store/configSlice'
 import usePreferencesSync from '../../hooks/usePreferencesSync'
-import {
-  Film,
-  Search,
-  User,
-  UserCog,
-  Settings,
-  LogOut,
-  Star,
-  Sun,
-  Moon,
-  Bookmark,
-} from 'lucide-react'
+import { User, LogOut, Sun, Moon, Bookmark, Globe, ChevronDown } from 'lucide-react'
 
 const Header = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch()
   const user = useSelector((store) => store.user)
+  const configLang = useSelector((store) => store.config.lang)
   // /home (AI search) and /movies (movie grid) are real, distinct routes —
   // no Redux view-state flag needed, the URL itself is the source of truth.
   const isGptActive = location.pathname === '/home'
@@ -119,12 +109,11 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const handleGptSearchClick = () => {
-    navigate(isGptActive ? '/movies' : '/home')
-  }
+  const currentLang =
+    SUPPORTED_LANG.find((lang) => lang.identifier === configLang) || SUPPORTED_LANG[0]
 
-  const handleLanguageChange = (e) => {
-    dispatch(changeLanguages(e.target.value))
+  const handleLanguageChange = (identifier) => {
+    dispatch(changeLanguages(identifier))
   }
 
   const navLinkClass = (active) =>
@@ -141,7 +130,7 @@ const Header = () => {
   const NavUnderline = () => (
     <motion.span
       layoutId="header-nav-underline"
-      className="absolute left-0 right-0 -bottom-1 h-0.5 bg-accent2 rounded-full"
+      className="absolute left-0 right-0 -bottom-1 h-0.5 bg-hud-cyan rounded-full"
       transition={{ type: 'spring', stiffness: 500, damping: 35 }}
     />
   )
@@ -193,49 +182,63 @@ const Header = () => {
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </motion.button>
         {!user && location.pathname !== '/login' && (
-          <Button asChild variant="default" size="default" className="px-4">
+          <Button
+            asChild
+            variant="default"
+            size="default"
+            className="px-4 bg-hud-cyan text-ink hover:bg-hud-cyan-strong"
+          >
             <Link to="/login">Sign In</Link>
           </Button>
         )}
         {user && (
           <>
           {isGptActive && (
-            <select
-              className="appearance-none backdrop-blur-md bg-white/10 text-text-dark border border-white/20 text-xs md:text-sm py-1 md:py-1.5 px-3 md:pr-2 md:pl-5 rounded-lg cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent2 transition-all duration-300 hover:bg-white/20 shadow-cg-elevated"
-              onChange={handleLanguageChange}
-            >
-              {SUPPORTED_LANG.map((lang) => (
-                <option
-                  key={lang.identifier}
-                  value={lang.identifier}
-                  className="bg-ink-elevated text-text-dark"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="flex items-center gap-1 text-text-dark-muted hover:text-text-dark text-xs md:text-sm px-2.5 py-2 md:py-2.5 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-cyan rounded-lg"
+                  aria-label="Change search language"
                 >
-                  {lang.name}
-                </option>
-              ))}
-            </select>
+                  <Globe size={16} />
+                  <span className="hidden sm:inline">{currentLang.name}</span>
+                  <ChevronDown size={12} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-36 backdrop-blur-[--blur-cg-glass] bg-surface-glass border-border-hairline rounded-panel shadow-cg-elevated p-1.5"
+              >
+                {SUPPORTED_LANG.map((lang) => (
+                  <DropdownMenuItem
+                    key={lang.identifier}
+                    onClick={() => handleLanguageChange(lang.identifier)}
+                    className={`py-2 pl-3 focus:bg-white/10 ${
+                      lang.identifier === currentLang.identifier
+                        ? 'text-hud-cyan-strong font-medium'
+                        : 'text-text-dark focus:text-text-dark'
+                    }`}
+                  >
+                    {lang.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
 
-          <button
-            className="relative group text-text-dark-muted hover:text-text-dark p-2 md:p-3 cursor-pointer transition-all duration-300"
-            onClick={handleGptSearchClick}
-            aria-label={isGptActive ? 'Browse movies' : 'Search with AI'}
-          >
-            {isGptActive ? <Film size={20} /> : <Search size={20} />}
-            <span className="absolute left-1 right-1 bottom-0 h-1 bg-accent2 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
-          </button>
+          <span className="hidden sm:block w-px h-5 bg-border-hairline" aria-hidden="true" />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <motion.button
                 whileTap={{ scale: 0.92 }}
-                className="flex items-center space-x-1 md:space-x-2 cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2"
+                className="flex items-center space-x-1 md:space-x-2 cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-cyan"
                 aria-label="Open profile menu"
               >
                 <img
                   src={user.photo}
                   alt=""
-                  className="w-6.5 h-6.5 md:w-8 md:h-8 rounded-lg object-cover border border-border-hairline transition-shadow hover:shadow-[0_0_0_2px_var(--color-accent2-glow)]"
+                  className="w-6.5 h-6.5 md:w-8 md:h-8 rounded-lg object-cover border border-border-hairline transition-shadow hover:shadow-[0_0_0_2px_var(--color-hud-cyan-glow)]"
                 />
               </motion.button>
             </DropdownMenuTrigger>
@@ -254,18 +257,6 @@ const Header = () => {
                   <Bookmark size={14} />
                   Watchlist
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 py-2 pl-3 text-text-dark focus:bg-white/10 focus:text-text-dark">
-                <UserCog size={14} />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 py-2 pl-3 text-accent2 focus:bg-white/10 focus:text-accent2">
-                <Star size={14} />
-                Premium
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 py-2 pl-3 text-text-dark focus:bg-white/10 focus:text-text-dark">
-                <Settings size={14} />
-                Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
