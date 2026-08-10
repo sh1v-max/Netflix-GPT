@@ -380,7 +380,7 @@ const DetailPage = () => {
           <div className="md:col-span-2">
             <SectionEyebrow icon={FileText}>Overview</SectionEyebrow>
             <p
-              className={`text-text-dark-muted text-sm md:text-base leading-relaxed transition-all duration-300 ${
+              className={`text-text-dark-muted text-sm md:text-base leading-relaxed text-justify transition-all duration-300 ${
                 overviewIsLong && !overviewExpanded ? 'line-clamp-4' : ''
               }`}
             >
