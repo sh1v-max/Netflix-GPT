@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { motion } from 'motion/react'
 import {
@@ -251,6 +251,24 @@ const DetailPage = () => {
           the way a minimal cinematic hero should read. */}
       <div className="relative w-full h-dvh flex items-end">
         <div className="absolute inset-0 bg-linear-to-t from-ink/95 via-ink/25 to-transparent pointer-events-none" />
+
+        <nav
+          aria-label="Breadcrumb"
+          className="absolute top-0 left-0 right-0 z-10 pt-20 md:pt-24 px-6 md:px-12 lg:px-16 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide text-text-dark-muted"
+        >
+          <Link to="/home" className="hover:text-hud-cyan-strong transition-colors">
+            Home
+          </Link>
+          <ChevronRight size={12} className="shrink-0" />
+          <Link
+            to={mediaType === 'tv' ? '/shows' : '/movies'}
+            className="hover:text-hud-cyan-strong transition-colors"
+          >
+            {mediaType === 'tv' ? 'TV Shows' : 'Movies'}
+          </Link>
+          <ChevronRight size={12} className="shrink-0" />
+          <span className="text-hud-cyan-strong truncate max-w-[40vw]">{title}</span>
+        </nav>
 
         {/* Centered over the backdrop, like a video player's own play
             affordance, rather than a small icon tucked into the action row.

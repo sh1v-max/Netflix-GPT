@@ -2029,6 +2029,27 @@ change, so there wasn't a UI difference to check anyway.
 
 ---
 
+### 2.25 — DetailPage: breadcrumbs
+
+Added a small breadcrumb nav (`Home / Movies / {Title}` or `Home / TV
+Shows / {Title}`) to the top-left of the hero, below the fixed `Header`
+(`pt-20 md:pt-24` clears it). `Home` links to `/home` (the logged-in
+AI-search landing — `/` itself redirects logged-in users away, and this
+route is auth-gated, so `/home` is always the correct target). The
+middle crumb links to `/movies` or `/shows` based on `mediaType` — the
+canonical catalog page for that media type, regardless of whether the
+user actually arrived via `/movies`, `/anime`, or `/discover` (none of
+which are tracked as a distinct "came from" state); the final crumb is
+the title itself, non-interactive, truncated at `max-w-[40vw]` for long
+titles. Styled to match the page's existing `font-mono` uppercase/
+`hud-cyan` language (`ChevronRight` separators, already imported for
+`RowNavButtons`).
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18
+warnings). Visual check skipped per the user's standing instruction.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).
