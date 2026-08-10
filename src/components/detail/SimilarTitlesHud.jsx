@@ -61,7 +61,7 @@ const SimilarTitlesHud = ({ movies, mediaType = 'movie' }) => {
         initial="hidden"
         animate="show"
         variants={stagger}
-        className="flex gap-3 md:gap-4 overflow-x-scroll no-scrollbar scroll-smooth"
+        className="flex gap-3 md:gap-4 overflow-x-scroll no-scrollbar scroll-smooth pt-2"
       >
         {movies.map((movie) => (
           <motion.div key={movie.id} variants={fadeUp} className="shrink-0">

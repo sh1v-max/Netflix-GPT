@@ -26,7 +26,7 @@ const CastGrid = forwardRef(({ cast, getSubtitle = (member) => member.character 
         initial="hidden"
         animate="show"
         variants={stagger}
-        className="flex gap-4 overflow-x-scroll no-scrollbar scroll-smooth pb-2"
+        className="flex gap-4 overflow-x-scroll no-scrollbar scroll-smooth pt-2 pb-2"
       >
         {cast.map((member) => (
           <motion.div
