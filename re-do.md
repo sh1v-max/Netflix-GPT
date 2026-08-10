@@ -1363,6 +1363,82 @@ missing optional section.
 
 ---
 
+### 2.13 — DetailPage reskin to "Sci-Fi HUD / Data Console"
+
+`/movies`, `/shows`, `/anime`, and `/discover` all shared the v3 HUD look
+by 2.11; `DetailPage.jsx` was the one page left on the older v2
+"glass panel" look (deliberately, per 2.12's note that "a detail page and
+a catalog page are different jobs") — but with every catalog page on-theme,
+clicking through from any of them into a title now read as a jarring style
+switch. This round is a visual reskin only: same data, same functional
+behavior (video trailer autoplay, rating/watchlist controls, taste-match,
+overview expand/collapse, similar-titles scroll) — re-chromed with the HUD
+tokens already defined in `index.css` from 2.8, nothing new added there.
+
+- [x] Root wrapped in `theme-dark-scope` (matches `MediaConsole.jsx`'s
+      root), for consistency with the other three console pages.
+- [x] Hero metadata card swapped from `bg-surface-glass`/`rounded-panel`
+      to `HudFrame` (bracket corners), with a `Database`-icon eyebrow
+      ("CINEGRAPH // TITLE RECORD") mirroring `ConsoleHeader`'s own.
+- [x] Metadata row (year/runtime/certification/rating/taste-match) moved
+      to `font-mono`; certification badge border `border-hud-line`;
+      tagline/"Read more" link `text-accent2` → `text-hud-cyan-strong`
+      (`RatingControl`/`WatchlistButton` keep their own established
+      `accent`/`accent2` colors completely untouched — same precedent as
+      `FilterPanelHud`'s `variant="hud"`).
+- [x] Genre chips: pill → bracket-style (`font-mono` uppercase,
+      `border-hud-line`, no fill), matching `PresetChips`'s visual family.
+      Keyword chips (2.12) stay a visually quieter secondary tier.
+- [x] New `SectionEyebrow` helper (icon + `text-hud-cyan` + `font-mono`
+      uppercase tracking-wide label) replaces the plain
+      `font-display text-lg font-semibold` headers on every section
+      (Overview, Where to Watch, Details, Cast, Crew, More Like This) —
+      no box/frame around body content, bracket panels stay reserved for
+      the hero card only.
+- [x] Collection banner reskinned as a slim HUD strip (`Layers` icon +
+      "PART OF COLLECTION" eyebrow, `border-hud-line` top/bottom).
+- [x] Details `<dl>` converted into a proper `font-mono` label:value data
+      readout (`text-hud-cyan-strong` values), the same visual language
+      as `ConsoleHeader`'s "Results:"/"Mode:" stat line.
+- [x] `md:border-l md:border-hud-line/20 md:pl-8` divider added between
+      the Overview and Where-to-Watch/Details columns.
+- [x] `CastGrid.jsx` — hover ring `accent2` → `hud-cyan`
+      (`group-hover:border-hud-cyan/50` +
+      `shadow-[...var(--color-hud-cyan-glow)]`), subtitle (character/job)
+      text switched to `font-mono`. `getSubtitle` prop contract (2.12)
+      unchanged. Avatars stay circular (people, not database records).
+- [x] New `src/components/detail/SimilarTitlesHud.jsx` — HUD sibling to
+      `MovieList.jsx`, same horizontal-scroll behavior but built on
+      `MovieCardHud` tiles (bracket corners, persistent rating/year/genre
+      readout — the same tile every catalog page uses) instead of
+      `MovieCard`'s hover-gated one. Builds its own `genreMap` via
+      `useGenres(mediaType)`. Replaces `<MovieList title="More Like
+      This".../>` in `DetailPage.jsx` only — **`MovieList.jsx` and
+      `MovieCard.jsx` are untouched**, still depended on by
+      `GptMovieSuggestions.jsx` (AI search results), `Watchlist.jsx`, and
+      `Profile.jsx`. Mixing a HUD variant into a shared component via
+      conditionals was already explicitly rejected as a pattern in the
+      original Movies HUD plan — `MovieCardHud` is a sibling file, not a
+      variant prop, for exactly this reason, and `SimilarTitlesHud`
+      follows the same precedent.
+- [x] Nothing added to `index.css` — every token/class used
+      (`hud-panel`, `hud-corner*`, `--color-hud-cyan*`, `--color-hud-line`,
+      `font-mono`) already existed from 2.8. No routing, hook, or Redux
+      changes.
+
+**Verified**: build/lint clean (0 errors, same pre-existing 18 warnings).
+Runtime-checked via `browser-automation` using the TEMP-DEBUG pattern in
+`Header.jsx` (reverted cleanly, `grep -n "TEMP-DEBUG"` exit 1 afterward):
+`/title/movie/862` (Toy Story) — bracket-corner hero card, HUD eyebrow,
+mono uppercase genre chips, cyan Details readout, and a "More Like This"
+row now rendering `MovieCardHud` tiles identical to the catalog pages.
+`/title/tv/1399` (Game of Thrones) — tv path reskinned correctly, no
+collection/budget section. `/watchlist` spot-checked (loads with 0
+console errors) to confirm `MovieCard`/`MovieList` — used elsewhere —
+were unaffected by the new sibling component.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).

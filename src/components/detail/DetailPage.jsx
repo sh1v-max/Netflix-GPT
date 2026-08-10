@@ -1,13 +1,25 @@
 import React, { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { motion, AnimatePresence } from 'motion/react'
-import { Star, Sparkles, ChevronDown } from 'lucide-react'
+import { motion } from 'motion/react'
+import {
+  Star,
+  Sparkles,
+  ChevronDown,
+  Database,
+  FileText,
+  Tv,
+  Info,
+  Users,
+  Clapperboard,
+  Layers,
+} from 'lucide-react'
 import Header from '../layout/Header'
 import Footer from '../layout/Footer'
 import VideoBackground from '../browse/VideoBackground'
-import MovieList from '../shared/MovieList'
+import SimilarTitlesHud from './SimilarTitlesHud'
 import CastGrid from './CastGrid'
+import HudFrame from '../movies/HudFrame'
 import { Skeleton } from '@/components/ui/skeleton'
 import useMediaDetails from '../../hooks/useMediaDetails'
 import useCredits from '../../hooks/useCredits'
@@ -18,6 +30,17 @@ import WatchlistButton from '../shared/WatchlistButton'
 import { mediaDocId } from '../../utils/firestorePaths'
 import { BACKDROP_CDN_URL, IMG_CDN_URL } from '../../utils/constant'
 import { EASE } from '@/lib/motion'
+
+// Small reusable HUD section eyebrow — icon + font-mono uppercase label,
+// same visual family as ConsoleHeader's own eyebrow (Database icon +
+// eyebrowLabel). Used for every section heading on this page instead of
+// the old plain `font-display text-lg font-semibold` headers.
+const SectionEyebrow = ({ icon: Icon, children }) => (
+  <div className="flex items-center gap-2 mb-3 text-hud-cyan">
+    <Icon size={14} />
+    <span className="font-mono text-[11px] uppercase tracking-[0.15em]">{children}</span>
+  </div>
+)
 
 const OVERVIEW_TRUNCATE_LENGTH = 260
 // Curated, priority-ordered job list for the Crew section — the full
@@ -87,7 +110,7 @@ const DetailPage = () => {
 
   if (!details) {
     return (
-      <div className="min-h-screen bg-ink">
+      <div className="theme-dark-scope min-h-screen bg-ink">
         <Header />
         <Skeleton className="h-[55vh] md:h-[70vh] w-full rounded-none" />
         <div className="max-w-5xl mx-auto px-6 md:px-12 py-8 md:py-12 space-y-3">
@@ -162,7 +185,7 @@ const DetailPage = () => {
   const hasDetailsPanel = Boolean(details.status || details.original_language || budget || revenue)
 
   return (
-    <div className="min-h-screen bg-ink text-text-dark flex flex-col">
+    <div className="theme-dark-scope min-h-screen bg-ink text-text-dark flex flex-col">
       <Header />
 
       <main className="flex-1">
@@ -199,9 +222,16 @@ const DetailPage = () => {
               />
             )}
 
-            <div className="bg-surface-glass backdrop-blur-[--blur-cg-glass] border border-border-hairline rounded-panel shadow-cg-elevated p-4 md:p-6 max-w-2xl">
+            <HudFrame className="p-4 md:p-6 max-w-2xl">
+              <div className="flex items-center gap-2 mb-2 text-hud-cyan">
+                <Database size={13} />
+                <span className="font-mono text-[10px] uppercase tracking-[0.15em]">
+                  Cinegraph // Title Record
+                </span>
+              </div>
+
               {details.tagline && (
-                <p className="text-accent2 text-sm md:text-base italic mb-2">
+                <p className="text-hud-cyan-strong text-sm md:text-base italic mb-2">
                   {details.tagline}
                 </p>
               )}
@@ -209,7 +239,7 @@ const DetailPage = () => {
                 {title}
               </h1>
 
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm text-text-dark-muted mb-3">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs md:text-sm text-text-dark-muted mb-3">
                 {year && <span>{year}</span>}
                 {runtime && (
                   <>
@@ -220,7 +250,7 @@ const DetailPage = () => {
                 {certification && (
                   <>
                     <span>&middot;</span>
-                    <span className="text-[11px] md:text-xs border border-border-hairline rounded px-1.5 py-0.5 font-medium">
+                    <span className="text-[11px] md:text-xs border border-hud-line rounded px-1.5 py-0.5 font-medium">
                       {certification}
                     </span>
                   </>
@@ -237,7 +267,7 @@ const DetailPage = () => {
                 {tasteMatch !== null && (
                   <>
                     <span>&middot;</span>
-                    <span className="inline-flex items-center gap-1 text-accent2 font-medium">
+                    <span className="inline-flex items-center gap-1 text-hud-cyan-strong font-medium">
                       <Sparkles size={13} />
                       {tasteMatch}% match for you
                     </span>
@@ -246,7 +276,7 @@ const DetailPage = () => {
               </div>
 
               {(directorNames.length > 0 || creatorNames.length > 0) && (
-                <p className="text-xs md:text-sm text-text-dark-muted mb-3">
+                <p className="font-mono text-xs md:text-sm text-text-dark-muted mb-3">
                   {mediaType === 'movie' ? 'Directed by ' : 'Created by '}
                   <span className="text-text-dark">
                     {(mediaType === 'movie' ? directorNames : creatorNames).join(', ')}
@@ -259,7 +289,7 @@ const DetailPage = () => {
                   {details.genres.map((genre) => (
                     <span
                       key={genre.id}
-                      className="text-xs bg-white/10 text-text-dark px-3 py-1 rounded-full"
+                      className="font-mono text-[10px] uppercase tracking-wide border border-hud-line text-text-dark px-2.5 py-1"
                     >
                       {genre.name}
                     </span>
@@ -277,14 +307,14 @@ const DetailPage = () => {
                 />
                 <WatchlistButton mediaType={mediaType} id={id} size={16} />
               </div>
-            </div>
+            </HudFrame>
           </div>
         </motion.div>
       </div>
 
       {/* Collection banner */}
       {collection && (
-        <div className="relative w-full h-20 md:h-28 overflow-hidden">
+        <div className="relative w-full h-20 md:h-28 overflow-hidden border-y border-hud-line">
           {collection.backdrop_path && (
             <img
               src={BACKDROP_CDN_URL + collection.backdrop_path}
@@ -294,10 +324,14 @@ const DetailPage = () => {
             />
           )}
           <div className="absolute inset-0 bg-ink/70" />
-          <div className="relative max-w-5xl mx-auto px-6 md:px-12 h-full flex items-center">
-            <p className="text-sm md:text-base text-text-dark">
-              Part of <span className="font-semibold">{collection.name}</span>
-            </p>
+          <div className="relative max-w-5xl mx-auto px-6 md:px-12 h-full flex flex-col justify-center gap-1">
+            <div className="flex items-center gap-2 text-hud-cyan">
+              <Layers size={12} />
+              <span className="font-mono text-[10px] uppercase tracking-[0.15em]">
+                Part of Collection
+              </span>
+            </div>
+            <p className="font-display text-sm md:text-base text-text-dark">{collection.name}</p>
           </div>
         </div>
       )}
@@ -305,7 +339,7 @@ const DetailPage = () => {
       {/* Overview + where to watch */}
       <div className="max-w-5xl mx-auto px-6 md:px-12 py-8 md:py-12 grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
-          <h2 className="font-display text-lg font-semibold mb-3">Overview</h2>
+          <SectionEyebrow icon={FileText}>Overview</SectionEyebrow>
           <p
             className={`text-text-dark-muted text-sm md:text-base leading-relaxed transition-all duration-300 ${
               overviewIsLong && !overviewExpanded ? 'line-clamp-4' : ''
@@ -316,7 +350,7 @@ const DetailPage = () => {
           {overviewIsLong && (
             <button
               onClick={() => setOverviewExpanded((v) => !v)}
-              className="mt-2 inline-flex items-center gap-1 text-accent2 text-sm font-medium hover:underline cursor-pointer"
+              className="mt-2 inline-flex items-center gap-1 text-hud-cyan-strong text-sm font-medium hover:underline cursor-pointer"
             >
               {overviewExpanded ? 'Show less' : 'Read more'}
               <motion.span
@@ -333,7 +367,7 @@ const DetailPage = () => {
               {keywords.slice(0, 12).map((kw) => (
                 <span
                   key={kw.id}
-                  className="text-[11px] md:text-xs text-text-dark-muted bg-white/5 border border-border-hairline px-2.5 py-1 rounded-full"
+                  className="font-mono text-[10px] text-text-dark-muted bg-white/5 border border-border-hairline px-2.5 py-1"
                 >
                   {kw.name}
                 </span>
@@ -342,10 +376,8 @@ const DetailPage = () => {
           )}
         </div>
 
-        <div>
-          <h2 className="font-display text-lg font-semibold mb-3">
-            Where to watch
-          </h2>
+        <div className="md:border-l md:border-hud-line/20 md:pl-8">
+          <SectionEyebrow icon={Tv}>Where to Watch</SectionEyebrow>
           {streamProviders?.length > 0 ? (
             <motion.div
               initial="hidden"
@@ -374,32 +406,32 @@ const DetailPage = () => {
 
           {hasDetailsPanel && (
             <div className="mt-8">
-              <h2 className="font-display text-lg font-semibold mb-3">Details</h2>
-              <dl className="space-y-2 text-sm">
+              <SectionEyebrow icon={Info}>Details</SectionEyebrow>
+              <dl className="space-y-2">
                 {details.status && (
-                  <div className="flex justify-between gap-4">
+                  <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
                     <dt className="text-text-dark-muted">Status</dt>
-                    <dd className="text-text-dark text-right">{details.status}</dd>
+                    <dd className="text-hud-cyan-strong text-right">{details.status}</dd>
                   </div>
                 )}
                 {details.original_language && (
-                  <div className="flex justify-between gap-4">
+                  <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
                     <dt className="text-text-dark-muted">Original language</dt>
-                    <dd className="text-text-dark text-right uppercase">
+                    <dd className="text-hud-cyan-strong text-right">
                       {details.original_language}
                     </dd>
                   </div>
                 )}
                 {budget && (
-                  <div className="flex justify-between gap-4">
+                  <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
                     <dt className="text-text-dark-muted">Budget</dt>
-                    <dd className="text-text-dark text-right">{budget}</dd>
+                    <dd className="text-hud-cyan-strong text-right">{budget}</dd>
                   </div>
                 )}
                 {revenue && (
-                  <div className="flex justify-between gap-4">
+                  <div className="flex justify-between gap-4 font-mono text-[11px] uppercase tracking-wide">
                     <dt className="text-text-dark-muted">Revenue</dt>
-                    <dd className="text-text-dark text-right">{revenue}</dd>
+                    <dd className="text-hud-cyan-strong text-right">{revenue}</dd>
                   </div>
                 )}
               </dl>
@@ -411,7 +443,7 @@ const DetailPage = () => {
       {/* Cast */}
       {credits?.cast?.length > 0 && (
         <div className="max-w-5xl mx-auto px-6 md:px-12 pb-8 md:pb-12">
-          <h2 className="font-display text-lg font-semibold mb-4">Cast</h2>
+          <SectionEyebrow icon={Users}>Cast</SectionEyebrow>
           <CastGrid cast={credits.cast} />
         </div>
       )}
@@ -419,17 +451,13 @@ const DetailPage = () => {
       {/* Crew */}
       {crewForGrid.length > 0 && (
         <div className="max-w-5xl mx-auto px-6 md:px-12 pb-8 md:pb-12">
-          <h2 className="font-display text-lg font-semibold mb-4">Crew</h2>
+          <SectionEyebrow icon={Clapperboard}>Crew</SectionEyebrow>
           <CastGrid cast={crewForGrid} getSubtitle={(member) => member.job} />
         </div>
       )}
 
       {/* Similar titles */}
-      {similar?.length > 0 && (
-        <div className="pb-12">
-          <MovieList title="More Like This" movies={similar} mediaType={mediaType} />
-        </div>
-      )}
+      <SimilarTitlesHud movies={similar} mediaType={mediaType} />
       </main>
 
       <Footer />

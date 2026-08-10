@@ -85,9 +85,15 @@ netflixgpt/
 │   │   │                       Japanese language, movie/tv toggle
 │   │   ├── detail/              DetailPage.jsx (hero + collection banner
 │   │   │                       + overview/keywords + where-to-watch +
-│   │   │                       details panel + cast/crew) + CastGrid.jsx
-│   │   │                       (shared cast/crew grid, subtitle field
-│   │   │                       swappable via a getSubtitle prop)
+│   │   │                       details panel + cast/crew), now on the
+│   │   │                       HUD theme (HudFrame hero card, font-mono
+│   │   │                       data readouts, SectionEyebrow headers) +
+│   │   │                       CastGrid.jsx (shared cast/crew grid,
+│   │   │                       subtitle field swappable via a
+│   │   │                       getSubtitle prop, hud-cyan hover ring) +
+│   │   │                       SimilarTitlesHud.jsx ("More Like This" —
+│   │   │                       MovieCardHud tiles, sibling to
+│   │   │                       ../shared/MovieList, not a shared variant)
 │   │   ├── shared/              MovieCard, MovieList, RatingControl — reused
 │   │   │                       everywhere a poster or a rating appears
 │   │   └── gpt/                 GptSearch, GptSearchBar, GptMovieSuggestions
@@ -408,10 +414,14 @@ movie/tv.
 DetailPage enrichment (keywords, collection banner, full crew,
 certifications, budget/revenue), flagged here as the natural fast-follow
 once all four catalog pages shared the HUD console, is now done (see the
-"DetailPage enrichment" note under §6/§9 below) — `DetailPage.jsx` keeps
-its pre-existing card/gradient hero style, not the HUD console; a detail
-page and a catalog page are different jobs, so the two were never meant
-to converge visually.
+"DetailPage enrichment" note under §6/§9 below). `DetailPage.jsx` was
+then also reskinned onto the same HUD design tokens (`HudFrame` hero
+card, `font-mono` data readouts, bracket-style genre chips, a
+`SectionEyebrow` header pattern reused across every section) — see the
+component tree in §3 above and the `re-do.md` 2.13 entry for the full
+list of visual moves. It's still a fundamentally different page shape
+than the catalog consoles (a hero + stacked content sections, not a
+filterable grid), just no longer on the older v2 "glass panel" look.
 
 ---
 
@@ -502,12 +512,13 @@ npx firebase deploy --only hosting,firestore:rules   # deploy
 Watchlist (2.4), profile computation (2.5), the Taste Profile page
 (2.6), the server-side move of the GPT call (2.7, ad hoc — see §9),
 the `/movies` "Sci-Fi HUD" rebuild (2.8, ad hoc — see §8), its rollout
-to `/shows` (2.9), `/anime` (2.10), and `/discover` (2.11), and
-DetailPage enrichment (2.12 — keywords, collection banner, full crew,
-certifications, budget/revenue) are all done — every media-browsing
-page (`/movies`, `/shows`, `/anime`, `/discover`) shares
-`MediaConsole.jsx`, and `DetailPage.jsx` now surfaces effectively
-everything TMDB returns for a title. What's left: personalized AI
+to `/shows` (2.9), `/anime` (2.10), and `/discover` (2.11), DetailPage
+enrichment (2.12 — keywords, collection banner, full crew,
+certifications, budget/revenue), and the DetailPage HUD reskin (2.13)
+are all done — every media-browsing page (`/movies`, `/shows`, `/anime`,
+`/discover`) shares `MediaConsole.jsx`, and `DetailPage.jsx` both
+surfaces effectively everything TMDB returns for a title and matches the
+same visual language as the catalog pages. What's left: personalized AI
 recommendations (prompt injection using the taste profile, "why this
 was picked" captions, "For You" rows) — see `re-do.md` Phase 3 for the
 concrete, in-order plan.
