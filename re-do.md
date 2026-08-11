@@ -2096,6 +2096,51 @@ as described above.
 
 ---
 
+### 2.27 — Avatar presets restyled, custom upload moved to Cloudinary
+
+User reported the preset avatar style "looks too basic" and that
+uploading a custom avatar "is not working," asking to fix both.
+
+- [x] **Preset style**: `src/utils/avatar.jsx`'s `PRESET_AVATARS` switched
+      DiceBear's style path from `avataaars` (cartoon people) to `glass`
+      (abstract translucent gradient orbs) — same API, zero new
+      dependency, reads as small nebulas/planets that fit the space
+      theme instead of looking childish.
+- [x] **Upload bug — root cause**: custom uploads went through
+      `firebase/storage` (`uploadCustomAvatar` → `uploadBytes` →
+      `getDownloadURL`), and `storage.rules` was correctly written and
+      registered in `firebase.json`, but **Firebase Storage itself was
+      never provisioned on the live project** — confirmed via
+      `npx firebase deploy --only storage`, which failed with "Firebase
+      Storage has not been set up on project." As of late 2024, Google
+      requires the paid Blaze plan just to provision Storage at all
+      (there's no longer a Spark/free path), which the user didn't want
+      to take on for a personal project.
+- [x] **Fix — moved uploads to Cloudinary** instead of paying for Blaze:
+      user created a free Cloudinary account + an unsigned upload preset
+      (`cinegraph_avatars`, folder `avatars`). `avatar.jsx`'s
+      `uploadCustomAvatar(uid, file)` rewritten to `POST` a `FormData`
+      (file + `upload_preset` + `public_id: uid`) straight to
+      `https://api.cloudinary.com/v1_1/{cloud_name}/image/upload` from
+      the browser and return `secure_url` — no backend, no billing.
+      Cloud name/preset read from new `.env` vars
+      `VITE_CLOUDINARY_CLOUD_NAME` / `VITE_CLOUDINARY_UPLOAD_PRESET`
+      (same `VITE_`-prefixed, committed-`.env` convention already used
+      for the TMDB key — safe here since it's an unsigned preset, not a
+      secret). `AvatarPicker.jsx` needed no changes — same
+      `uploadCustomAvatar(uid, file)` call signature.
+- [x] **Cleanup**: removed the now-unused `getStorage` import/export
+      from `firebaseConfig.jsx`. `storage.rules` and the `storage` block
+      in `firebase.json` left in place but unused/undeployed (harmless,
+      documents intent if Storage is ever provisioned later).
+
+**Verified**: `npm run build` clean before and after the Cloudinary
+rewrite. Not runtime-checked in-browser this round (routine fix, per
+standing instruction to skip browser verification unless asked) — user
+to confirm the upload works live.
+
+---
+
 ## Phase 3 — AI Recommendation Layer
 
 Depends on Phase 2 existing (needs a profile to personalize against).

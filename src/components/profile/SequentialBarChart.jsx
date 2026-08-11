@@ -29,7 +29,7 @@ const SequentialBarChart = ({ data, valueSuffix = '' }) => {
                 transition={{ duration: 0.6, delay: i * 0.05, ease: EASE }}
                 className="h-full rounded-r-md"
                 style={{
-                  backgroundColor: `color-mix(in srgb, var(--color-accent2) ${intensity}%, transparent)`,
+                  backgroundColor: `color-mix(in srgb, var(--color-hud-cyan) ${intensity}%, transparent)`,
                 }}
               />
             </div>

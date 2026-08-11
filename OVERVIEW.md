@@ -237,14 +237,25 @@ since they aren't secret). Exports `app` (the Firebase App instance,
 shared by both Auth and Firestore) and `auth`.
 
 ### Storage
-Config also exports `storage` (`getStorage(app)`) from the same file.
-Used solely for custom avatar uploads — `src/utils/avatar.jsx`'s
-`uploadCustomAvatar(uid, file)` writes to a fixed path `avatars/{uid}/photo`
-(overwrites on re-upload, no per-upload file accumulation) and returns the
-download URL. Rules in `storage.rules`: public read (avatar URLs are
-embedded in plain `<img>` tags app-wide without auth headers), write
-restricted to the owning uid with a 5MB size cap and image-content-type
-check.
+Not used. Firebase Storage requires the paid Blaze plan to provision at
+all (as of late 2024, even to stay within its free tier), so custom
+avatar uploads use **Cloudinary** instead — see below. `storage.rules`
+and the `storage` block in `firebase.json` still exist in the repo but
+are unused/undeployed; `firebaseConfig.jsx` no longer imports
+`getStorage`.
+
+### Avatar uploads (Cloudinary, not Firebase)
+`src/utils/avatar.jsx`'s `uploadCustomAvatar(uid, file)` posts directly
+to Cloudinary's unsigned upload API
+(`https://api.cloudinary.com/v1_1/{cloud_name}/image/upload`) from the
+browser — no backend needed. Cloud name and upload preset are read from
+`VITE_CLOUDINARY_CLOUD_NAME` / `VITE_CLOUDINARY_UPLOAD_PRESET` in `.env`
+(safe to expose client-side: it's an unsigned preset scoped to this one
+use case, same trust level as the TMDB key already in the same file).
+`public_id` is fixed to the user's `uid`, so re-uploading overwrites in
+place instead of accumulating files. Preset avatars are unrelated to
+this — they're generated URLs from DiceBear's public API (`PRESET_AVATARS`
+in the same file, `glass` style), no upload/storage involved.
 
 ### Firestore
 Config in `src/utils/firestoreConfig.jsx` (exports `db`, built on the

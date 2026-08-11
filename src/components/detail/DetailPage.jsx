@@ -30,21 +30,7 @@ import WatchlistButton from '../shared/WatchlistButton'
 import { mediaDocId } from '../../utils/firestorePaths'
 import { BACKDROP_CDN_URL, IMG_CDN_URL } from '../../utils/constant'
 import { EASE } from '@/lib/motion'
-
-// Minimal section divider — icon + mono label + a thin hairline, instead of
-// a filled/bordered panel. Every "box" this page used to wrap content in
-// (HudFrame panels, glass cards) read as clutter once there were several of
-// them stacked down the page — a hairline rule does the same wayfinding job
-// with none of the visual weight.
-const SectionEyebrow = ({ icon: Icon, children, action }) => (
-  <div className="flex items-center justify-between gap-2 mb-4 pb-2 border-b border-hud-line/25">
-    <div className="flex items-center gap-2 text-hud-cyan">
-      <Icon size={13} />
-      <span className="font-mono text-[11px] uppercase tracking-[0.15em]">{children}</span>
-    </div>
-    {action}
-  </div>
-)
+import SectionEyebrow from '../shared/SectionEyebrow'
 
 // Prev/next scroll buttons for a horizontal-scroll row (Cast/Crew), placed
 // in the section header instead of a "More" toggle.

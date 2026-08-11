@@ -10,4 +10,4 @@ const Shows = () => (
   />
 )
 
-export default Shows 
+export default ShowsAdventurer + Lorelei + Pixel Art + Bottts  

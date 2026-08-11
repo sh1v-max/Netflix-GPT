@@ -14,16 +14,19 @@ import {
   ThumbsDown,
   Bookmark,
   Camera,
+  ChevronRight,
 } from 'lucide-react'
 import Header from '../layout/Header'
 import Footer from '../layout/Footer'
-import MovieCard from '../shared/MovieCard'
-import { Button } from '@/components/ui/button'
+import MovieCardHud from '../movies/MovieCardHud'
+import SectionEyebrow from '../shared/SectionEyebrow'
 import { Skeleton } from '@/components/ui/skeleton'
 import { auth } from '../../utils/firebaseConfig'
 import { addUser } from '../../store/userSlice'
 import useTasteProfile from '../../hooks/useTasteProfile'
 import useWatchlistDetails from '../../hooks/useWatchlistDetails'
+import useGenres from '../../hooks/useGenres'
+import { getReleaseYear } from '../../utils/constant'
 import SequentialBarChart from './SequentialBarChart'
 import AvatarPicker from './AvatarPicker'
 import { EASE } from '@/lib/motion'
@@ -48,13 +51,30 @@ const memberSince = (createdAt) => {
 }
 
 const StatTile = ({ icon, label, value }) => (
-  <div className="bg-ink-elevated rounded-panel border border-border-hairline p-4 md:p-5 flex items-center gap-3">
-    <div className="rounded-lg bg-bg-muted p-2 text-accent2 shrink-0">{icon}</div>
+  <div className="border border-hud-line p-4 md:p-5 flex items-center gap-3">
+    <div className="text-hud-cyan shrink-0">{icon}</div>
     <div className="min-w-0">
-      <p className="font-display text-xl md:text-2xl font-semibold leading-none">{value}</p>
-      <p className="text-text-dark-muted text-xs mt-1">{label}</p>
+      <p className="font-mono text-xl md:text-2xl font-semibold leading-none text-hud-cyan-strong">
+        {value}
+      </p>
+      <p className="font-mono text-[11px] text-text-dark-muted mt-1 uppercase tracking-wide">
+        {label}
+      </p>
     </div>
   </div>
+)
+
+const EmptyPanel = ({ icon, title, description }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, ease: EASE }}
+    className="flex flex-col items-center text-center py-14"
+  >
+    <div className="hud-panel mb-4 p-4 text-hud-cyan">{icon}</div>
+    <h3 className="font-mono text-sm uppercase tracking-wide mb-2">{title}</h3>
+    <p className="text-text-dark-muted text-sm max-w-sm px-6">{description}</p>
+  </motion.div>
 )
 
 const Profile = () => {
@@ -64,6 +84,11 @@ const Profile = () => {
   const navigate = useNavigate()
   const { profile, genreNameById } = useTasteProfile()
   const { items: watchlistItems, isLoading: watchlistLoading } = useWatchlistDetails(watchlist)
+  const movieGenres = useGenres('movie')
+  const tvGenres = useGenres('tv')
+  const genreMap = Object.fromEntries(
+    [...(movieGenres || []), ...(tvGenres || [])].map((g) => [g.id, g.name])
+  )
 
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(user?.name || '')
@@ -71,7 +96,7 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-ink text-text-dark flex flex-col">
+      <div className="theme-dark-scope min-h-screen bg-ink text-text-dark flex flex-col">
         <Header />
         <main className="flex-1" />
         <Footer />
@@ -118,11 +143,22 @@ const Profile = () => {
   const joined = memberSince(user.createdAt)
 
   return (
-    <div className="min-h-screen bg-ink text-text-dark flex flex-col">
+    <div className="theme-dark-scope min-h-screen bg-ink text-text-dark flex flex-col">
       <Header />
       <main className="flex-1">
-        <div className="pt-20 md:pt-28 pb-12 px-4 md:px-8 max-w-4xl mx-auto">
-          {/* Identity header */}
+        <div className="pt-24 md:pt-28 pb-12 px-4 md:px-8 max-w-4xl mx-auto">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-1.5 mb-6 font-mono text-[11px] uppercase tracking-wide text-text-dark-muted"
+          >
+            <Link to="/home" className="hover:text-hud-cyan-strong transition-colors">
+              Cinegraph
+            </Link>
+            <ChevronRight size={12} className="shrink-0" />
+            <span className="text-hud-cyan-strong">Profile</span>
+          </nav>
+
+          {/* Identity */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -138,7 +174,7 @@ const Profile = () => {
               <img
                 src={user.photo}
                 alt=""
-                className="w-full h-full rounded-full object-cover border border-border-hairline shadow-cg-elevated"
+                className="w-full h-full rounded-full object-cover border border-border-hairline transition-shadow group-hover:shadow-[0_0_0_2px_var(--color-hud-cyan-glow)]"
               />
               <span className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/50 flex items-center justify-center transition-colors">
                 <Camera size={18} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -155,12 +191,12 @@ const Profile = () => {
                       if (e.key === 'Enter') handleSaveName()
                       if (e.key === 'Escape') handleCancelEdit()
                     }}
-                    className="font-display text-xl md:text-2xl font-semibold bg-ink border border-border-hairline rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-accent2 min-w-0"
+                    className="font-display text-xl md:text-2xl font-semibold bg-ink border border-hud-line px-2 py-1 focus:outline-none focus:ring-2 focus:ring-hud-cyan min-w-0"
                   />
                   <button
                     onClick={handleSaveName}
                     aria-label="Save name"
-                    className="text-accent2 hover:text-accent2-strong cursor-pointer p-1"
+                    className="text-hud-cyan hover:text-hud-cyan-strong cursor-pointer p-1"
                   >
                     <Check size={18} />
                   </button>
@@ -180,7 +216,7 @@ const Profile = () => {
                   <button
                     onClick={() => setIsEditingName(true)}
                     aria-label="Edit name"
-                    className="text-text-dark-muted hover:text-accent2 cursor-pointer p-1 shrink-0"
+                    className="text-text-dark-muted hover:text-hud-cyan-strong cursor-pointer p-1 shrink-0"
                   >
                     <Pencil size={14} />
                   </button>
@@ -188,7 +224,7 @@ const Profile = () => {
               )}
               <p className="text-text-dark-muted text-sm truncate">{user.email}</p>
               {joined && (
-                <p className="text-text-dark-muted text-xs mt-1 flex items-center gap-1.5">
+                <p className="font-mono text-[11px] text-text-dark-muted mt-1 flex items-center gap-1.5">
                   <Calendar size={12} />
                   Member since {joined}
                 </p>
@@ -210,120 +246,110 @@ const Profile = () => {
           </motion.div>
 
           {/* Taste graph */}
-          <h2 className="font-display text-lg md:text-xl font-semibold mb-4">Your taste graph</h2>
-          {profile.totalRated === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: EASE }}
-              className="bg-ink-elevated rounded-panel border border-border-hairline flex flex-col items-center text-center py-16 mb-10"
-            >
-              <div className="mb-4 rounded-full bg-bg-muted p-4 text-accent2">
-                <Sparkles size={28} />
-              </div>
-              <h3 className="font-display text-lg font-semibold mb-2">Nothing to map yet</h3>
-              <p className="text-text-dark-muted text-sm max-w-sm px-6">
-                Like or dislike a few titles from any poster or detail page
-                — your taste graph builds itself from there.
-              </p>
-            </motion.div>
-          ) : (
-            <div className="mb-10">
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.1, ease: EASE }}
-                className="bg-ink-elevated rounded-panel border border-border-hairline p-5 md:p-6 mb-6"
-              >
-                <p className="text-sm md:text-base leading-relaxed">
+          <div className="mb-10">
+            <SectionEyebrow icon={Sparkles}>Taste Graph</SectionEyebrow>
+            {profile.totalRated === 0 ? (
+              <EmptyPanel
+                icon={<Sparkles size={26} />}
+                title="Nothing to map yet"
+                description="Like or dislike a few titles from any poster or detail page — your taste graph builds itself from there."
+              />
+            ) : (
+              <>
+                <p className="text-sm md:text-base leading-relaxed text-text-dark-muted mb-6">
                   {buildSummary(profile, genreNameById)}
                 </p>
-              </motion.div>
 
-              <div className="grid md:grid-cols-2 gap-6">
-                {genreChartData.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.15, ease: EASE }}
-                    className="bg-ink-elevated rounded-panel border border-border-hairline p-5 md:p-6"
-                  >
-                    <h3 className="font-display text-sm md:text-base font-semibold mb-4 uppercase tracking-wide text-text-dark-muted">
-                      Top genres
-                    </h3>
-                    <SequentialBarChart data={genreChartData} />
-                  </motion.div>
-                )}
+                <div className="grid md:grid-cols-2 gap-8">
+                  {genreChartData.length > 0 && (
+                    <div>
+                      <p className="font-mono text-[10px] uppercase tracking-wide text-text-dark-muted mb-3">
+                        Top Genres
+                      </p>
+                      <SequentialBarChart data={genreChartData} />
+                    </div>
+                  )}
 
-                {decadeChartData.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.2, ease: EASE }}
-                    className="bg-ink-elevated rounded-panel border border-border-hairline p-5 md:p-6"
-                  >
-                    <h3 className="font-display text-sm md:text-base font-semibold mb-4 uppercase tracking-wide text-text-dark-muted">
-                      By decade
-                    </h3>
-                    <SequentialBarChart data={decadeChartData} />
-                  </motion.div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Watchlist preview */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-lg md:text-xl font-semibold">Watchlist</h2>
-            {watchlistItems.length > 0 && (
-              <Link to="/watchlist" className="text-accent2 text-sm font-medium hover:underline">
-                View all
-              </Link>
+                  {decadeChartData.length > 0 && (
+                    <div>
+                      <p className="font-mono text-[10px] uppercase tracking-wide text-text-dark-muted mb-3">
+                        By Decade
+                      </p>
+                      <SequentialBarChart data={decadeChartData} />
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
-          {watchlistLoading ? (
-            <div className="flex gap-3 mb-10">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="w-24 md:w-32 aspect-2/3 rounded-lg shrink-0" />
-              ))}
-            </div>
-          ) : watchlistItems.length === 0 ? (
-            <p className="text-text-dark-muted text-sm mb-10">
-              Nothing saved yet — bookmark a title from any poster or detail
-              page to build your watchlist.
-            </p>
-          ) : (
-            <motion.div
-              initial="hidden"
-              animate="show"
-              variants={{ show: { transition: { staggerChildren: 0.03 } } }}
-              className="flex gap-3 overflow-x-auto no-scrollbar mb-10"
+
+          {/* Watchlist preview */}
+          <div className="mb-10">
+            <SectionEyebrow
+              icon={Bookmark}
+              action={
+                watchlistItems.length > 0 && (
+                  <Link
+                    to="/watchlist"
+                    className="font-mono text-[10px] uppercase tracking-wide text-hud-cyan-strong hover:underline"
+                  >
+                    View All
+                  </Link>
+                )
+              }
             >
-              {watchlistItems.slice(0, 8).map((item) => (
-                <motion.div
-                  key={`${item.media_type}-${item.id}`}
-                  variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-                  transition={{ duration: 0.3, ease: EASE }}
-                  className="shrink-0"
-                >
-                  <MovieCard
-                    id={item.id}
-                    posterPath={item.poster_path}
-                    title={item.title || item.name}
-                    mediaType={item.media_type}
-                    genreIds={item.genre_ids}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
+              Watchlist
+            </SectionEyebrow>
+            {watchlistLoading ? (
+              <div className="flex gap-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="w-24 md:w-32 aspect-2/3 rounded-none shrink-0" />
+                ))}
+              </div>
+            ) : watchlistItems.length === 0 ? (
+              <p className="text-text-dark-muted text-sm">
+                Nothing saved yet — bookmark a title from any poster or detail
+                page to build your watchlist.
+              </p>
+            ) : (
+              <motion.div
+                initial="hidden"
+                animate="show"
+                variants={{ show: { transition: { staggerChildren: 0.03 } } }}
+                className="flex gap-3 overflow-x-auto no-scrollbar"
+              >
+                {watchlistItems.slice(0, 8).map((item) => (
+                  <motion.div
+                    key={`${item.media_type}-${item.id}`}
+                    variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
+                    transition={{ duration: 0.3, ease: EASE }}
+                    className="shrink-0"
+                  >
+                    <MovieCardHud
+                      id={item.id}
+                      posterPath={item.poster_path}
+                      title={item.title || item.name}
+                      mediaType={item.media_type}
+                      genreIds={item.genre_ids}
+                      releaseYear={getReleaseYear(item)}
+                      voteAverage={item.vote_average}
+                      genreMap={genreMap}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </div>
 
           {/* Account actions */}
-          <div className="border-t border-border-hairline pt-6">
-            <Button onClick={handleSignOut} variant="destructive" className="gap-2">
+          <div className="border-t border-hud-line/25 pt-6">
+            <button
+              onClick={handleSignOut}
+              className="inline-flex items-center gap-2 border border-hud-line px-4 py-2 text-sm font-medium text-rust hover:bg-rust hover:text-text-dark transition-colors cursor-pointer"
+            >
               <LogOut size={16} />
               Sign Out
-            </Button>
+            </button>
           </div>
         </div>
       </main>
