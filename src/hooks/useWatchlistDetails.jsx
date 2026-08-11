@@ -3,9 +3,13 @@ import { API_OPTIONS, TMDB_BASE_URL } from '../utils/constant'
 
 // Watchlist docs only store { mediaType, mediaId } (same minimal shape as
 // ratings) — this fetches full details for each saved item so they can
-// render as real MovieCards, and normalizes the response to the
-// `genre_ids` shape MovieCard/MovieList already expect (TMDB's single-item
-// endpoints return `genres: [{id, name}]`, not a flat id array).
+// render as MovieCardHud tiles (the same persistent-data-readout tile every
+// catalog page uses), and normalizes the response to the `genre_ids` shape
+// MovieCardHud expects (TMDB's single-item endpoints return
+// `genres: [{id, name}]`, not a flat id array). Also carries through
+// `vote_average`/`release_date`/`first_air_date` for that tile's rating and
+// year readout — a single-item response already includes these, no extra
+// fetch needed.
 const useWatchlistDetails = (watchlist) => {
   const [items, setItems] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -37,6 +41,9 @@ const useWatchlistDetails = (watchlist) => {
         title: details.title,
         name: details.name,
         genre_ids: (details.genres || []).map((genre) => genre.id),
+        vote_average: details.vote_average,
+        release_date: details.release_date,
+        first_air_date: details.first_air_date,
       }
     }
 
