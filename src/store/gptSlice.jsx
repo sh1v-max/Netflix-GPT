@@ -7,12 +7,12 @@ import { createSlice } from "@reduxjs/toolkit";
 const gptSlice = createSlice({
   name: 'gpt',
   initialState: {
-    turns: [], // [{ query, movieNames, movieResults, reasons }]
+    turns: [], // [{ query, movieNames, mediaTypes, movieResults, reasons }]
   },
   reducers:{
     addGptMovieResult: (state, action) => {
-      const {query, movieNames, movieResults, reasons} = action.payload
-      state.turns.push({ query, movieNames, movieResults, reasons })
+      const {query, movieNames, mediaTypes, movieResults, reasons} = action.payload
+      state.turns.push({ query, movieNames, mediaTypes, movieResults, reasons })
     },
     clearGptConversation: (state) => {
       state.turns = []

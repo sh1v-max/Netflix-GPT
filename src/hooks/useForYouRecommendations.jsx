@@ -2,27 +2,17 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import useTasteProfile from './useTasteProfile'
 import { buildPersonalizedPrompt } from '../utils/buildPersonalizedPrompt'
-import { API_OPTIONS, GPT_PROXY_URL } from '../utils/constant'
+import { searchTitleTMDB } from '../utils/searchTitleTMDB'
+import { GPT_PROXY_URL } from '../utils/constant'
 import { setForYouResult } from '../store/forYouSlice'
 
 // Same floor as buildPersonalizedPrompt's own gate — below this there's no
-// real taste graph to recommend from, so the section just doesn't render
-// (see 3.3 in re-do.md: "needs a profile to personalize against").
-const MIN_RATINGS_FOR_FOR_YOU = 3
+// real taste graph to recommend from. Exported so ForYouRows can show
+// "X/N rated" progress instead of just a flat "not eligible yet" message.
+export const MIN_RATINGS_FOR_FOR_YOU = 3
 // Long enough that opening a few pages in one sitting doesn't refetch;
 // short enough that picks feel alive as new ratings come in over days.
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
-
-const searchMovieTMDB = async (movie) => {
-  const data = await fetch(
-    'https://api.themoviedb.org/3/search/movie?query=' +
-      encodeURIComponent(movie) +
-      '&include_adult=false&language=en-US&page=1',
-    API_OPTIONS
-  )
-  const json = await data.json()
-  return json.results
-}
 
 // No-query recommendations for the AI home's idle state — reuses the same
 // gpt-proxy-worker endpoint as a real search (no separate worker route),
@@ -65,19 +55,23 @@ const useForYouRecommendations = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             query:
-              "Recommend movies based purely on my taste profile below — I don't have a specific title or mood in mind right now.",
+              "Recommend movies or TV shows based purely on my taste profile below — I don't have a specific title or mood in mind right now.",
             profileSummary,
           }),
         })
         if (!proxyResponse.ok) throw new Error('For You request failed')
         const { results } = await proxyResponse.json()
         const movieNames = results.map((r) => r.name)
+        const mediaTypes = results.map((r) => (r.mediaType === 'tv' ? 'tv' : 'movie'))
         const reasons = results.map((r) => r.reason)
-        const movieResults = await Promise.all(movieNames.map((m) => searchMovieTMDB(m)))
+        const movieResults = await Promise.all(
+          movieNames.map((name, i) => searchTitleTMDB(name, mediaTypes[i]))
+        )
         if (!cancelled) {
           dispatch(
             setForYouResult({
               movieNames,
+              mediaTypes,
               movieResults,
               reasons,
               fetchedAt: Date.now(),
@@ -102,7 +96,7 @@ const useForYouRecommendations = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eligible, profileSignature])
 
-  return { ...cached, isLoading, error, eligible }
+  return { ...cached, isLoading, error, eligible, totalRated: profile.totalRated }
 }
 
 export default useForYouRecommendations

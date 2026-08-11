@@ -2359,6 +2359,69 @@ round (per standing instruction to skip browser verification unless
 asked) — worth a look at `/home` with an active search or 3+ ratings to
 confirm the row/card/hover behavior reads as intended.
 
+### 3.7 — Fix: ForYouRows flashed then vanished on failure
+User reported the "Personalized for you" section briefly showed its
+loading skeleton, then disappeared entirely with nothing in its place.
+Root cause investigated by hitting `gpt-proxy-worker` directly with curl:
+Gemini's free-tier daily quota (20 requests/day for `gemini-3.5-flash`)
+had been exhausted by the day's own testing/redeploys, so the request was
+failing fast with a 502 — not a code bug, but the failure was being
+swallowed (`console.error` only) instead of shown, so the section just
+went blank with no explanation.
+
+- [x] `useForYouRecommendations.jsx` gained an `error` state, set on any
+      caught failure and returned alongside the existing fields.
+- [x] `ForYouRows.jsx` renders a quiet inline message on `error` instead
+      of returning `null` — failures are now visible, not invisible.
+- [x] **Follow-up UX request, same conversation**: made the whole section
+      a persistent, always-mounted panel (`hud-panel` with the existing
+      `HudBadge`) instead of conditionally rendering different pieces —
+      it never appears/disappears now, only the content inside changes:
+      not-eligible-yet (`X/3 rated` progress), loading ("shouldn't take
+      more than 10 seconds"), the quiet error, or the actual picks. Moved
+      out from behind `GptSearch.jsx`'s `isIdle` gate so it's visible
+      below search results too, not just in the empty state.
+
+**Verified**: `npm run build` clean. Root cause confirmed directly via
+`curl` against the live worker (real 429/502 reproduced), not guessed.
+
+### 3.8 — Extend AI search + For You to TV shows (and anime)
+Both were movie-only — `gpt-proxy-worker`'s system prompt asked
+exclusively for movies, and the client only ever queried `/search/movie`.
+Anime in this app is just TV (or occasionally a movie) filtered by
+genre/keyword elsewhere (`Anime.jsx`), not its own TMDB category, so
+extending to TV covers it too — no anime-specific handling needed.
+
+- [x] `gpt-proxy-worker/src/index.js`: `GPT_QUERY` rewritten to ask for
+      movies **and** TV shows, with a `"mediaType":"movie"|"tv"` field per
+      result (previously just `{name, reason}`). Response is normalized
+      server-side (trim/lowercase, fallback to `"movie"`) in case the
+      model drifts from the exact two allowed values.
+- [x] New `src/utils/searchTitleTMDB.jsx` — routes to `/search/movie` or
+      `/search/tv` based on the classified `mediaType`; replaces the
+      movie-only `searchMovieTMDB` duplicated in both `GptSearch.jsx` and
+      `useForYouRecommendations.jsx` (extracted once both needed the same
+      routing logic, not left duplicated).
+  - [x] `gptSlice.jsx` / `forYouSlice.jsx`: turns/cache gained a
+        `mediaTypes` array alongside `movieNames`/`movieResults`/
+        `reasons`.
+  - [x] `pickBestGptMatches.jsx`: now takes `mediaTypes` and returns it
+        per item — `MovieCardHud`'s `mediaType` prop (used to build the
+        `/title/{mediaType}/{id}` link) comes from GPT's own
+        classification, not `movie.media_type`, since TMDB's
+        `/search/tv` and `/search/movie` results don't carry that field
+        themselves (only the multi-search endpoint does).
+  - [x] `GptMovieSuggestions.jsx` / `ForYouRows.jsx`: genre maps now merge
+        movie *and* TV genres (`useGenres('movie')` + `useGenres('tv')`,
+        same merge pattern `Watchlist.jsx` already used) so a TV result's
+        genre chip resolves correctly.
+
+**Verified**: `npm run build` clean. Worker redeployed (wrangler
+confirmed upload + live URL). **Not runtime-verified against a real
+Gemini response** — today's free-tier quota (20 req/day) was already
+exhausted before this round (see 3.7), so `mediaType` classification
+accuracy in practice is unconfirmed until the quota resets.
+
 ---
 
 ## Phase 4 — Polish & Professional Credibility

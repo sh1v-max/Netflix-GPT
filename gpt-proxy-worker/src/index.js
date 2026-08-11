@@ -2,7 +2,7 @@ const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/openai/chat
 const GEMINI_MODEL = 'gemini-3.5-flash'
 
 const GPT_QUERY =
-  'Act as a Movie Recommendation system. Suggest 10 movies for the query — the first one should be the movie in the query itself (or the closest real match if the query is not a title). If earlier turns are present in this conversation, treat the newest user message as a follow-up refinement of them (e.g. "more like the third one but shorter" refers to the 3rd item of the most recent list you returned) rather than a standalone query. Respond with ONLY a raw JSON array, no markdown code fences, no commentary, in this exact shape: [{"name":"Movie Title","reason":"one short sentence (under 15 words) on why this fits the query"}, ...]. Exactly 10 objects. The "reason" for the first object should explain why it matches the query; for the rest, why someone who wants the query would also like it.'
+  'Act as a Movie and TV Show Recommendation system — this includes anime, which counts as a TV show (or a movie, for standalone anime films) rather than its own category. Suggest 10 titles for the query, picking whichever of movie or TV fits each one best — the first one should be the title in the query itself (or the closest real match if the query is not a title). If earlier turns are present in this conversation, treat the newest user message as a follow-up refinement of them (e.g. "more like the third one but shorter" refers to the 3rd item of the most recent list you returned) rather than a standalone query. Respond with ONLY a raw JSON array, no markdown code fences, no commentary, in this exact shape: [{"name":"Title","mediaType":"movie or tv","reason":"one short sentence (under 15 words) on why this fits the query"}, ...]. Exactly 10 objects. "mediaType" must be exactly "movie" or "tv", lowercase. The "reason" for the first object should explain why it matches the query; for the rest, why someone who wants the query would also like it.'
 
 // Multi-turn refinement (3.5) — the client sends prior turns as
 // {query, names}; each becomes one user/assistant exchange in the chat
@@ -147,6 +147,14 @@ export default {
           headers: { ...headers, 'Content-Type': 'application/json' },
         })
       }
+
+      // Normalize mediaType defensively — the prompt asks for exactly
+      // "movie"/"tv" but nothing stops the model from drifting (extra
+      // whitespace, wrong case, "TV Show", omitting it entirely).
+      results = results.map((r) => {
+        const normalized = typeof r?.mediaType === 'string' ? r.mediaType.trim().toLowerCase() : ''
+        return { ...r, mediaType: normalized === 'tv' ? 'tv' : 'movie' }
+      })
 
       return new Response(JSON.stringify({ results }), {
         headers: { ...headers, 'Content-Type': 'application/json' },

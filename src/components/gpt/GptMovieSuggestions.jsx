@@ -32,19 +32,19 @@ const ThinkingRow = ({ label = 'Cinegraph is thinking...' }) => (
 // near-duplicate matches. Row heading echoes the query itself, like a
 // chat transcript, so scrolling back up still shows which turn is which.
 const Turn = ({ turn, genreMap, isLast }) => {
-  const items = pickBestGptMatches(turn.movieNames, turn.movieResults, turn.reasons)
+  const items = pickBestGptMatches(turn.movieNames, turn.movieResults, turn.reasons, turn.mediaTypes)
   if (items.length === 0) return null
 
   return (
     <div>
       <HudScrollRow title={`"${turn.query}"`}>
-        {items.map(({ movie, reason }) => (
+        {items.map(({ movie, reason, mediaType }) => (
           <MovieCardHud
-            key={movie.id}
+            key={`${mediaType}-${movie.id}`}
             id={movie.id}
             posterPath={movie.poster_path}
             title={movie.title || movie.name}
-            mediaType={movie.media_type || 'movie'}
+            mediaType={mediaType}
             genreIds={movie.genre_ids}
             releaseYear={getReleaseYear(movie)}
             voteAverage={movie.vote_average}
@@ -68,9 +68,14 @@ const Turn = ({ turn, genreMap, isLast }) => {
 const GptMovieSuggestions = ({ isSearching, error }) => {
   const turns = useSelector((store) => store.gpt.turns)
   const movieGenres = useGenres('movie')
+  const tvGenres = useGenres('tv')
   const genreMap = useMemo(
-    () => Object.fromEntries((movieGenres || []).map((g) => [g.id, g.name])),
-    [movieGenres]
+    () =>
+      Object.fromEntries([
+        ...(movieGenres || []).map((g) => [g.id, g.name]),
+        ...(tvGenres || []).map((g) => [g.id, g.name]),
+      ]),
+    [movieGenres, tvGenres]
   )
 
   if (turns.length === 0 && isSearching) return <ThinkingRow />

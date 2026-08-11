@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import lang from '../../utils/languageConstant'
-import { API_OPTIONS, GPT_PROXY_URL } from '../../utils/constant'
+import { GPT_PROXY_URL } from '../../utils/constant'
 import { addGptMovieResult, clearGptConversation } from '../../store/gptSlice'
 import { buildPersonalizedPrompt } from '../../utils/buildPersonalizedPrompt'
+import { searchTitleTMDB } from '../../utils/searchTitleTMDB'
 import useTasteProfile from '../../hooks/useTasteProfile'
 import GptMovieSuggestions from './GptMovieSuggestions'
 import GptSearchBar from './GptSearchBar'
@@ -25,17 +26,6 @@ const GptSearch = () => {
   const [query, setQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState('')
-
-  const searchMovieTMDB = async (movie) => {
-    const data = await fetch(
-      'https://api.themoviedb.org/3/search/movie?query=' +
-        encodeURIComponent(movie) +
-        '&include_adult=false&language=en-US&page=1',
-      API_OPTIONS
-    )
-    const json = await data.json()
-    return json.results
-  }
 
   // Each call is either the first search or a follow-up refinement
   // ("more like the third one but shorter") — prior turns ride along as
@@ -61,13 +51,16 @@ const GptSearch = () => {
       if (!proxyResponse.ok) throw new Error('No response from GPT')
       const { results } = await proxyResponse.json()
       const gptMovies = results.map((r) => r.name)
+      const mediaTypes = results.map((r) => (r.mediaType === 'tv' ? 'tv' : 'movie'))
       const reasons = results.map((r) => r.reason)
-      const promiseArray = gptMovies.map((movie) => searchMovieTMDB(movie))
-      const tmdbResults = await Promise.all(promiseArray)
+      const tmdbResults = await Promise.all(
+        gptMovies.map((name, i) => searchTitleTMDB(name, mediaTypes[i]))
+      )
       dispatch(
         addGptMovieResult({
           query: trimmed,
           movieNames: gptMovies,
+          mediaTypes,
           movieResults: tmdbResults,
           reasons,
         })
@@ -110,7 +103,10 @@ const GptSearch = () => {
         />
         <GptMovieSuggestions isSearching={isSearching} error={error} />
       </div>
-      {isIdle && <ForYouRows />}
+      {/* Always rendered, not gated by isIdle — a persistent shell (see
+          ForYouRows) so this section never appears/disappears depending
+          on whether there's an active search. */}
+      <ForYouRows />
     </div>
   )
 }

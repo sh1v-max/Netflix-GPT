@@ -9,6 +9,7 @@ const forYouSlice = createSlice({
   name: 'forYou',
   initialState: {
     movieNames: null,
+    mediaTypes: null,
     movieResults: null,
     reasons: null,
     fetchedAt: null,
@@ -16,8 +17,9 @@ const forYouSlice = createSlice({
   },
   reducers: {
     setForYouResult: (state, action) => {
-      const { movieNames, movieResults, reasons, fetchedAt, profileSignature } = action.payload
+      const { movieNames, mediaTypes, movieResults, reasons, fetchedAt, profileSignature } = action.payload
       state.movieNames = movieNames
+      state.mediaTypes = mediaTypes
       state.movieResults = movieResults
       state.reasons = reasons
       state.fetchedAt = fetchedAt
