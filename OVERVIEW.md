@@ -195,7 +195,7 @@ consistently.
 
 ## 5. State management (Redux Toolkit)
 
-Six slices, registered in `src/store/appStore.jsx` (`tv` was deleted in
+Seven slices, registered in `src/store/appStore.jsx` (`tv` was deleted in
 2.24 — `trailerVideo` was its only field, and once that moved into
 `details` the whole slice was dead):
 
@@ -205,7 +205,8 @@ Six slices, registered in `src/store/appStore.jsx` (`tv` was deleted in
 | `movies` | `popularMovies` only, used by `Home.jsx`'s marketing grid (`trailerVideo` moved out to `details` in 2.24) | `usePopularMovies` |
 | `details` | `mediaDetails`, `credits`, `similar`, `watchProviders`, `genres`, `trailerVideo` (2.24) — all keyed by `${mediaType}_${id}` (genres keyed by mediaType alone) | `useMediaDetails`, `useCredits`, `useSimilarTitles`, `useWatchProviders`, `useGenres`, `useTrailer` |
 | `preferences` | `ratings` (`{ [docId]: 'like' \| 'dislike' }`), `ratedGenres`/`ratedYears` (`{ [docId]: ... }` — mirror `ratings`, power the Detail page's taste-compatibility read and the Taste Profile page), `watchlist` (`{ [docId]: true }`), `isLoaded` | `usePreferencesSync` (two live Firestore `onSnapshot` listeners — ratings, watchlist) |
-| `gpt` | `movieNames`, `movieResults` | `GptSearchBar` / `GptSearch.jsx`'s `runSearch` |
+| `gpt` | `turns: []` — one entry per search/follow-up (3.5), each `{query, movieNames, movieResults, reasons}`. Pushed, not overwritten, so a follow-up appends to the conversation | `GptSearch.jsx`'s `runSearch`, cleared via `clearGptConversation` |
+| `forYou` | No-query recommendations (3.3): `movieNames`, `movieResults`, `reasons`, `fetchedAt`, `profileSignature` (cache-freshness key) | `useForYouRecommendations` |
 | `config` | `lang` (defaults `'en'`) | `Header`'s language selector (only shown in AI-search mode) |
 
 **Caching pattern**: every TMDB-backed hook checks the store before
@@ -534,8 +535,18 @@ every client is a real security risk. Instead:
   Gemini key lives only as a Worker secret (`GEMINI_KEY`, set via
   `npx wrangler secret put GEMINI_KEY`), never in frontend code or `.env`.
 - `src/components/gpt/GptSearch.jsx`'s `runSearch` does a plain
-  `fetch(GPT_PROXY_URL, { method: 'POST', body: { query } })` — no
-  `openai` SDK on the frontend anymore (removed from `package.json`).
+  `fetch(GPT_PROXY_URL, { method: 'POST', body: { query, profileSummary,
+  history } })` — no `openai` SDK on the frontend anymore (removed from
+  `package.json`). `profileSummary` (3.1) is a short taste-graph sentence
+  from `buildPersonalizedPrompt.jsx`, gated on ≥3 ratings; `history`
+  (3.5) is the last 5 prior turns as `{query, names}`, converted by the
+  Worker into real `user`/`assistant` message pairs ahead of the new
+  query so Gemini can resolve follow-ups like "more like the third one."
+  The Worker asks Gemini for a raw JSON array (`{name, reason}` per
+  result, 3.2) instead of a comma list, parses/validates it server-side,
+  and returns `{results}` (previously `{content}`) — a malformed or
+  non-array response 502s with a clear error instead of reaching the
+  client as unparseable text.
 - The Worker's CORS allowlist (`ALLOWED_ORIGINS` in `index.js`) covers
   `localhost:5173`/`5174` and the two Firebase Hosting domains; add any
   new origin there before it'll work from a new host.

@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import configReducer from './configSlice'
 import detailsReducer from './detailsSlice'
+import forYouReducer from './forYouSlice'
 import gptReducer from "./gptSlice"
 import moviesReducer from "./moviesSlice"
 import preferencesReducer from './preferencesSlice'
@@ -13,6 +14,7 @@ const appStore = configureStore({
     details: detailsReducer,
     preferences: preferencesReducer,
     gpt: gptReducer,
+    forYou: forYouReducer,
     config: configReducer
   },
 })

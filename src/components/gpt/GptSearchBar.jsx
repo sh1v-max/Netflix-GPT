@@ -1,9 +1,9 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import { motion } from 'motion/react'
-import { Sparkles, ArrowUp } from 'lucide-react'
+import { Sparkles, ArrowUp, Radar, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EASE } from '@/lib/motion'
+import HudBadge from '../shared/HudBadge'
 import ThinkingDots from './ThinkingDots'
 
 const EXAMPLE_PROMPTS = [
@@ -18,10 +18,12 @@ const GptSearchBar = ({
   onQueryChange,
   onSubmit,
   isSearching,
+  isFollowUp,
+  onStartOver,
   placeholder,
   submitLabel,
 }) => {
-  const hasResults = useSelector((store) => store.gpt.movieNames)
+  const isIdle = !query && !isSearching && !isFollowUp
 
   const handleSubmit = (e) => {
     e?.preventDefault()
@@ -30,17 +32,39 @@ const GptSearchBar = ({
 
   return (
     <div className="flex flex-col items-center px-4 md:px-6 w-full">
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: EASE }}
-        className="flex items-center gap-2 mb-4 text-accent2"
-      >
-        <Sparkles size={16} />
-        <span className="text-cg-label uppercase tracking-wider font-medium">
-          AI-powered search
-        </span>
-      </motion.div>
+      {isIdle && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE }}
+          className="flex flex-col items-center text-center mb-8"
+        >
+          <HudBadge icon={Radar}>AI-Powered Recommendation Engine</HudBadge>
+          <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-semibold leading-[1.02] tracking-tight text-balance mb-4">
+            Ask, and <span className="text-hud-cyan-strong">discover.</span>
+          </h1>
+          <p className="text-text-dark-muted text-base md:text-xl max-w-xl">
+            Describe a mood, a plot, or a title you loved — Cinegraph's AI
+            finds real matches, not just what's trending.
+          </p>
+        </motion.div>
+      )}
+
+      {isFollowUp && (
+        <div className="flex items-center justify-between w-full max-w-3xl mb-2 px-1">
+          <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-hud-cyan">
+            Ask a follow-up
+          </span>
+          <button
+            type="button"
+            onClick={onStartOver}
+            className="flex items-center gap-1.5 text-xs text-text-dark-muted hover:text-hud-cyan-strong transition-colors cursor-pointer"
+          >
+            <RotateCcw size={12} />
+            Start over
+          </button>
+        </div>
+      )}
 
       <motion.form
         initial={{ opacity: 0, y: 16 }}
@@ -49,25 +73,35 @@ const GptSearchBar = ({
         onSubmit={handleSubmit}
         className="relative w-full max-w-3xl"
       >
-        <div className="flex items-center gap-2 bg-surface-glass backdrop-blur-[--blur-cg-glass] border border-border-hairline focus-within:border-accent2/60 focus-within:shadow-[0_0_0_1px_var(--color-accent2-glow),0_0_32px_var(--color-accent2-glow)] rounded-panel shadow-cg-elevated p-2.5 md:p-3 transition-shadow duration-300">
+        {/* Ambient breathing glow behind the bar while idle — invites the
+            first interaction instead of sitting inert. */}
+        {isIdle && (
+          <motion.div
+            aria-hidden="true"
+            animate={{ opacity: [0.4, 0.8, 0.4] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -inset-1 rounded-panel bg-hud-cyan/20 blur-xl -z-10"
+          />
+        )}
+        <div className="flex items-center gap-2 bg-surface-glass backdrop-blur-xl border border-hud-line focus-within:border-hud-cyan/60 focus-within:shadow-[0_0_0_1px_var(--color-hud-cyan-glow),0_0_32px_var(--color-hud-cyan-glow)] rounded-panel shadow-cg-elevated p-2.5 md:p-3 transition-shadow duration-300">
+          <Sparkles className="text-hud-cyan shrink-0 ml-2 hidden sm:block" size={18} />
           <input
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
             type="text"
             disabled={isSearching}
-            className="grow min-w-0 px-3 py-2.5 md:px-5 md:py-3.5 text-sm md:text-lg bg-transparent text-text-dark placeholder-text-dark-muted focus:outline-none disabled:opacity-60"
-            placeholder={placeholder}
+            className="grow min-w-0 px-3 py-2.5 md:px-3 md:py-3.5 text-sm md:text-lg bg-transparent text-text-dark placeholder-text-dark-muted focus:outline-none disabled:opacity-60"
+            placeholder={isFollowUp ? 'More like the third one but shorter…' : placeholder}
           />
           <Button
             type="submit"
             disabled={isSearching || !query.trim()}
-            variant="glow"
             size="icon-lg"
-            className="rounded-xl shrink-0"
+            className="rounded-xl shrink-0 bg-hud-cyan text-ink hover:bg-hud-cyan-strong"
             aria-label={submitLabel}
           >
             {isSearching ? (
-              <ThinkingDots className="text-white" />
+              <ThinkingDots className="text-ink" />
             ) : (
               <ArrowUp className="size-5" />
             )}
@@ -75,7 +109,7 @@ const GptSearchBar = ({
         </div>
       </motion.form>
 
-      {!query && !isSearching && !hasResults && (
+      {isIdle && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -90,7 +124,7 @@ const GptSearchBar = ({
               whileHover={{ y: -2 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               onClick={() => onSubmit(prompt)}
-              className="text-xs md:text-sm px-3.5 py-2 rounded-full border border-border-hairline text-text-dark-muted hover:text-text-dark hover:border-accent2/50 bg-ink-elevated/60 transition-colors cursor-pointer"
+              className="text-xs md:text-sm px-3.5 py-2 rounded-full border border-hud-line text-text-dark-muted hover:text-hud-cyan-strong hover:border-hud-cyan/50 bg-ink-elevated/60 transition-colors cursor-pointer"
             >
               {prompt}
             </motion.button>

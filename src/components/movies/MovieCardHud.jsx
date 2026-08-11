@@ -24,6 +24,7 @@ const MovieCardHud = ({
   layoutId,
   voteAverage = null,
   genreMap = {},
+  reason = null,
 }) => {
   const [imgError, setImgError] = useState(false)
   const hasPoster = posterPath && !imgError
@@ -83,6 +84,16 @@ const MovieCardHud = ({
               )}
             </div>
           </div>
+
+          {/* GPT "why this was picked" reason — hover-only, replaces the
+              poster rather than the persistent readout (which stays
+              meaningful even mid-hover on touch devices that can't hover
+              at all). */}
+          {reason && (
+            <div className="absolute inset-0 bg-ink/90 backdrop-blur-sm p-3 flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <p className="text-hud-cyan-strong text-[11px] leading-snug line-clamp-6">{reason}</p>
+            </div>
+          )}
         </HudFrame>
       </Link>
     </motion.div>

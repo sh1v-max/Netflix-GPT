@@ -2146,30 +2146,111 @@ to confirm the upload works live.
 Depends on Phase 2 existing (needs a profile to personalize against).
 
 ### 3.1 — Prompt personalization
-- [ ] `buildPersonalizedPrompt(profile, query)` helper in `utils/`
-- [ ] Update the GPT system message (currently `GPT_QUERY` in
-      `constant.jsx`) to include the injected profile summary: *"This
-      user favors [genres], the [decade] era, and dislikes [avoid list].
-      Given that, and the query below, recommend..."*
+- [x] **Done.** Split across the client/worker boundary rather than one
+      `buildPersonalizedPrompt(profile, query)` helper as originally
+      sketched — genre *names* only exist client-side (`useGenres`),
+      while the actual system prompt lives in the Worker, so:
+      - `src/utils/buildPersonalizedPrompt.jsx` (client): takes the
+        existing `useTasteProfile()` output (`profile`, `genreNameById`)
+        and returns a short sentence — *"This user favors Action,
+        Thriller; leans toward the 1990s era; tends to dislike Horror.
+        Weigh this alongside their query below, but the query always
+        takes priority."* — or `null` if the user has rated fewer than 3
+        titles (`MIN_RATINGS_TO_PERSONALIZE`), so a near-empty profile
+        doesn't skew results off one rating.
+      - `GptSearch.jsx`'s `runSearch` now calls `useTasteProfile()` +
+        `buildPersonalizedPrompt` and sends `{ query, profileSummary }`
+        to `GPT_PROXY_URL` (previously just `{ query }`).
+      - `gpt-proxy-worker/src/index.js`: reads `body.profileSummary`,
+        trims + caps it at 300 chars (`MAX_PROFILE_SUMMARY_LENGTH` — a
+        payload-size guard, not a real prompt-injection defense; it
+        crosses the same public unauthenticated endpoint `query`
+        already does, at the same trust level), and appends it to the
+        existing `GPT_QUERY` system message when present. Redeployed
+        (`npm run deploy` in `gpt-proxy-worker/`) — live on
+        `cinegraph-gpt-proxy.singhshiv0427.workers.dev`.
+      - Output format/parsing (`content.split(',')`, 10 comma-separated
+        names) is unchanged — this only changes what goes into the
+        system prompt, not what's asked for back.
+
+**Verified**: `npm run build` clean. Worker deploy succeeded (wrangler
+confirmed upload + live URL). Not runtime-checked in-browser this round
+(routine build-verified change, per standing instruction to skip browser
+verification unless asked).
 
 ### 3.2 — "Why this was picked" captions
-- [ ] Change the requested GPT response format from a flat comma list to
-      `{name, reason}` pairs (or a strict JSON array) so each result
-      carries a one-line justification
-- [ ] Update `GptSearchBar`'s parsing logic and `GptMovieSuggestions` /
-      `MovieList` / `MovieCard` to render the reason as a caption under
-      the poster on hover (reuse the title-caption overlay already added
-      to `MovieCard`)
+- [x] **Done.** Reason lives at the row level (one GPT-suggested title →
+      one `MovieList` row of its TMDB matches), not per-poster-hover as
+      originally sketched — the reason explains why *that title* was
+      recommended, not why each individual TMDB search match for it was,
+      so a subtitle under the row heading is the accurate place for it
+      rather than duplicating it onto every poster in the row.
+      - `gpt-proxy-worker/src/index.js`: `GPT_QUERY` rewritten to demand
+        a raw JSON array (`[{"name":"...","reason":"..."}, ...]`, no
+        markdown fence) instead of a flat comma list. Response parsing
+        strips an accidental ```` ```json ```` fence if the model adds
+        one anyway, `JSON.parse`s it, and 502s with a clear error if the
+        model returns something unparseable or empty — previously any
+        shape of `content` string was accepted uncritically. Response
+        contract changed from `{content}` to `{results}`.
+      - `GptSearch.jsx`: `runSearch` now reads `results` (array of
+        `{name, reason}`), derives `movieNames`/`reasons` from it, and
+        dispatches both to `gptSlice`.
+      - `gptSlice.jsx`: added `reasons` to state, threaded through
+        `addGptMovieResult`.
+      - `GptMovieSuggestions.jsx` → `MovieList.jsx`: new `subtitle` prop,
+        rendered as a muted line under the row title.
+      - **Found and fixed in passing**: `MovieList.jsx`'s scroll-arrow
+        buttons had the same broken `backdrop-blur-[--blur-cg-glass]`
+        bug identified and fixed in the navbar (2.x) and `GptSearchBar`
+        earlier — arbitrary-value bracket syntax on a bare CSS custom
+        property never resolved to a real `backdrop-filter` in this
+        project's Tailwind v4 setup. Swapped to `backdrop-blur-xl`. This
+        was the last known instance of that bug in the codebase.
+
+**Verified**: `npm run build` clean. Worker redeployed (wrangler
+confirmed upload + live URL). Not runtime-checked in-browser this round
+(routine build-verified change, per standing instruction to skip browser
+verification unless asked) — worth an actual AI search on `/home` to
+confirm the model reliably returns valid JSON in practice, not just that
+the parsing code is correct.
 
 ### 3.3 — "For You" home rows
-- [ ] `useForYouRecommendations()` hook — calls GPT with the profile
-      alone (no query), on homepage load
-- [ ] Cache the result (Redux or session storage) so it's not
-      re-requested on every navigation — refresh on a timer or on
-      profile change, not on every render
-- [ ] Replaces the generic TMDB rows as the homepage's personalized
-      section (Phase 0 already demoted the full carousel wall off the
-      homepage — this is what fills that space instead)
+- [x] **Done.** "Homepage" here means `/home` (`AiSearchHome` — the
+      AI-search-first logged-in landing page, per its own header comment
+      "the logged-in home base"). There are no generic TMDB rows there
+      to replace anymore (that architecture predates the HUD-console
+      rebuild — `/browse` doesn't exist as a route today) — this adds
+      the first personalized content that idle state has ever had,
+      below the search hero.
+      - `src/hooks/useForYouRecommendations.jsx`: gates on the same
+        `totalRated >= 3` floor as `buildPersonalizedPrompt` (no real
+        taste graph below that, so the section just doesn't render
+        rather than guessing off nothing). **Reuses the existing
+        gpt-proxy-worker endpoint as-is** — no new worker route/deploy
+        needed — by sending a generic "no specific title in mind" query
+        alongside the real `profileSummary`; the system prompt (3.1/3.2)
+        already has a "closest real match if the query is not a title"
+        fallback for exactly this case.
+      - `src/store/forYouSlice.jsx` (new, registered in `appStore.jsx`):
+        caches `{movieNames, movieResults, reasons, fetchedAt,
+        profileSignature}` in Redux. Refetches only when
+        `profileSignature` (a cheap JSON of `topGenres`/`avoidGenres`/
+        `favoriteDecade`) changes or the cache passes a 24h TTL —
+        satisfies "not re-requested on every navigation" without adding
+        a new persistence mechanism (sessionStorage) the rest of the
+        app doesn't otherwise use.
+      - `src/components/gpt/ForYouRows.jsx` (new): thinking-skeleton →
+        row list, same `MovieList` + `subtitle` reason pattern as 3.2's
+        search results. Mounted in `GptSearch.jsx`, rendered only in the
+        idle state (below the hero/search bar, not overlapping search
+        results).
+
+**Verified**: `npm run build` clean. No worker changes this round, so no
+redeploy needed. Not runtime-checked in-browser this round (routine
+build-verified change, per standing instruction to skip browser
+verification unless asked) — needs a real account with 3+ ratings to
+actually exercise the eligible path.
 
 ### 3.4 — Security fix
 - [x] **Done early, ad hoc, ahead of the rest of Phase 3** — see 2.7
@@ -2180,12 +2261,103 @@ Depends on Phase 2 existing (needs a profile to personalize against).
       client-side one, once 3.1 lands.
 
 ### 3.5 — Stretch: multi-turn refinement
-- [ ] Conversation state (array of prior turns) instead of a single
-      query/response round-trip
-- [ ] Follow-up input: "more like the third one but shorter" — passes
-      prior turns + profile to GPT for a refined result set
-- [ ] Only take this on once one-shot personalized search (3.1-3.4) is
-      solid — it's the most technically involved piece in the whole plan
+- [x] **Done.**
+      - `gptSlice.jsx`: replaced the single `movieNames`/`movieResults`/
+        `reasons` trio with `turns: []`, each entry
+        `{query, movieNames, movieResults, reasons}`. `addGptMovieResult`
+        now pushes instead of overwriting; new `clearGptConversation`
+        resets it. Every other consumer of `store.gpt` (`GptSearchBar`,
+        `GptSearch`) updated to read `turns` instead of the old flat
+        fields.
+      - `GptSearch.jsx`'s `runSearch` sends prior turns as
+        `history: [{query, names}]` (capped at the last 5,
+        `MAX_HISTORY_TURNS`) alongside the new query + `profileSummary`
+        on every request, not just the first.
+      - `gpt-proxy-worker/src/index.js`: accepts `body.history`, caps it
+        server-side too (same 5-turn cap, plus per-field length/type
+        validation — same trust posture as `query`/`profileSummary`
+        already had), and converts each prior turn into a real
+        `{role:'user'}`/`{role:'assistant'}` message pair ahead of the
+        new query in the Gemini chat completion request — the assistant
+        turn is reconstructed as `[{name, reason:''}]` JSON (names only;
+        no need to resend reasons to establish "what was suggested").
+        This lets Gemini's own multi-turn handling resolve ordinal
+        references ("the third one") against its own prior answer,
+        rather than the client trying to parse/track that itself.
+        `GPT_QUERY` system prompt updated with one sentence telling the
+        model to treat a follow-up as a refinement of the most recent
+        list, not a standalone query.
+      - `GptMovieSuggestions.jsx`: now renders every turn in order (a
+        `Turn` sub-component per entry, hairline divider between them),
+        not just the latest — a follow-up appends instead of replacing,
+        so an in-flight or failed follow-up never wipes prior results.
+        Turns after the first show a `You asked: "..."` label (the first
+        is self-evident from the search bar right above it). The
+        thinking/error states now render *alongside* existing turns
+        when `turns.length > 0`, and only take over the whole area on a
+        genuinely empty first search.
+      - `GptSearchBar.jsx`: new `isFollowUp` state — swaps the
+        placeholder to a follow-up example, adds a small "Ask a
+        follow-up" label + "Start over" button (`RotateCcw`, dispatches
+        `clearGptConversation`) above the input once a conversation
+        exists. Idle hero (headline/badge/chips) now keys off
+        `isFollowUp` instead of the old `hasResults` selector.
+      - `ForYouRows.jsx` / `useForYouRecommendations.jsx`: untouched —
+        they're a separate one-shot fetch (forYouSlice), not part of the
+        gpt conversation.
+
+**Verified**: `npm run build` clean. Worker redeployed (wrangler
+confirmed upload + live URL). Not runtime-checked in-browser this round
+(routine build-verified change, per standing instruction to skip browser
+verification unless asked) — this is the one most worth trying live
+end-to-end (a real search, then "more like the third one but shorter")
+since ordinal-reference resolution is a model-behavior question the
+build can't verify.
+
+### 3.6 — Fix: GPT result rows, post-3.2/3.3 follow-up
+User feedback after trying the "Personalized for you" section: rows were
+inconsistent (some suggestions showed 1 poster, some showed several
+near-duplicates of the same movie), the prev/next scroll buttons didn't
+match the space theme, and the cards themselves were the plain `MovieCard`
+(hover-gated, no theme) instead of the bracket-corner `MovieCardHud` used
+everywhere else.
+
+- [x] **Root cause of the duplicate-poster issue**: each GPT suggestion
+      maps to a full TMDB search-results array (often several near-
+      identical matches — reissues, regional titles, franchise entries
+      sharing a name), and the old `MovieList` rendered *all* of them per
+      suggestion — one row per suggested title, showing 1–N posters
+      depending on how many TMDB matches existed. New
+      `src/utils/pickBestGptMatches.jsx` keeps only the single best (first)
+      match per suggestion, dropping any suggestion with zero matches, so
+      N GPT suggestions now reliably render as up to N posters — never
+      duplicates.
+- [x] **Row architecture changed**: from "one scroll row per suggested
+      title" to **one scroll row per turn**, holding one `MovieCardHud`
+      per suggestion. Row heading now echoes the query itself (e.g.
+      `"cozy comfort movies"`) instead of a movie name, reading like a
+      chat transcript — clearer with multiple turns (3.5) stacked.
+- [x] **Space-theme cards**: switched from `MovieCard` to `MovieCardHud`
+      (bracket corners, persistent rating/year/genre readout — same tile
+      every catalog page uses). `MovieCardHud` gained an optional `reason`
+      prop: a hover-only overlay (`bg-ink/90 backdrop-blur-sm`) showing
+      the GPT justification over the poster, replacing the row-level
+      subtitle text from 3.2 (a reason now belongs to its specific card,
+      not the whole row).
+- [x] **Space-theme scroll buttons**: new `src/components/shared/
+      HudScrollRow.jsx` — title/subtitle + scroll-row shell with prev/next
+      arrows styled `text-hud-cyan`, `border-hud-line`, real
+      `backdrop-blur-xl`, replacing the old plain gray/glass buttons.
+      Used by both `GptMovieSuggestions.jsx` and `ForYouRows.jsx`.
+- [x] **Dead code removed**: `MovieList.jsx` and `MovieCard.jsx` had zero
+      remaining consumers after this change (they were only ever used by
+      GPT search/For You) — deleted rather than left unused. A stale
+      comment in `useMultiSearch.jsx` referencing them was also updated.
+
+**Verified**: `npm run build` clean. Not runtime-checked in-browser this
+round (per standing instruction to skip browser verification unless
+asked) — worth a look at `/home` with an active search or 3+ ratings to
+confirm the row/card/hover behavior reads as intended.
 
 ---
 
@@ -2195,7 +2367,7 @@ Do this once the three pillars work end-to-end, before calling it done.
 
 - [ ] Tests (Vitest + React Testing Library) — start with
       `validateConfig.jsx`, `computeTasteProfile`, the Redux/preferences
-      slices, and a couple of component smoke tests (`MovieCard`,
+      slices, and a couple of component smoke tests (`MovieCardHud`,
       `DetailPage`)
 - [ ] Error boundary around the router — one thrown error shouldn't blank
       the whole app

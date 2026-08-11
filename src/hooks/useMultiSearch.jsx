@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { API_OPTIONS, TMDB_BASE_URL } from '../utils/constant'
 
 // Searches movies, TV shows, and people in one call — we only keep
-// movie/tv results since MovieCard/MovieList expect that shape.
+// movie/tv results since the card components expect that shape.
 // Debounced internally so any consumer gets safe search-as-you-type
 // behavior without needing to remember to debounce it themselves.
 const useMultiSearch = (query, delay = 350) => {

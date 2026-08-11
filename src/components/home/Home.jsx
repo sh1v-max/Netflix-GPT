@@ -5,6 +5,7 @@ import { motion } from 'motion/react'
 import Header from '../layout/Header'
 import Footer from '../layout/Footer'
 import HudFrame from '../movies/HudFrame'
+import HudBadge from '../shared/HudBadge'
 import usePopularMovies from '../../hooks/usePopularMovies'
 import { IMG_CDN_URL, BACKDROP_CDN_URL } from '../../utils/constant'
 import { Button } from '@/components/ui/button'
@@ -20,22 +21,6 @@ const stagger = {
   hidden: {},
   show: { transition: { staggerChildren: 0.08 } },
 }
-
-// Small bracket-cornered pill — the hero/section equivalent of
-// SectionEyebrow, used where the label needs to read as a standalone tag
-// rather than a header for content directly below it.
-const Eyebrow = ({ icon: Icon, children }) => (
-  <div className="hud-panel relative inline-flex items-center gap-2 px-3 py-1.5 mb-6">
-    <span className="hud-corner hud-corner--tl" aria-hidden="true" />
-    <span className="hud-corner hud-corner--tr" aria-hidden="true" />
-    <span className="hud-corner hud-corner--bl" aria-hidden="true" />
-    <span className="hud-corner hud-corner--br" aria-hidden="true" />
-    <Icon size={13} className="text-hud-cyan" />
-    <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-hud-cyan-strong">
-      {children}
-    </span>
-  </div>
-)
 
 const FeatureSection = ({ icon, badge, title, description, visual, reverse }) => {
   return (
@@ -109,7 +94,7 @@ const Home = () => {
             className="relative text-center px-6 max-w-4xl mx-auto w-full"
           >
             <motion.div variants={fadeUp} className="flex justify-center">
-              <Eyebrow icon={Radar}>AI-Powered Recommendation Engine</Eyebrow>
+              <HudBadge icon={Radar}>AI-Powered Recommendation Engine</HudBadge>
             </motion.div>
 
             <motion.h1

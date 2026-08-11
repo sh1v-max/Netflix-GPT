@@ -1,17 +1,21 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { motion } from 'motion/react'
-import { Compass, AlertCircle } from 'lucide-react'
-import MovieList from '../shared/MovieList'
+import { AlertCircle } from 'lucide-react'
+import MovieCardHud from '../movies/MovieCardHud'
+import HudScrollRow from '../shared/HudScrollRow'
+import useGenres from '../../hooks/useGenres'
+import { pickBestGptMatches } from '../../utils/pickBestGptMatches'
+import { getReleaseYear } from '../../utils/constant'
 import { Skeleton } from '@/components/ui/skeleton'
 import ThinkingDots from './ThinkingDots'
 import { EASE } from '@/lib/motion'
 
-const ThinkingRow = () => (
+const ThinkingRow = ({ label = 'Cinegraph is thinking...' }) => (
   <div className="px-4 md:px-[10%] pt-4">
-    <div className="flex items-center gap-2 text-accent2 text-sm font-medium mb-4">
+    <div className="flex items-center gap-2 text-hud-cyan-strong text-sm font-medium mb-4">
       <ThinkingDots />
-      Cinegraph is thinking...
+      {label}
     </div>
     <div className="flex gap-2 md:gap-4">
       {Array.from({ length: 6 }).map((_, i) => (
@@ -21,12 +25,57 @@ const ThinkingRow = () => (
   </div>
 )
 
+// One row per turn (not one row per suggested title) — each GPT
+// suggestion contributes exactly one card (its best TMDB match, via
+// pickBestGptMatches), so a "10 suggestions" turn reliably renders as
+// ~10 posters instead of some titles showing 1 and others showing several
+// near-duplicate matches. Row heading echoes the query itself, like a
+// chat transcript, so scrolling back up still shows which turn is which.
+const Turn = ({ turn, genreMap, isLast }) => {
+  const items = pickBestGptMatches(turn.movieNames, turn.movieResults, turn.reasons)
+  if (items.length === 0) return null
+
+  return (
+    <div>
+      <HudScrollRow title={`"${turn.query}"`}>
+        {items.map(({ movie, reason }) => (
+          <MovieCardHud
+            key={movie.id}
+            id={movie.id}
+            posterPath={movie.poster_path}
+            title={movie.title || movie.name}
+            mediaType={movie.media_type || 'movie'}
+            genreIds={movie.genre_ids}
+            releaseYear={getReleaseYear(movie)}
+            voteAverage={movie.vote_average}
+            genreMap={genreMap}
+            reason={reason}
+          />
+        ))}
+      </HudScrollRow>
+      {!isLast && <div className="h-px bg-hud-line/30 mx-4 md:mx-[10%] mb-6" aria-hidden="true" />}
+    </div>
+  )
+}
+
+// Idle state's messaging now lives in GptSearchBar's hero heading, right
+// above the input — this component only renders once there's something to
+// show (in-flight, error, or results), so nothing gets said twice.
+//
+// Renders every turn (3.5, multi-turn refinement), not just the latest —
+// a follow-up appends to the conversation instead of replacing it, so a
+// failed or in-flight follow-up never wipes out prior results.
 const GptMovieSuggestions = ({ isSearching, error }) => {
-  const { movieResults, movieNames } = useSelector((store) => store.gpt)
+  const turns = useSelector((store) => store.gpt.turns)
+  const movieGenres = useGenres('movie')
+  const genreMap = useMemo(
+    () => Object.fromEntries((movieGenres || []).map((g) => [g.id, g.name])),
+    [movieGenres]
+  )
 
-  if (isSearching) return <ThinkingRow />
+  if (turns.length === 0 && isSearching) return <ThinkingRow />
 
-  if (error) {
+  if (turns.length === 0 && error) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -34,7 +83,7 @@ const GptMovieSuggestions = ({ isSearching, error }) => {
         transition={{ duration: 0.4, ease: EASE }}
         className="flex flex-col items-center text-center px-4 pt-6"
       >
-        <div className="mb-4 rounded-full bg-ink-elevated border border-border-hairline p-4 text-rust">
+        <div className="mb-4 rounded-full bg-ink-elevated border border-hud-line p-4 text-rust">
           <AlertCircle size={28} />
         </div>
         <p className="text-text-dark text-sm md:text-base max-w-md">{error}</p>
@@ -42,47 +91,28 @@ const GptMovieSuggestions = ({ isSearching, error }) => {
     )
   }
 
-  if (!movieNames) {
-    // isIdle is handled by the parent's centered layout — this just needs
-    // to be its natural, un-stretched size within that centered block.
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: EASE }}
-        className="flex flex-col items-center px-4 pt-6 text-center"
-      >
-        <div className="mb-4 rounded-full bg-ink-elevated border border-border-hairline p-4 text-accent2">
-          <Compass size={28} />
-        </div>
-        <p className="text-text-dark-muted text-sm md:text-lg max-w-md">
-          Describe a mood, a plot, or a title you loved — Cinegraph's AI
-          finds real matches, not just what's trending.
-        </p>
-      </motion.div>
-    )
-  }
+  if (turns.length === 0) return null
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="show"
-      variants={{ show: { transition: { staggerChildren: 0.08 } } }}
-      className="w-full h-full px-1 pt-4 pb-10 md:px-[10%]"
-    >
-      {movieNames.map((movieName, index) => (
-        <motion.div
-          key={movieName}
-          variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }}
-          transition={{ duration: 0.4, ease: EASE }}
-        >
-          <MovieList
-            title={index === 0 ? `${movieName} — your best match` : movieName}
-            movies={movieResults[index]}
-          />
-        </motion.div>
+    <div className="w-full h-full pt-4 pb-10">
+      {turns.map((turn, i) => (
+        <Turn key={turn.query + i} turn={turn} genreMap={genreMap} isLast={i === turns.length - 1} />
       ))}
-    </motion.div>
+
+      {isSearching && <ThinkingRow label="Refining..." />}
+
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: EASE }}
+          className="flex items-center gap-2 text-rust text-sm px-4 md:px-[10%] pt-6"
+        >
+          <AlertCircle size={18} />
+          {error}
+        </motion.div>
+      )}
+    </div>
   )
 }
 
