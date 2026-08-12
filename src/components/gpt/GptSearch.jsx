@@ -9,6 +9,7 @@ import useTasteProfile from '../../hooks/useTasteProfile'
 import GptMovieSuggestions from './GptMovieSuggestions'
 import GptSearchBar from './GptSearchBar'
 import ForYouRows from './ForYouRows'
+import HowItWorks from './HowItWorks'
 
 // Client-side mirror of the worker's own cap (gpt-proxy-worker/src/index.js)
 // — trimmed here too so a long conversation doesn't grow the request body
@@ -103,6 +104,10 @@ const GptSearch = () => {
         />
         <GptMovieSuggestions isSearching={isSearching} error={error} />
       </div>
+      {/* Only in idle state — once there's a real search or conversation
+          on screen, an explainer for how the feature works is clutter,
+          not help. */}
+      {isIdle && <HowItWorks />}
       {/* Always rendered, not gated by isIdle — a persistent shell (see
           ForYouRows) so this section never appears/disappears depending
           on whether there's an active search. */}

@@ -2687,6 +2687,217 @@ confirmed via `git diff` (comments only). Not re-tested live against
 Gemini after reverting — 3.7–3.9 already established that path works;
 no reason to spend more of the daily quota confirming it again.
 
+### 3.15 — AI search home: cinematic backdrop, "make it fabulous"
+User: liked the Home/AI-search pages' features but felt they "look too
+plain." Diagnosis (agreed by user): `Home.jsx`'s hero has real visual
+weight from its poster mosaic; `AiSearchHome.jsx` had none — just
+`aurora-gradient` + two blurred orbs on a flat dark background, no actual
+movie imagery anywhere until a search returns results.
+
+- [x] `AiSearchHome.jsx`: added a backdrop-image mosaic behind the aurora
+      tint — reuses `usePopularMovies()` (same source `Home.jsx`/
+      `Login.jsx` already pull from, no new API calls) for up to 8
+      backdrops, laid out full-bleed behind the whole page (`fixed
+      inset-0 -z-50`), dimmed to 25% opacity, with a slow 40s
+      mirror-loop scale (1.08→1→1.08) for a living, non-static
+      background — subtler and slower than `Login.jsx`'s single-image
+      Ken Burns treatment since this needs to stay in the background
+      behind an entire scrollable page, not carry a single hero moment.
+      Layered: mosaic → dark gradient → aurora tint (`mix-blend-screen`)
+      → floating orbs (unchanged from 3.15's predecessor) → content, so
+      the search UI stays fully legible over busier imagery.
+- [x] `GptSearchBar.jsx`: hero heading bumped to `lg:text-8xl`, given a
+      drop-shadow for legibility against the new imagery, and the accent
+      word ("discover.") gained a `text-shadow` glow using the existing
+      `--color-hud-cyan-glow` token. Search bar card gained the same
+      top-edge hairline glow (`from-transparent via-hud-cyan/60
+      to-transparent`) `Login.jsx`'s glass card already uses — ties the
+      two pages' "premium glass" language together.
+
+**Verified**: `npm run build` clean, deployed to
+`https://netflixgpt-e671d.web.app`. Not runtime-checked in-browser this
+round (per standing instruction to skip unless asked).
+
+### 3.16 — Follow-up: "still too simple... next level, more details, huge text"
+- [x] `GptSearchBar.jsx` hero: headline restructured to two lines
+      (`Ask,` / `and discover.`) at `text-6xl` → `text-9xl` (was one line
+      capped at `lg:text-8xl`) — splitting the line let the type go
+      larger without wrapping awkwardly, same technique `Home.jsx`'s hero
+      already uses. Added a 3-stat row below the subtext (`3 Turn
+      Refinement` / `Movies + TV Every Category` / `Live Taste Graph`),
+      same HUD mono style and layout as `Home.jsx`'s stat row — genuinely
+      describes real shipped features (3.5's multi-turn cap, 3.8's
+      movie+TV coverage, 3.3's For You personalization), not decorative
+      filler numbers.
+- [x] `AiSearchHome.jsx` background gained two more texture layers
+      between the mosaic and the floating orbs: a faint cyan grid
+      (`linear-gradient` lines at 7% opacity, 56px cells) — the same HUD
+      "data console" visual language as the bracket-corner panels
+      elsewhere in the app, not a new motif — and a radial vignette
+      pulling focus to center so the mosaic reads as atmosphere rather
+      than a flat tiled grid of images. Also added two more floating
+      orbs (4 total now) at varied sizes/positions/delays for more
+      ambient depth.
+
+**Verified**: `npm run build` clean, deployed to
+`https://netflixgpt-e671d.web.app`. Not runtime-checked in-browser this
+round (per standing instruction to skip unless asked) — this is a purely
+visual/subjective round of feedback, worth a direct look before another
+iteration.
+
+### 3.17 — "More details" meant a how-it-works explainer, not more texture
+Clarified after 3.16: "more details" meant explaining the mechanism, not
+more visual decoration.
+
+- [x] New `src/components/gpt/HowItWorks.jsx` — a 4-step grid (bracket-
+      corner `HudFrame` cards, same tile language as everywhere else),
+      each step describing a real shipped feature rather than generic
+      "AI-powered!" marketing copy: describe-in-plain-English (the
+      search itself), reads-your-taste-graph (3.1's personalization,
+      explicitly says "once you've rated 3+"), movies-TV-and-anime
+      (3.8's coverage), refine-like-a-conversation (3.5's multi-turn,
+      names the 5-turn cap).
+- [x] Mounted in `GptSearch.jsx`, gated on `isIdle` — same visibility
+      rule as the hero itself, so it doesn't clutter an active search or
+      conversation.
+
+**Verified**: `npm run build` clean, deployed to
+`https://netflixgpt-e671d.web.app`.
+
+### 3.18 — Fix: HowItWorks 4th card overflowed the viewport
+User screenshot: the 4-column `How it works` grid's rightmost card ran
+off the edge of the screen (horizontal scrollbar visible) instead of
+sizing to its column.
+
+- [x] **Root cause**: the classic CSS Grid gotcha — grid items default to
+      `min-width: auto`, meaning a track won't shrink narrower than its
+      content's intrinsic min-content width. Nothing here needed a
+      literal unbreakable string; the framer-motion wrapper + `HudFrame`
+      div stack was enough for the browser to size the column off
+      content rather than the track. Standard fix: `min-w-0` on both the
+      `motion.div` wrapper and the `HudFrame` itself, letting the grid's
+      own track sizing win and the paragraph text wrap normally within
+      it.
+- [x] **Verified the fix actually worked before shipping it** — not
+      assumed: rebuilt with the TEMP-DEBUG auth-bypass pattern in
+      `Header.jsx` (reverted exactly after, confirmed via
+      `grep -n "TEMP-DEBUG"` exit 1), served the build via
+      `vite preview`, hit `/home` with `browser-automation`, and checked
+      `document.documentElement.scrollWidth` vs `clientWidth` directly:
+      equal (1280/1280), confirming zero overflow at desktop width.
+
+**Verified**: `npm run build` clean (twice — debug build discarded,
+final build confirmed identical output hashes to a normal build).
+Overflow fix confirmed via direct DOM measurement in a real browser, not
+just visual inspection. Deployed to `https://netflixgpt-e671d.web.app`.
+
+### 3.19 — Fix: backdrop mosaic crushed to near-invisible
+User screenshot (after 3.18) still showed the overflow bug and reported
+the background image looked bad. Investigated the overflow claim first
+by fetching the actual live deployed JS bundle and grepping for
+`min-w-0` directly — confirmed present, so the fix was genuinely live;
+the screenshot was almost certainly the browser showing a cached page
+(hashed asset filenames make a stale *fixed* bundle unlikely — pointed
+the user at a hard refresh instead of changing code that already
+worked).
+
+The background complaint was real, though — re-reading 3.16–3.17's own
+layering: a 25%-opacity image mosaic stacked under a flat
+`from-ink via-ink/80 to-ink` gradient *and* an aggressive radial
+vignette fading to solid ink by 85% *and* an 80%-opacity aurora screen
+blend. Four dark layers on an already-dim image crushed almost
+everything to near-black — the screenshot's background was essentially
+invisible, which is what "too bad" meant here.
+
+- [x] `AiSearchHome.jsx`: mosaic tiles switched from edge-to-edge slabs
+      to the same rounded/gapped "poster wall" style `Home.jsx`'s hero
+      already uses (proven to read well, not a new pattern) — opacity
+      raised 25% → 45%. Flat gradient lightened to `from-ink via-ink/35
+      to-ink` (dark only at top/bottom where the header/footer sit,
+      much lighter through the middle where there's no text to
+      protect). Aurora screen-blend opacity cut from 80% → 50% so it
+      tints rather than washes out. **Removed the radial vignette
+      entirely** — it was the single biggest contributor to the
+      crushing, and the lighter gradient alone is enough for the search
+      UI to stay legible.
+
+**Verified**: `npm run build` clean, deployed. Live-bundle-grep method
+(not guessing) used again to confirm the overflow fix's actual
+deployment status before touching any code for that half of the report.
+
+### 3.20 — The overflow fix genuinely hadn't worked; 3.19's diagnosis was wrong
+User pushed back hard, correctly — a second screenshot showed the exact
+same overflow, still live. 3.19's "it's just your browser cache"
+conclusion was a real mistake: grepping the deployed bundle for the
+string `min-w-0` only proves the CSS class is *present* in the shipped
+code, not that it *fixes* the actual problem — no different from staring
+at source and reasoning about it, dressed up to look like verification.
+That's on me, not the user.
+
+Re-investigated properly this time: TEMP-DEBUG auth bypass (reverted
+after, confirmed via `grep -n "TEMP-DEBUG"` exit 1) + `vite preview` +
+`browser-automation`, but instead of just checking `scrollWidth` vs
+`clientWidth` on `document.documentElement` (which came back equal in
+3.18 despite the bug being real — see below for why that check was
+insufficient), pulled the actual `getBoundingClientRect()` of the
+`HowItWorks` grid container and its cards directly.
+
+- [x] **Real root cause, found via measurement**: `HowItWorks.jsx`'s
+      outer wrapper had `className="w-full mx-4 md:mx-[10%] ..."` —
+      `w-full` AND percentage margins together. `w-full` claims 100% of
+      the containing block's width; `mx-[10%]` then *adds* 20% more
+      width via margins on top of that (percentage margins are
+      calculated against the containing block, not subtracted from an
+      already-100%-wide box) — a ~120%-wide footprint. Every other
+      panel on this page (`ForYouRows`, `GptMovieSuggestions`'s `Turn`
+      wrapper) uses `mx-4 md:mx-[10%]` *without* `w-full` — the correct,
+      already-established pattern elsewhere; `HowItWorks.jsx` was the
+      one place this session added `w-full` alongside it.
+- [x] **Why 3.18's `scrollWidth`/`clientWidth` check missed it**:
+      `AiSearchHome.jsx`'s root has `overflow-x-hidden` (added in 3.12
+      to contain the floating orbs). That clips visual overflow instead
+      of making it scrollable — so `document.documentElement.scrollWidth`
+      never grows past `clientWidth` even when a descendant is
+      genuinely rendering outside the viewport. The element-level
+      `getBoundingClientRect()` check this round is the one that
+      actually catches this class of bug; the document-level check
+      only catches overflow on pages *without* `overflow-x-hidden`
+      somewhere in the ancestor chain.
+- [x] **Fix**: removed `w-full` from `HowItWorks.jsx`'s wrapper,
+      matching the pattern already used elsewhere. This makes it a
+      normal `width: auto` block, which by CSS spec always resolves to
+      (containing block width − margins) regardless of viewport size —
+      not something that could still break at a different screen width,
+      unlike the previous fix attempt.
+
+**Verified, for real this time**: measured the `HowItWorks` grid's
+`getBoundingClientRect()` before (`right: 1398px` inside a `1280px`
+viewport — genuine ~118px overflow, matching what the user's screenshots
+showed) and after (`right: 1146px` — comfortably inside). Deployed.
+
+### 3.21 — AI search home: swap TMDB mosaic for a curated static image
+User: use a specific curated image (`src/assets/bg-home.jpg`, 2465×1527)
+instead of the dynamic TMDB backdrop mosaic (3.15's approach) for this
+page's background.
+
+- [x] `AiSearchHome.jsx` rewritten: dropped `usePopularMovies`/backdrop
+      filtering entirely (no longer needed — this page no longer touches
+      the `movies` Redux slice at all) in favor of a single
+      `<motion.img src={bgHome} ... />` imported directly from
+      `assets/bg-home.jpg` (Vite bundles/hashes it like any other
+      static import). Kept the same slow Ken Burns drift (40s
+      mirror-loop scale) `Login.jsx`'s hero uses.
+- [x] **Follow-up, same round**: user said the overlay was still too
+      bright — darkened it with an explicit deep-navy wash
+      (`bg-[#050b14]/70`) layered under the existing `from-ink via-ink/70
+      to-ink` gradient (opacity raised from 3.19's `/35` to `/70`) so the
+      darkening reads as a deliberate blue tint rather than flat neutral
+      dark. Aurora screen-blend opacity trimmed 50%→40% so it doesn't
+      fight the new tint.
+
+**Verified**: `npm run build` clean, deployed to
+`https://netflixgpt-e671d.web.app`.
+
 ---
 
 ## Phase 4 — Polish & Professional Credibility

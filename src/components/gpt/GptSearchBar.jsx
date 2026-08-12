@@ -40,13 +40,34 @@ const GptSearchBar = ({
           className="flex flex-col items-center text-center mb-8"
         >
           <HudBadge icon={Radar}>AI-Powered Recommendation Engine</HudBadge>
-          <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-semibold leading-[1.02] tracking-tight text-balance mb-4">
-            Ask, and <span className="text-hud-cyan-strong">discover.</span>
+          <h1 className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-semibold leading-[0.95] tracking-tighter text-balance mb-5 drop-shadow-[0_4px_32px_rgba(0,0,0,0.7)]">
+            Ask,
+            <br />
+            <span className="text-hud-cyan-strong [text-shadow:0_0_50px_var(--color-hud-cyan-glow)]">
+              and discover.
+            </span>
           </h1>
-          <p className="text-text-dark-muted text-base md:text-xl max-w-xl">
+          <p className="text-text-dark-muted text-base md:text-xl max-w-xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
             Describe a mood, a plot, or a title you loved — Cinegraph's AI
             finds real matches, not just what's trending.
           </p>
+
+          <div className="flex items-center justify-center gap-8 md:gap-14 mt-10 font-mono">
+            {[
+              ['3', 'Turn Refinement'],
+              ['Movies + TV', 'Every Category'],
+              ['Live', 'Taste Graph'],
+            ].map(([value, label]) => (
+              <div key={label} className="text-center">
+                <p className="text-xl md:text-3xl font-semibold text-hud-cyan-strong tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
+                  {value}
+                </p>
+                <p className="text-[10px] md:text-xs uppercase tracking-[0.15em] text-text-dark-muted mt-1">
+                  {label}
+                </p>
+              </div>
+            ))}
+          </div>
         </motion.div>
       )}
 
@@ -83,7 +104,8 @@ const GptSearchBar = ({
             className="absolute -inset-1 rounded-panel bg-hud-cyan/20 blur-xl -z-10"
           />
         )}
-        <div className="flex items-center gap-2 bg-surface-glass backdrop-blur-xl border border-hud-line focus-within:border-hud-cyan/60 focus-within:shadow-[0_0_0_1px_var(--color-hud-cyan-glow),0_0_32px_var(--color-hud-cyan-glow)] rounded-panel shadow-cg-elevated p-2.5 md:p-3 transition-shadow duration-300">
+        <div className="relative flex items-center gap-2 bg-surface-glass backdrop-blur-xl border border-hud-line focus-within:border-hud-cyan/60 focus-within:shadow-[0_0_0_1px_var(--color-hud-cyan-glow),0_0_32px_var(--color-hud-cyan-glow)] rounded-panel shadow-cg-elevated p-2.5 md:p-3 transition-shadow duration-300">
+          <div className="absolute inset-x-8 top-0 h-px bg-linear-to-r from-transparent via-hud-cyan/60 to-transparent" aria-hidden="true" />
           <Sparkles className="text-hud-cyan shrink-0 ml-2 hidden sm:block" size={18} />
           <input
             value={query}
