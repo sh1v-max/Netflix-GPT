@@ -1,3 +1,8 @@
+// Attempted a move to OpenAI directly (3.14 in re-do.md) for its more
+// generous free daily tokens — reverted: OpenAI's API rejected every
+// request with "credit_balance_exhausted", meaning the free daily tier
+// requires a funded/billed account first, not a standalone no-card tier.
+// Back on Gemini until that's sorted out (or not pursued further).
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
 const GEMINI_MODEL = 'gemini-3.5-flash'
 

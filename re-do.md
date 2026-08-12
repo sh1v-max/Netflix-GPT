@@ -2645,6 +2645,48 @@ against the production URL: bottom nav present with all 5 labels
 (`Home`/`Movies`/`Shows`/`Anime`/`Discover`, confirming the label
 rename shipped), hamburger button completely gone from the DOM.
 
+### 3.14 — Attempted move to OpenAI directly; reverted to Gemini
+User found their OpenAI account showed eligibility for a much larger free
+daily allotment (250K tokens/day for flagship models, 2.5M/day for mini
+models) than Gemini's flat 20 *requests*/day cap (see 3.7) and asked to
+switch providers — this would have been the 3rd provider this project has
+used (OpenRouter → Gemini → attempted OpenAI).
+
+- [x] Low-effort swap, as expected: Gemini was already being called
+      through its OpenAI-compatible endpoint, so `gpt-proxy-worker/
+      src/index.js` only needed `GEMINI_URL`/`GEMINI_MODEL`/
+      `env.GEMINI_KEY` renamed to `OPENAI_URL` (`api.openai.com/v1/
+      chat/completions`) / `OPENAI_MODEL` (`gpt-4.1-mini`, user's choice
+      of the three offered) / `env.OPENAI_KEY` — request/response shape
+      identical, zero frontend changes needed.
+- [x] **Real secret-exposure incident during setup**: user ran
+      `wrangler secret put <the actual API key>` instead of
+      `wrangler secret put OPENAI_KEY` — `secret put`'s argument is the
+      secret *name*, and the value is meant to be entered at the
+      following interactive prompt, not on the command line. This put
+      the live key in shell history and in this chat transcript.
+      Flagged immediately, user revoked the exposed key on
+      platform.openai.com and generated a replacement, set correctly the
+      second time (confirmed via wrangler's own "Success! Uploaded
+      secret OPENAI_KEY" output).
+- [x] **Reverted after live testing**: a real `curl` against the
+      redeployed worker returned `"credit_balance_exhausted"` —
+      OpenAI's API rejects all requests, including ones that would fall
+      under the free daily token allotment, unless the account has a
+      funded/billed balance. The screenshot's "eligible for free daily
+      usage" apparently isn't a fully standalone no-card tier in
+      practice. User asked to revert; reverted `index.js` back to
+      Gemini exactly (confirmed via `git diff` showing only comment
+      wording changes, no functional diff from the pre-3.14 version) and
+      redeployed. The `OPENAI_KEY` secret is left set (harmless, unused)
+      in case billing gets sorted out later and this is revisited.
+
+**Verified**: `node --check` on the worker file both before and after
+revert. Reverted version's functional equivalence to the pre-3.14 commit
+confirmed via `git diff` (comments only). Not re-tested live against
+Gemini after reverting — 3.7–3.9 already established that path works;
+no reason to spend more of the daily quota confirming it again.
+
 ---
 
 ## Phase 4 — Polish & Professional Credibility
