@@ -6,8 +6,12 @@ import { smoothScrollBy } from '../../utils/smoothScrollBy'
 // arrows styled to match the rest of the app (hud-cyan, hairline border,
 // real backdrop blur) instead of the plain glass/gray buttons MovieList
 // used. Card rendering is left to the caller (children) since different
-// rows need different card types (MovieCardHud, etc).
-const HudScrollRow = ({ title, subtitle, children }) => {
+// rows need different card types (MovieCardHud, etc). `title` is optional
+// — omit it when the caller already renders its own heading above (e.g.
+// Profile's watchlist preview uses SectionEyebrow) and still wants the
+// scroll buttons; `ariaLabel` then substitutes for the button labels that
+// would otherwise read off `title`.
+const HudScrollRow = ({ title, subtitle, ariaLabel, children }) => {
   const scrollRef = useRef(null)
 
   // Scrolls by ~85% of the visible width (not a fixed pixel guess — that
@@ -22,11 +26,15 @@ const HudScrollRow = ({ title, subtitle, children }) => {
     smoothScrollBy(container, direction === 'left' ? -amount : amount)
   }
 
+  const label = ariaLabel || title || 'row'
+
   return (
     <div className="relative px-6 mb-6 md:mb-12">
-      <h1 className="font-display text-sm md:text-3xl pt-1 md:pt-4 text-text-dark font-semibold">
-        {title}
-      </h1>
+      {title && (
+        <h1 className="font-display text-sm md:text-3xl pt-1 md:pt-4 text-text-dark font-semibold">
+          {title}
+        </h1>
+      )}
       {subtitle && (
         <p className="text-xs md:text-sm text-text-dark-muted mb-1 md:mb-2 max-w-2xl">{subtitle}</p>
       )}
@@ -34,7 +42,7 @@ const HudScrollRow = ({ title, subtitle, children }) => {
       <button
         className="hidden md:flex items-center justify-center absolute left-0 top-[59%] -translate-y-1/2 bg-ink-elevated/80 hover:bg-ink-elevated text-hud-cyan hover:text-hud-cyan-strong p-3 rounded-full z-50 transition-colors duration-300 backdrop-blur-xl border border-hud-line shadow-cg-elevated cursor-pointer"
         onClick={() => scroll('left')}
-        aria-label={`Scroll ${title} left`}
+        aria-label={`Scroll ${label} left`}
       >
         <ChevronLeft size={18} />
       </button>
@@ -46,7 +54,7 @@ const HudScrollRow = ({ title, subtitle, children }) => {
       <button
         className="hidden md:flex items-center justify-center absolute right-0 top-[55%] -translate-y-1/2 bg-ink-elevated/80 hover:bg-ink-elevated text-hud-cyan hover:text-hud-cyan-strong p-3 rounded-full z-50 transition-colors duration-300 backdrop-blur-xl border border-hud-line shadow-cg-elevated cursor-pointer"
         onClick={() => scroll('right')}
-        aria-label={`Scroll ${title} right`}
+        aria-label={`Scroll ${label} right`}
       >
         <ChevronRight size={18} />
       </button>

@@ -5,7 +5,7 @@ import { FaGithub } from 'react-icons/fa'
 
 const Footer = () => {
   return (
-    <footer className="relative w-full bg-ink text-text-dark-muted px-8 md:px-16 pt-10 pb-6 text-sm border-t border-border-hairline">
+    <footer className="relative w-full bg-ink text-text-dark-muted px-8 md:px-16 pt-10 pb-20 sm:pb-6 text-sm border-t border-border-hairline">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <a
           href="https://github.com/sh1v-max/Netflix-GPT"

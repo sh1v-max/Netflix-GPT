@@ -20,6 +20,7 @@ import Header from '../layout/Header'
 import Footer from '../layout/Footer'
 import MovieCardHud from '../movies/MovieCardHud'
 import SectionEyebrow from '../shared/SectionEyebrow'
+import HudScrollRow from '../shared/HudScrollRow'
 import { Skeleton } from '@/components/ui/skeleton'
 import { auth } from '../../utils/firebaseConfig'
 import { addUser } from '../../store/userSlice'
@@ -312,20 +313,11 @@ const Profile = () => {
                 page to build your watchlist.
               </p>
             ) : (
-              <motion.div
-                initial="hidden"
-                animate="show"
-                variants={{ show: { transition: { staggerChildren: 0.03 } } }}
-                className="flex gap-3 overflow-x-auto no-scrollbar"
-              >
-                {watchlistItems.slice(0, 8).map((item) => (
-                  <motion.div
-                    key={`${item.media_type}-${item.id}`}
-                    variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-                    transition={{ duration: 0.3, ease: EASE }}
-                    className="shrink-0"
-                  >
+              <div className="-mx-4 md:-mx-8">
+                <HudScrollRow ariaLabel="watchlist">
+                  {watchlistItems.slice(0, 8).map((item) => (
                     <MovieCardHud
+                      key={`${item.media_type}-${item.id}`}
                       id={item.id}
                       posterPath={item.poster_path}
                       title={item.title || item.name}
@@ -335,9 +327,9 @@ const Profile = () => {
                       voteAverage={item.vote_average}
                       genreMap={genreMap}
                     />
-                  </motion.div>
-                ))}
-              </motion.div>
+                  ))}
+                </HudScrollRow>
+              </div>
             )}
           </div>
 

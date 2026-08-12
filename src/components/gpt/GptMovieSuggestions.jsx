@@ -36,7 +36,7 @@ const Turn = ({ turn, genreMap, isLast }) => {
   if (items.length === 0) return null
 
   return (
-    <div>
+    <div className="mx-4 md:mx-[10%]">
       <HudScrollRow title={`"${turn.query}"`}>
         {items.map(({ movie, reason, mediaType }) => (
           <MovieCardHud
@@ -53,7 +53,7 @@ const Turn = ({ turn, genreMap, isLast }) => {
           />
         ))}
       </HudScrollRow>
-      {!isLast && <div className="h-px bg-hud-line/30 mx-4 md:mx-[10%] mb-6" aria-hidden="true" />}
+      {!isLast && <div className="h-px bg-hud-line/30 mb-6" aria-hidden="true" />}
     </div>
   )
 }

@@ -2530,6 +2530,121 @@ round (per standing instruction) — this one in particular is worth a
 real click-through, ideally on a device/OS with reduce-motion on and off,
 since that's exactly the axis the bug lived on.
 
+### 3.11 — Fix: results row full-width; root-cause the "still not smooth" report
+User reported two things live: the AI search results row spans the full
+page width (unlike everything else, which sits inset), and the scroll
+animation is still not smooth despite 3.10.
+
+- [x] **Full-width fix**: `GptMovieSuggestions.jsx`'s `Turn` wrapper had
+      no horizontal margin at all — `HudScrollRow`'s own `px-6` was the
+      only inset, so the row stretched edge-to-edge instead of matching
+      the rest of the page's `mx-4 md:mx-[10%]` convention (used by
+      `ForYouRows`, the search bar, etc.). Added it.
+- [x] **"Still not smooth" — actually verified this time, not guessed**:
+      used `browser-automation` (justified here — two prior fix attempts
+      had already missed, guessing a third time risked the same).
+      Auto-logged in via the TEMP-DEBUG pattern in `Header.jsx` (reverted
+      exactly after, confirmed via `grep -n "TEMP-DEBUG"` exit 1),
+      clicked a real "next" button on `/title/movie/27205`'s Cast row,
+      and sampled `container.scrollLeft` every 50ms via `page.evaluate`:
+      `0 → 216 → 323 → 367 → 387 → 395 → 399 → 400` settling at ~450ms.
+      **That's a genuine eased animation — the code is correct.** Root
+      cause of the report was environmental, not code: this app had
+      never once been deployed to Firebase Hosting this entire session
+      (every verification step was `npm run build` only) — the user was
+      looking at whatever build predated this whole session's work,
+      which still had the original native
+      `scrollBy({behavior:'smooth'})`.
+- [x] Ran `npx firebase deploy --only hosting` — first hosting deploy
+      of the session. Ships every visual change made across this whole
+      thread (navbar, Home, Login, AI search page, Watchlist, Profile,
+      avatars, all of Phase 3, every scroll/width fix) to
+      `https://netflixgpt-e671d.web.app` for the first time.
+
+**Verified**: `npm run build` clean. Scroll animation verified directly
+via live `scrollLeft` sampling in a real browser (see above), not
+guessed. Hosting deploy succeeded (Firebase CLI confirmed release
+complete).
+
+### 3.12 — Fix: navbar invisible on mobile, plus a broader mobile audit
+User: "the navbar is not visible in phone's view... make everything
+absolute mobile responsive." Confirmed a real, serious gap: `Header.jsx`'s
+primary nav (`Home`/`Movies`/`TV Shows`/`Anime`/`Discover`) was wrapped in
+`hidden sm:flex` with **no mobile alternative at all** — below 640px
+there was no way to navigate between sections, full stop (the profile
+dropdown and language switcher were still reachable, just not the primary
+nav).
+
+- [x] **Fix**: added a hamburger trigger (`sm:hidden`) opening a
+      `Sheet` (`src/components/ui/sheet.jsx` — already in the project,
+      unused until now; Radix-based, same accessible pattern as the
+      existing profile `DropdownMenu` — real focus trap, Escape-to-close)
+      listing all five nav links. Extracted a `navLinks` array as the
+      single source of truth for both the desktop inline `<nav>` and the
+      mobile Sheet's list, replacing five near-identical hand-written
+      `<Link>` blocks with one `.map()` — was about to triple the
+      duplication otherwise.
+- [x] **Broader mobile audit** (per "make everything absolute mobile
+      responsive"), grepped for every `hidden {sm,md,lg}:{flex,block}` in
+      the codebase and checked each for a missing mobile fallback:
+      - `MediaConsole.jsx`'s filter sidebar (`hidden lg:block`) — **not a
+        bug**, already has a working `Filters` toggle button
+        (`lg:hidden`) that reveals the same `FilterPanelHud` inline.
+      - `HudScrollRow`/`SimilarTitlesHud`'s prev/next buttons
+        (`hidden md:flex`) — **not a bug**, rows stay natively
+        touch-scrollable without the button affordance, a standard
+        mobile pattern.
+      - Everything else hidden on small screens was purely decorative
+        (icons, dividers, a redundant poster thumbnail next to a hero
+        that already has a full backdrop image).
+      - **Found and fixed**: `AiSearchHome.jsx`'s root used `w-screen`
+        (`100vw`) instead of `w-full` — a common source of horizontal
+        overflow on mobile (`100vw` can include the scrollbar gutter,
+        while the visible content area doesn't), on the one page in the
+        app with floating decorative orbs positioned near the edges.
+        Switched to `w-full` and added `overflow-x-hidden` as a
+        defensive containment for those edge-positioned orbs.
+
+**Verified, live, not guessed**: redeployed
+(`npx firebase deploy --only hosting`), then used `browser-automation`
+against the actual production URL: confirmed zero horizontal overflow
+(`document.documentElement.scrollWidth === clientWidth`), and clicked the
+real hamburger button via `page.evaluate` — confirmed the Sheet mounted
+with all five nav links present in the DOM afterward. **Unrelated finding
+during this check, not caused by anything here**: a 404 on a Google Fonts
+Roboto Mono `.woff2` file — falls back to a system monospace font, not
+investigated further, flagged to the user.
+
+### 3.13 — Replace the hamburger with a bottom tab bar
+User, with a screenshot of their own portfolio site as reference: didn't
+want a hamburger drawer on mobile — wanted a fixed bottom tab bar instead
+(icon + label per section, active tab highlighted), plus "TV Shows" →
+"Shows" (shorter label, fits a tab better) and "keep all at the very
+bottom, like this."
+
+- [x] Removed the `Sheet`-based hamburger drawer from 3.12 entirely
+      (import, trigger button, `SheetContent` JSX) — not kept as a
+      fallback, fully replaced per the explicit "no hamburger" ask.
+- [x] New `src/components/layout/MobileBottomNav.jsx`: fixed
+      `bottom-0` bar, `sm:hidden`, one tab per `navLinks` entry (icon +
+      11px label), active tab in `hud-cyan-strong` + bolder icon stroke,
+      `pb-[env(safe-area-inset-bottom)]` for notched-phone safe areas.
+      `navLinks` (the same array Header already built for the desktop
+      `<nav>` in 3.12) gained an `icon` field per entry (`Home`, `Film`,
+      `Tv`, `Sparkles`, `Compass` from lucide-react) and the `Shows`
+      label change — one array still drives both desktop nav and the
+      mobile tab bar, no duplication.
+- [x] `Footer.jsx`: `pb-20 sm:pb-6` (was flat `pb-6`) — the fixed bottom
+      bar would otherwise permanently cover the last ~70px of every
+      page's footer on mobile once scrolled all the way down. One shared
+      component, so this covers every page rather than needing the fix
+      repeated per-page.
+
+**Verified, live**: redeployed, then confirmed via `browser-automation`
+against the production URL: bottom nav present with all 5 labels
+(`Home`/`Movies`/`Shows`/`Anime`/`Discover`, confirming the label
+rename shipped), hamburger button completely gone from the DOM.
+
 ---
 
 ## Phase 4 — Polish & Professional Credibility

@@ -10,7 +10,7 @@ import { floatOrb } from '@/lib/motion'
 // (previously a Redux view-state toggle sharing one URL with the movie
 // grid, which meant "Home" and "Movies" pointed at the same address).
 const AiSearchHome = () => (
-  <div className="relative w-screen min-h-screen flex flex-col">
+  <div className="relative w-full min-h-screen overflow-x-hidden flex flex-col">
     <Header />
     <div className="flex-1">
       <div className="relative w-full h-full">

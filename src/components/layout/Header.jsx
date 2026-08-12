@@ -14,10 +14,22 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { SUPPORTED_LANG } from '../../utils/constant'
 import Logo from './Logo'
+import MobileBottomNav from './MobileBottomNav'
 import { addUser, removeUser } from '../../store/userSlice'
 import { changeLanguages } from '../../store/configSlice'
 import usePreferencesSync from '../../hooks/usePreferencesSync'
-import { User, LogOut, Bookmark, Globe, ChevronDown } from 'lucide-react'
+import {
+  User,
+  LogOut,
+  Bookmark,
+  Globe,
+  ChevronDown,
+  Home as HomeIcon,
+  Film,
+  Tv,
+  Sparkles,
+  Compass,
+} from 'lucide-react'
 
 const Header = () => {
   const navigate = useNavigate()
@@ -116,6 +128,17 @@ const Header = () => {
   // actual landing page at '/'. Match the Logo link's own behavior.
   const isHomeActive = user ? location.pathname === '/home' : location.pathname === '/'
 
+  // Single source of truth for both the desktop inline nav and the mobile
+  // bottom tab bar (MobileBottomNav), so a new section only needs adding
+  // in one place. `icon` is only used by the bottom bar.
+  const navLinks = [
+    { to: user ? '/home' : '/', label: 'Home', icon: HomeIcon, active: isHomeActive },
+    { to: '/movies', label: 'Movies', icon: Film, active: location.pathname === '/movies' },
+    { to: '/shows', label: 'Shows', icon: Tv, active: location.pathname === '/shows' },
+    { to: '/anime', label: 'Anime', icon: Sparkles, active: location.pathname === '/anime' },
+    { to: '/discover', label: 'Discover', icon: Compass, active: location.pathname === '/discover' },
+  ]
+
   const NavUnderline = () => (
     <motion.span
       layoutId="header-nav-underline"
@@ -125,6 +148,7 @@ const Header = () => {
   )
 
   return (
+    <>
     <header
       className={`fixed top-0 left-0 w-full z-30 flex items-center justify-between px-4 md:px-8 transition-all duration-500 ${
         isScrolled
@@ -134,31 +158,17 @@ const Header = () => {
           : 'bg-ink py-3 md:py-4'
       }`}
     >
-      <div className="flex items-center gap-4 md:gap-8">
+      <div className="flex items-center gap-2 md:gap-8">
         <Link to={user ? '/home' : '/'}>
           <Logo className="text-text-dark" />
         </Link>
         <nav className="hidden sm:flex items-center gap-4 text-sm">
-          <Link to={user ? '/home' : '/'} className={navLinkClass(isHomeActive)}>
-            Home
-            {isHomeActive && <NavUnderline />}
-          </Link>
-          <Link to="/movies" className={navLinkClass(location.pathname === '/movies')}>
-            Movies
-            {location.pathname === '/movies' && <NavUnderline />}
-          </Link>
-          <Link to="/shows" className={navLinkClass(location.pathname === '/shows')}>
-            TV Shows
-            {location.pathname === '/shows' && <NavUnderline />}
-          </Link>
-          <Link to="/anime" className={navLinkClass(location.pathname === '/anime')}>
-            Anime
-            {location.pathname === '/anime' && <NavUnderline />}
-          </Link>
-          <Link to="/discover" className={navLinkClass(location.pathname === '/discover')}>
-            Discover
-            {location.pathname === '/discover' && <NavUnderline />}
-          </Link>
+          {navLinks.map((link) => (
+            <Link key={link.to} to={link.to} className={navLinkClass(link.active)}>
+              {link.label}
+              {link.active && <NavUnderline />}
+            </Link>
+          ))}
         </nav>
       </div>
       <div className="flex items-center gap-2 md:gap-2">
@@ -253,6 +263,8 @@ const Header = () => {
         )}
       </div>
     </header>
+    <MobileBottomNav links={navLinks} />
+    </>
   )
 }
 
