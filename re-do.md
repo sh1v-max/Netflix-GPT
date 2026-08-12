@@ -2422,6 +2422,72 @@ Gemini response** — today's free-tier quota (20 req/day) was already
 exhausted before this round (see 3.7), so `mediaType` classification
 accuracy in practice is unconfirmed until the quota resets.
 
+### 3.9 — Fix: scroll buttons, and split "For You" into Movies/TV/Anime
+Next-day follow-up (quota reset overnight). Two more user reports: the
+prev/next scroll buttons on any row "not working as expected," and "For
+You" only ever showing anime — not separate personalized rows for movies,
+shows, and anime.
+
+- [x] **Scroll button root cause**: `HudScrollRow.scroll()` called
+      `container.scrollBy({ behavior: 'smooth' })` (animates
+      asynchronously) and then, in the same synchronous tick, read
+      `container.scrollLeft` to decide whether to teleport to the
+      opposite end. That read almost always saw the *stale pre-scroll*
+      position (the smooth animation hadn't started moving yet), so the
+      "wrap to the other end" branch fired far more often than intended
+      — a click near either edge would jerk to the opposite end instead
+      of scrolling normally. Fixed by dropping the wraparound entirely
+      (unexpected UX for a row of unknown length anyway — buttons should
+      just clamp at the ends, not teleport) and scrolling by 85% of the
+      container's own width instead of a fixed 850px guess that
+      over/undershot depending on screen size.
+- [x] **"For You" showing only anime — root cause**: one Gemini call was
+      asked to recommend "movies or TV shows" off one *mixed* taste
+      profile; if that profile happened to skew toward anime-genre
+      ratings, every suggestion in the response legitimately came back
+      as anime — GPT wasn't malfunctioning, the request just never
+      constrained or separated categories.
+- [x] **Fix — three independent personalized rows**, each computed from
+      only its own slice of rating history:
+      - New `src/utils/splitRatingsByCategory.jsx` buckets
+        `preferencesSlice`'s `ratings`/`ratedGenres`/`ratedYears` into
+        `movie`/`tv`/`anime` (same Animation-genre-id-16 approximation
+        `Anime.jsx` uses elsewhere — true anime detection there also
+        checks Japanese `original_language`, which isn't stored per
+        rating, so this is "animated" rather than strictly "Japanese
+        animated"; noted as a known simplification, not pretended to be
+        exact).
+      - `useForYouRecommendations.jsx` rewritten to take a `category`
+        param: computes that category's own `computeTasteProfile` from
+        the split bucket (not the full mixed history), and sends a new
+        `category` field to the worker.
+      - `gpt-proxy-worker/src/index.js`: new `CATEGORY_CONSTRAINTS` map
+        appends an explicit hard constraint to the system prompt per
+        category ("only suggest movies — no TV shows", etc.) — this is
+        what actually guarantees each row's response matches its
+        category, not just a hopeful instruction.
+      - `forYouSlice.jsx`: restructured from one flat cache entry to
+        `{movie, tv, anime}`, each with its own independent
+        fetch/cache/TTL lifecycle.
+      - `ForYouRows.jsx`: rewritten around a `CategoryRow` sub-component
+        rendered three times (Movies/TV Shows/Anime) inside the same
+        persistent panel from 3.7 — each row independently shows its own
+        not-eligible progress (`X/3 rated`, scoped to that category),
+        loading, quiet error, or picks, so one category being empty
+        doesn't block the other two.
+      - **Known cost tradeoff**: this changes "For You" from 1 Gemini
+        call to up to 3 (one per eligible category, still cached 24h
+        each) — meaningfully higher quota usage per user per day than
+        before. Worth keeping in mind given the free-tier 20/day ceiling
+        discussed in 3.7; billing becomes more worth doing sooner if
+        usage grows.
+
+**Verified**: `npm run build` clean. Worker redeployed (wrangler
+confirmed upload + live URL). Not runtime-verified against a real Gemini
+response this round either — didn't want to spend more of a
+freshly-reset daily quota on my own testing right after the previous
+round exhausted it; worth trying live with the actual account.
+
 ---
 
 ## Phase 4 — Polish & Professional Credibility

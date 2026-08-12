@@ -1,29 +1,31 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-// Cache for the no-query "For You" recommendations (3.3) — separate from
-// gptSlice (query-driven search results) so navigating away from /home and
-// back doesn't lose either one. fetchedAt + profileSignature let
-// useForYouRecommendations decide whether to refetch instead of hitting
-// the proxy on every mount.
+const emptyEntry = () => ({
+  movieNames: null,
+  mediaTypes: null,
+  movieResults: null,
+  reasons: null,
+  fetchedAt: null,
+  profileSignature: null,
+})
+
+// Cache for the no-query "For You" recommendations (3.3), one independent
+// entry per category (Movies/TV Shows/Anime) so each row can be
+// personalized from its own slice of rating history and refetch on its
+// own schedule — separate from gptSlice (query-driven search results) so
+// navigating away from /home and back doesn't lose either one.
 const forYouSlice = createSlice({
   name: 'forYou',
   initialState: {
-    movieNames: null,
-    mediaTypes: null,
-    movieResults: null,
-    reasons: null,
-    fetchedAt: null,
-    profileSignature: null,
+    movie: emptyEntry(),
+    tv: emptyEntry(),
+    anime: emptyEntry(),
   },
   reducers: {
     setForYouResult: (state, action) => {
-      const { movieNames, mediaTypes, movieResults, reasons, fetchedAt, profileSignature } = action.payload
-      state.movieNames = movieNames
-      state.mediaTypes = mediaTypes
-      state.movieResults = movieResults
-      state.reasons = reasons
-      state.fetchedAt = fetchedAt
-      state.profileSignature = profileSignature
+      const { category, movieNames, mediaTypes, movieResults, reasons, fetchedAt, profileSignature } =
+        action.payload
+      state[category] = { movieNames, mediaTypes, movieResults, reasons, fetchedAt, profileSignature }
     },
   },
 })

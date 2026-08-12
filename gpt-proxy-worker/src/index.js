@@ -13,6 +13,18 @@ const GPT_QUERY =
 const MAX_HISTORY_TURNS = 5
 const MAX_HISTORY_QUERY_LENGTH = 300
 
+// Optional strict per-request category constraint — used by the "For You"
+// section's three separate rows (Movies/TV Shows/Anime) so each row's
+// call is guaranteed to only return that category, rather than relying on
+// GPT_QUERY's general "picking whichever fits" behavior to naturally
+// split evenly (it doesn't — a taste profile skewed toward one category
+// made every suggestion come back as that category).
+const CATEGORY_CONSTRAINTS = {
+  movie: ' For this specific request, only suggest movies — no TV shows.',
+  tv: ' For this specific request, only suggest TV shows — no movies.',
+  anime: ' For this specific request, only suggest anime (Japanese animated movies or TV shows) — no live-action, no non-Japanese animation.',
+}
+
 // profileSummary is a short client-built sentence (buildPersonalizedPrompt,
 // src/utils/) describing the user's taste graph — capped here since it
 // crosses a public, unauthenticated endpoint and lands in the system
@@ -49,6 +61,7 @@ export default {
 
     let query
     let profileSummary = ''
+    let category = ''
     let history = []
     try {
       const body = await request.json()
@@ -57,6 +70,9 @@ export default {
         typeof body.profileSummary === 'string'
           ? body.profileSummary.trim().slice(0, MAX_PROFILE_SUMMARY_LENGTH)
           : ''
+      category = Object.prototype.hasOwnProperty.call(CATEGORY_CONSTRAINTS, body.category)
+        ? body.category
+        : ''
       if (Array.isArray(body.history)) {
         history = body.history
           .filter((turn) => turn && typeof turn.query === 'string' && Array.isArray(turn.names))
@@ -80,7 +96,9 @@ export default {
       })
     }
 
-    const systemPrompt = profileSummary ? `${GPT_QUERY} ${profileSummary}` : GPT_QUERY
+    const systemPrompt =
+      (profileSummary ? `${GPT_QUERY} ${profileSummary}` : GPT_QUERY) +
+      (category ? CATEGORY_CONSTRAINTS[category] : '')
 
     // Prior turns become real user/assistant exchanges (not flattened into
     // one text blob) so Gemini's own multi-turn handling resolves ordinal

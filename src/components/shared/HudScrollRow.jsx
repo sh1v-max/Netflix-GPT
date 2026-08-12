@@ -9,20 +9,19 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 const HudScrollRow = ({ title, subtitle, children }) => {
   const scrollRef = useRef(null)
 
+  // Scrolls by ~85% of the visible width (not a fixed pixel guess — that
+  // over/under-shot depending on screen size) and just lets the browser
+  // clamp at either end, rather than teleporting to the opposite end.
+  // The old wraparound logic read `container.scrollLeft` synchronously
+  // right after calling `scrollBy({ behavior: 'smooth' })`, which animates
+  // asynchronously — so that read almost always saw the stale pre-scroll
+  // position, firing the "snap to the other end" branch far more often
+  // than intended and making the buttons feel broken/jarring.
   const scroll = (direction) => {
     const container = scrollRef.current
     if (!container) return
-    const scrollAmount = 850
-    const maxScroll = container.scrollWidth - container.clientWidth
-    if (direction === 'left') {
-      container.scrollBy({ left: -scrollAmount, behavior: 'smooth' })
-      if (container.scrollLeft <= 0) container.scrollLeft = maxScroll
-    } else {
-      container.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-      if (container.scrollLeft + container.clientWidth >= container.scrollWidth) {
-        container.scrollLeft = 0
-      }
-    }
+    const amount = container.clientWidth * 0.85
+    container.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' })
   }
 
   return (
