@@ -4,6 +4,7 @@ import { Layers, ChevronLeft, ChevronRight } from 'lucide-react'
 import MovieCardHud from '../movies/MovieCardHud'
 import useGenres from '../../hooks/useGenres'
 import { getReleaseYear } from '../../utils/constant'
+import { smoothScrollBy } from '../../utils/smoothScrollBy'
 import { EASE } from '@/lib/motion'
 
 const stagger = {
@@ -29,14 +30,7 @@ const SimilarTitlesHud = ({ movies, mediaType = 'movie' }) => {
   if (!movies || movies.length === 0) return null
 
   const scroll = (direction) => {
-    const container = scrollRef.current
-    if (!container) return
-    const scrollAmount = 700
-    if (direction === 'left') {
-      container.scrollBy({ left: -scrollAmount, behavior: 'smooth' })
-    } else {
-      container.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-    }
+    smoothScrollBy(scrollRef.current, direction === 'left' ? -700 : 700)
   }
 
   return (
@@ -61,7 +55,7 @@ const SimilarTitlesHud = ({ movies, mediaType = 'movie' }) => {
         initial="hidden"
         animate="show"
         variants={stagger}
-        className="flex gap-3 md:gap-4 overflow-x-scroll no-scrollbar scroll-smooth pt-2"
+        className="flex gap-3 md:gap-4 overflow-x-scroll no-scrollbar pt-2"
       >
         {movies.map((movie) => (
           <motion.div key={movie.id} variants={fadeUp} className="shrink-0">

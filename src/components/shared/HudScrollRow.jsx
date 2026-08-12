@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { smoothScrollBy } from '../../utils/smoothScrollBy'
 
 // Space-theme scroll-row shell — title + horizontal card strip + prev/next
 // arrows styled to match the rest of the app (hud-cyan, hairline border,
@@ -10,18 +11,15 @@ const HudScrollRow = ({ title, subtitle, children }) => {
   const scrollRef = useRef(null)
 
   // Scrolls by ~85% of the visible width (not a fixed pixel guess — that
-  // over/under-shot depending on screen size) and just lets the browser
-  // clamp at either end, rather than teleporting to the opposite end.
-  // The old wraparound logic read `container.scrollLeft` synchronously
-  // right after calling `scrollBy({ behavior: 'smooth' })`, which animates
-  // asynchronously — so that read almost always saw the stale pre-scroll
-  // position, firing the "snap to the other end" branch far more often
-  // than intended and making the buttons feel broken/jarring.
+  // over/under-shot depending on screen size), animated via
+  // smoothScrollBy rather than the native scrollBy({behavior:'smooth'})
+  // — see that file for why (OS reduced-motion collapses native smooth
+  // scroll to an instant jump with no visible animation at all).
   const scroll = (direction) => {
     const container = scrollRef.current
     if (!container) return
     const amount = container.clientWidth * 0.85
-    container.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' })
+    smoothScrollBy(container, direction === 'left' ? -amount : amount)
   }
 
   return (
@@ -41,7 +39,7 @@ const HudScrollRow = ({ title, subtitle, children }) => {
         <ChevronLeft size={18} />
       </button>
 
-      <div ref={scrollRef} className="flex overflow-x-scroll no-scrollbar scroll-smooth pt-2">
+      <div ref={scrollRef} className="flex overflow-x-scroll no-scrollbar pt-2">
         <div className="flex gap-2 md:gap-4">{children}</div>
       </div>
 

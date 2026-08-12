@@ -29,6 +29,7 @@ import RatingControl from '../shared/RatingControl'
 import WatchlistButton from '../shared/WatchlistButton'
 import { mediaDocId } from '../../utils/firestorePaths'
 import { BACKDROP_CDN_URL, IMG_CDN_URL } from '../../utils/constant'
+import { smoothScrollBy } from '../../utils/smoothScrollBy'
 import { EASE } from '@/lib/motion'
 import SectionEyebrow from '../shared/SectionEyebrow'
 
@@ -36,7 +37,7 @@ import SectionEyebrow from '../shared/SectionEyebrow'
 // in the section header instead of a "More" toggle.
 const RowNavButtons = ({ scrollRef }) => {
   const scroll = (direction) => {
-    scrollRef.current?.scrollBy({ left: direction === 'left' ? -400 : 400, behavior: 'smooth' })
+    smoothScrollBy(scrollRef.current, direction === 'left' ? -400 : 400)
   }
   return (
     <div className="flex items-center gap-1">

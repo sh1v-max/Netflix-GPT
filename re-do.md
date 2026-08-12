@@ -2488,6 +2488,48 @@ response this round either — didn't want to spend more of a
 freshly-reset daily quota on my own testing right after the previous
 round exhausted it; worth trying live with the actual account.
 
+### 3.10 — Fix: scroll buttons had zero animation for some users
+3.9's scroll-button fix (dropping the wraparound teleport) turned out to
+only be half the story — user reported every prev/next button across the
+app "just jumps... no animation, no motion, no nothing," everywhere, not
+just the rows touched in 3.9.
+
+- [x] **Root cause**: every scroll row (`HudScrollRow`, `SimilarTitlesHud`,
+      `DetailPage`'s Cast/Crew `RowNavButtons`) called the *native*
+      `element.scrollBy({behavior:'smooth'})`. Browsers are spec'd to
+      collapse that into an instant jump when the OS has "reduce motion"
+      enabled — a real accessibility feature, but silent: nothing in the
+      app told the user why their clicks produced no animation. Confirmed
+      this is a known failure mode in this exact codebase already — see
+      `index.css`'s `.marquee-track` comment, which documents a prior
+      Framer Motion `animate()` attempt for that carousel that "silently
+      never moved for the same user," strongly indicating their OS has
+      this preference set.
+- [x] **Fix — one shared animated-scroll utility**, at the user's request
+      to standardize on Framer Motion for all motion in the app rather
+      than hand-rolling a separate `requestAnimationFrame` tween: new
+      `src/utils/smoothScrollBy.jsx` uses Motion's imperative `animate()`
+      (same engine/easing token, `EASE` from `@/lib/motion`, as every
+      other animation here) to tween `scrollLeft` directly, cancelling
+      any in-flight scroll on the same container first so rapid clicks
+      don't fight each other. Unlike the marquee's infinite-loop case,
+      finite tweens under `MotionConfig reducedMotion="user"` correctly
+      jump straight to the end value instead of never starting — so this
+      still respects the OS setting, it just does so *visibly* (the row
+      still scrolls) instead of doing nothing.
+- [x] Replaced every native `scrollBy({behavior:'smooth'})` call with
+      `smoothScrollBy()`: `HudScrollRow.jsx`, `SimilarTitlesHud.jsx`,
+      `DetailPage.jsx`'s `RowNavButtons`. Removed the now-redundant
+      Tailwind `scroll-smooth` class from all three scroll containers
+      (CSS `scroll-behavior: smooth` and manually-driven `scrollLeft`
+      writes fighting over the same property was worth avoiding, not
+      confirmed to actually conflict but not worth the risk).
+
+**Verified**: `npm run build` clean. Not runtime-checked in-browser this
+round (per standing instruction) — this one in particular is worth a
+real click-through, ideally on a device/OS with reduce-motion on and off,
+since that's exactly the axis the bug lived on.
+
 ---
 
 ## Phase 4 — Polish & Professional Credibility
