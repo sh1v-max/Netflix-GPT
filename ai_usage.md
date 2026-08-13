@@ -12,17 +12,34 @@ Firestore, Storage) are documented in `OVERVIEW.md`.
 
 On `/home`, a user types a natural-language query ("something like
 Inception, but shorter"). That query goes to an LLM, which returns 10
-comma-separated movie names. Cinegraph then looks each of those names
-up on TMDB (`searchMovieTMDB` in `GptSearch.jsx`) to get posters,
-ratings, and IDs, and renders the results as movie cards.
+titles as a JSON array — each with a classified `mediaType`
+(`"movie"`/`"tv"`, covering anime too, since anime is just a TV show or
+movie by TMDB's own data model) and a one-line `reason` explaining why
+it fits. Cinegraph then looks each title up on TMDB
+(`searchTitleTMDB`, routed to `/search/movie` or `/search/tv` based on
+that classification) to get a real poster/rating/ID, and renders the
+results as cards with the reason shown on hover.
 
-The LLM's only job is: given a query, produce 10 relevant movie titles
-in a specific comma-separated format. It does not know about TMDB, it
-does not return posters or metadata — that's a separate step.
+Three things layer on top of the base search:
+- **Personalization** — once you've rated 3+ titles, a short summary
+  of your taste graph (favorite genres, era, what you avoid) rides
+  along with every query, so results are shaped by what you actually
+  like.
+- **Multi-turn refinement** — up to 5 prior turns get sent as real
+  conversation history, so "more like the third one but shorter"
+  resolves against what was actually suggested last time.
+- **"For You"** — three independent no-query rows (Movies / TV Shows /
+  Anime) on the same page, each personalized from only that category's
+  rating history, refreshed at most once a day per category.
+
+The LLM's job is strictly: given a query (+ optional profile summary,
+history, category constraint), produce 10 relevant titles in that JSON
+shape. It does not know about TMDB, does not return posters or
+metadata — that's a separate step done entirely client-side.
 
 ---
 
-## 2. The history: three providers in one week
+## 2. The history: three providers, one reverted mid-course
 
 ### 2a. OpenAI, direct (original)
 The project started as a Netflix-clone tutorial and originally called
@@ -98,34 +115,77 @@ card required at all** — 100,000 requests/day, no billing account
 needed to get started. For a single small proxy endpoint, that's a
 much better fit.
 
+### 2d. Attempted OpenAI direct (explored, reverted same day)
+Gemini's free tier turned out to cap at **20 requests/day**, regardless
+of request size — hit that wall during normal development/testing, not
+even real traffic. OpenAI's dashboard advertised a much larger free
+daily token allotment (250K/day for flagship models, 2.5M/day for mini
+models) for eligible accounts, so we tried switching — same
+OpenAI-compatible shape Gemini's endpoint was already mimicking, so it
+was close to a one-line change (`OPENAI_URL`/`OPENAI_MODEL`/
+`env.OPENAI_KEY` in place of the `GEMINI_*` equivalents).
+
+**Reverted after a live test**: the deployed Worker's first real
+request to `api.openai.com` came back `"credit_balance_exhausted"` —
+OpenAI's API rejects all requests, including ones that would fall
+under the free daily allotment, unless the account has a funded/billed
+balance. The "eligible for free daily usage" messaging in the OpenAI
+dashboard isn't a fully standalone no-card tier in practice. Reverted
+`gpt-proxy-worker/src/index.js` back to Gemini (confirmed via `git
+diff` showing only comment-wording changes from the pre-attempt
+version — no functional drift). The `OPENAI_KEY` Worker secret is
+still set, harmless and unused, in case this gets revisited once
+billing is set up.
+
+**Real secret-exposure incident during this attempt, worth knowing
+about**: setting the `OPENAI_KEY` secret the first time was done
+incorrectly — `wrangler secret put <the actual key>` instead of
+`wrangler secret put OPENAI_KEY` (the argument is the secret *name*,
+the value goes at the following interactive prompt) — which put the
+live key in shell history and a chat transcript. The key was revoked
+and regenerated before it was ever actually used. If you're running
+`wrangler secret put` yourself: the value always goes at the prompt,
+never on the command line.
+
+Currently back on **Gemini** — 2c above describes the live setup.
+
 ---
 
 ## 3. Current architecture
 
 ```
 Browser (GptSearch.jsx)
-      │  fetch(GPT_PROXY_URL, { method: 'POST', body: { query } })
+      │  fetch(GPT_PROXY_URL, {
+      │    method: 'POST',
+      │    body: { query, profileSummary, history, category }
+      │  })
       │  (same-origin-friendly, CORS handled by the Worker)
       ▼
 Cloudflare Worker  (gpt-proxy-worker/src/index.js)
       │  - holds GEMINI_KEY as an encrypted secret (never in git, never in frontend)
-      │  - builds the system prompt + user query into a chat completion request
+      │  - builds the system prompt (GPT_QUERY + profileSummary +
+      │    optional CATEGORY_CONSTRAINTS entry) + prior turns
+      │    (as real user/assistant message pairs) + the new query
       │  - fetch(GEMINI_URL, { headers: { Authorization: Bearer GEMINI_KEY } })
       ▼
 Google Gemini API  (generativelanguage.googleapis.com, OpenAI-compatible endpoint)
-      │  returns { choices: [{ message: { content: "Movie1,Movie2,..." } }] }
+      │  returns { choices: [{ message: { content: '[{"name":...,"mediaType":...,"reason":...}, ...]' } }] }
       ▼
-Worker extracts `content`, returns { content } to the browser
+Worker strips an accidental ```json fence if present, JSON.parses it,
+normalizes mediaType to exactly "movie"/"tv", 502s with a clear error
+on anything malformed — returns { results } to the browser
       ▼
-Browser splits on comma, looks each title up on TMDB, renders results
+Browser routes each title to /search/movie or /search/tv based on its
+mediaType (searchTitleTMDB), renders results with the reason on hover
 ```
 
-The Worker is a **thin, dumb pass-through with one extra step**: it
-injects the system prompt server-side (so the prompt itself isn't
-visible/editable from the browser either) and holds the credential.
-It does not do anything with TMDB — that lookup still happens entirely
-client-side, same as before, since TMDB's key is a read-only public
-API key and isn't sensitive the same way an LLM key is.
+The Worker is a **thin pass-through with a few extra steps**: it
+injects the system prompt server-side (so it isn't visible/editable
+from the browser), holds the credential, validates the model's JSON
+response shape before forwarding it, and reconstructs multi-turn
+history as real chat messages. It does not do anything with TMDB —
+that lookup still happens entirely client-side, since TMDB's key is a
+read-only public token and isn't sensitive the same way an LLM key is.
 
 ---
 
@@ -133,14 +193,18 @@ API key and isn't sensitive the same way an LLM key is.
 
 | What | Where | Notes |
 |---|---|---|
-| Worker source code | `gpt-proxy-worker/src/index.js` | The Gemini call, the system prompt (`GPT_QUERY`), the model name, the CORS allowlist. This is the one file to edit for any prompt/model change. |
+| Worker source code | `gpt-proxy-worker/src/index.js` | The Gemini call, the system prompt (`GPT_QUERY`), `CATEGORY_CONSTRAINTS`, the model name, the CORS allowlist. This is the one file to edit for any prompt/model change. |
 | Worker config | `gpt-proxy-worker/wrangler.toml` | Worker name (`cinegraph-gpt-proxy`), entry file, compatibility date |
 | Worker's own deps | `gpt-proxy-worker/package.json` | Just `wrangler` as a devDependency — **separate from the main project's `package.json`**, not part of the Vite build |
+| Worker docs | `gpt-proxy-worker/README.md` | Shorter, setup-focused version of this doc |
 | Gemini API key | Cloudflare Worker secret, name `GEMINI_KEY` | Set via `wrangler secret put`, never in any file in this repo. See §6. |
-| Frontend call site | `src/components/gpt/GptSearch.jsx` (`runSearch`) | Plain `fetch()`, no SDK |
+| Frontend call sites | `src/components/gpt/GptSearch.jsx` (`runSearch`), `src/hooks/useForYouRecommendations.jsx` | Plain `fetch()`, no SDK |
+| Personalization | `src/utils/buildPersonalizedPrompt.jsx` | Turns a taste profile into the `profileSummary` string sent to the Worker |
+| TMDB lookup | `src/utils/searchTitleTMDB.jsx` | Routes each result to `/search/movie` or `/search/tv` by its classified `mediaType` |
 | Frontend config | `src/utils/constant.jsx` — exports `GPT_PROXY_URL` | Reads `import.meta.env.VITE_GPT_PROXY_URL` |
 | Frontend env var | `.env` — `VITE_GPT_PROXY_URL` | The deployed Worker's URL. Safe to expose — it's just an endpoint, not a secret. |
 | Deployed Worker URL | `https://cinegraph-gpt-proxy.singhshiv0427.workers.dev` | Live, currently deployed |
+| CORS allowlist | `ALLOWED_ORIGINS` in `gpt-proxy-worker/src/index.js` | Currently: `localhost:5173`/`5174`, `https://cinewatchgraph-ai.web.app` (the current deployed frontend), plus the original `netflixgpt-e671d.*` origins (frozen site, kept for safety) |
 
 **What's gone / no longer exists**: `src/utils/openaiConfig.jsx`
 (deleted), the `openai` npm package (uninstalled from the main
@@ -214,9 +278,11 @@ curl -s -X POST https://cinegraph-gpt-proxy.singhshiv0427.workers.dev \
   -H "Content-Type: application/json" \
   -d '{"query":"Inception"}'
 ```
-Should return `{"content":"Inception,Interstellar,..."}`. If it
-errors, check `npx wrangler tail` (streams live logs from the deployed
-Worker) while re-running the curl command.
+Should return `{"results":[{"name":"Inception","mediaType":"movie","reason":"..."}, ...]}`
+(10 objects). If it errors, check `npx wrangler tail` (streams live
+logs from the deployed Worker) while re-running the curl command. Be
+mindful this counts against Gemini's daily quota (§7) just like a real
+search does — don't loop this for debugging.
 
 ### Changing the model or the prompt
 Both live in `gpt-proxy-worker/src/index.js` as `GEMINI_MODEL` and
@@ -242,14 +308,18 @@ practice it'll look like the fetch silently fails from that origin.
 
 | | Cloudflare Workers (proxy) | Google Gemini (`gemini-3.5-flash`) |
 |---|---|---|
-| Free tier | 100,000 requests/day | Free tier documented, generous quota; exact rate limit varies by model — check AI Studio's dashboard for your key's current limits |
+| Free tier | 100,000 requests/day | **20 requests/day**, confirmed by hitting it directly (`RESOURCE_EXHAUSTED`, `generate_content_free_tier_requests` metric) — this is real, not generous for active development |
 | Card required | No | No (AI Studio key creation doesn't require one) |
-| What happens over quota | Requests start failing until next day / until upgrading | Requests start failing (429) until quota resets |
+| What happens over quota | Requests start failing until next day / until upgrading | Requests start failing (429, surfaced as a Worker 502) until quota resets (daily) |
 
-For a personal/portfolio project's traffic level, neither limit should
-realistically be hit. If Gemini search ever starts failing in a way
-that looks like a quota issue (not a code error), check the AI Studio
-dashboard for the key's current usage before assuming something broke.
+The Cloudflare side won't realistically be hit for a personal
+project's traffic. **Gemini's 20/day easily will be** — every real
+search, every "For You" category refresh, and any manual `curl`
+testing all count against the same 20. If search starts failing in a
+way that looks like a quota issue (not a code error), that's almost
+certainly it — check the AI Studio dashboard, or just wait for the
+daily reset. Enabling billing on the Google Cloud project raises this
+substantially; not done yet for this project.
 
 ---
 
@@ -257,19 +327,23 @@ dashboard for the key's current usage before assuming something broke.
 
 - The Gemini key exists in exactly one place outside Google's own
   systems: the `GEMINI_KEY` secret on the `cinegraph-gpt-proxy`
-  Worker. It is not in this git repo, not in `.env` (as an active
-  variable — see the backup-only commented line, §9), and not in the
+  Worker. It is not in this git repo, not in `.env`, and not in the
   built/shipped frontend bundle.
-- `.env` does contain a **commented-out** backup of the raw key value
-  (`# GEMINI_KEY_BACKUP=...`), added on request purely so it isn't
-  lost. `.env` is gitignored, so this never reaches version control —
-  but if `.env` is ever shared, copied, or the repo's gitignore status
-  changes, that comment goes with it. Worth deleting once you're
-  confident you won't need the backup.
+- **A real incident already happened here, worth learning from**: a
+  `.env` line kept a commented-out backup of the raw key
+  (`# GEMINI_KEY_BACKUP=...`) "just in case." VS Code's Local History
+  extension snapshotted `.env` (including that line) into `.history/`,
+  which then got swept into a git commit by a broad `git add` and
+  nearly reached GitHub before push protection caught it. Fixed by:
+  removing the backup line entirely (a live key has no business
+  sitting in a plaintext comment, however well-intentioned), untracking
+  `.history/` and gitignoring it, and amending the commit before it
+  ever successfully pushed. **Don't reintroduce a "backup" key comment
+  in `.env`** — if the key is ever lost, just generate a new one (§6).
 - If the key ever leaks (accidentally committed, pasted somewhere
-  public, etc.), rotate it immediately: generate a new one in AI
-  Studio, delete the old one there, and run `wrangler secret put
-  GEMINI_KEY` with the new value.
+  public, shown in a terminal/chat transcript, etc.), rotate it
+  immediately: generate a new one in AI Studio, delete the old one
+  there, and run `wrangler secret put GEMINI_KEY` with the new value.
 
 ---
 
@@ -279,8 +353,9 @@ dashboard for the key's current usage before assuming something broke.
 ```
 VITE_TMDB_KEY="..."         # TMDB read access token (safe to expose — read-only)
 VITE_GPT_PROXY_URL="https://cinegraph-gpt-proxy.singhshiv0427.workers.dev"
-# GEMINI_KEY_BACKUP=...     # commented out, not read by the app — backup only, see §8
 ```
+No LLM key of any kind belongs here — see §8 for why, including a real
+incident where a "just a backup" comment nearly leaked one.
 
 **Worker (`gpt-proxy-worker/`, no `.env` file at all)**:
 The Worker has no env file — its one secret (`GEMINI_KEY`) lives in
