@@ -36,3 +36,7 @@ dist-ssr
 # Claude Code session transcripts — never commit these, they can contain
 # the full raw content of everything read/discussed in a chat
 *.jsonl
+
+# Claude Code's own bundled skill tooling — assistant infrastructure, not
+# part of this app; doesn't belong in a public project repo.
+.claude
