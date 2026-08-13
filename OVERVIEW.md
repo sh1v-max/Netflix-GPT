@@ -305,7 +305,16 @@ prop drilling.
 
 ### Hosting
 `npm run build` → `dist/` → `npx firebase deploy --only hosting,firestore:rules`.
-Live at `https://netflixgpt-e671d.web.app`.
+Live at `https://cinewatchgraph-ai.web.app` — a second Hosting **site**
+under the same `netflixgpt-e671d` project (the project ID itself can
+never be renamed; `firebase.json`'s `hosting.site` field targets which
+site a deploy goes to). The literal word "cinegraph" is blocked by
+Firebase's site-name validation (reserved/brand-filtered, confirmed by
+testing — every name containing it got rejected regardless of prefix/
+suffix, while names without it passed immediately), hence the slightly
+different name here vs. the app's actual branding. The original
+`netflixgpt-e671d.web.app` site still exists but is frozen — no longer
+an active deploy target.
 
 ---
 

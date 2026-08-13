@@ -41,6 +41,11 @@ const MAX_PROFILE_SUMMARY_LENGTH = 300
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:5174',
+  // Hosting URL renamed to a new site (cinewatchgraph-ai) under the same
+  // project — old netflixgpt-e671d.* origins kept here too since that
+  // site still exists (frozen, not actively deployed to) and its cached
+  // DNS/bookmarks may still resolve for a while.
+  'https://cinewatchgraph-ai.web.app',
   'https://netflixgpt-e671d.web.app',
   'https://netflixgpt-e671d.firebaseapp.com',
 ]

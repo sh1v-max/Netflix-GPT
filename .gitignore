@@ -18,6 +18,12 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .idea
+# VS Code "Local History" extension — snapshots every saved file,
+# including .env, so it must never be tracked (caused a real secret leak,
+# see re-do.md).
+.history
+# Firebase CLI's local hosting cache — machine-specific, not source.
+.firebase
 .DS_Store
 *.suo
 *.ntvs*

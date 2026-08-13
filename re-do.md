@@ -2898,6 +2898,45 @@ page's background.
 **Verified**: `npm run build` clean, deployed to
 `https://netflixgpt-e671d.web.app`.
 
+### 3.22 — Rename the deployed URL
+User wanted a nicer public URL than the auto-generated
+`netflixgpt-e671d.web.app` left over from before the Cinegraph rebrand.
+Firebase project IDs can never be renamed, but a project can have
+multiple Hosting **sites**, each with its own `<name>.web.app` — the
+real mechanism for this.
+
+- [x] User ran `npx firebase hosting:sites:create` interactively
+      (guided, not run by me — walked through the CLI step by step per
+      their request to do it themselves). **Real, confirmed finding**:
+      every name containing the literal substring "cinegraph" was
+      rejected (`cinegraph`, `cinegraph-ai`, `cinegraph-watch`,
+      `cinegraph-ciph`, `atcinegraph`, `atcinegraph-ai`,
+      `cinegraph-at-ciph` — seven attempts, all rejected, all suggesting
+      a `ciph`-swapped alternative), while `cinewatchgraph-ai` (no
+      contiguous "cinegraph" substring) succeeded on the first try —
+      strong evidence the word itself is blocked/reserved by Firebase's
+      site-name validation, not that specific combinations happened to
+      be taken. Site created: `cinewatchgraph-ai.web.app`.
+- [x] `firebase.json`: added `"site": "cinewatchgraph-ai"` to the
+      `hosting` block so deploys target the new site instead of the
+      project's default one.
+- [x] **Found and fixed a real breakage this would have caused**:
+      `gpt-proxy-worker/src/index.js`'s `ALLOWED_ORIGINS` CORS allowlist
+      only had the old `netflixgpt-e671d.*` origins — without adding the
+      new domain, AI search would have been silently CORS-blocked on the
+      new URL (the fetch would fail with no clear error surfaced to the
+      user). Added `https://cinewatchgraph-ai.web.app`, kept the old
+      origins too (that site still exists, just frozen/undeployed —
+      no reason to break it if anything still points there). Worker
+      redeployed.
+- [x] `OVERVIEW.md`'s Hosting section updated with the new URL and the
+      "cinegraph is a blocked word" finding, so this doesn't need
+      re-discovering later.
+
+**Verified**: new site responds `HTTP 200`. Worker syntax-checked
+(`node --check`) and redeployed. Old site intentionally left in place,
+frozen, not deleted (user's call to make later if wanted).
+
 ---
 
 ## Phase 4 — Polish & Professional Credibility
